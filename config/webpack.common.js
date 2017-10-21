@@ -7,7 +7,7 @@ export default {
     target: 'web',
     stats: false,
     output: {
-        publicPath: '/',
+        publicPath: './',
         filename: '[name].js',
     },
     module: {
