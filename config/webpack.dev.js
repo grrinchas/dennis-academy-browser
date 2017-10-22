@@ -4,24 +4,25 @@ import common from './webpack.common';
 import AppConfig from '../app.confg';
 
 export default merge.smart(common, {
-  target: 'web',
-  devtool: 'inline-source-map',
-  entry: {
-    main: ['webpack-hot-middleware/client', AppConfig.entries.main],
-  },
-  output: {
-    path: AppConfig.paths.build,
-  },
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader?sourceMap'],
-      },
+    target: 'web',
+    devtool: 'inline-source-map',
+    entry: {
+        main: ['webpack-hot-middleware/client', AppConfig.entries.main],
+    },
+    output: {
+        publicPath: '/',
+        path: AppConfig.paths.build,
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader?sourceMap'],
+            },
+        ],
+    },
+    plugins: [
+        new Webpack.HotModuleReplacementPlugin(),
+        new Webpack.NoEmitOnErrorsPlugin(),
     ],
-  },
-  plugins: [
-    new Webpack.HotModuleReplacementPlugin(),
-    new Webpack.NoEmitOnErrorsPlugin(),
-  ],
 });

@@ -7,16 +7,28 @@ export default {
     target: 'web',
     stats: false,
     output: {
-        publicPath: './',
+        publicPath: '/',
         filename: '[name].js',
     },
     module: {
         rules: [
             {
-                test: /\.(png|svg|jpg|gif)$/,
+                test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 use: {
                     loader: 'file-loader',
                 },
+            },
+            {
+                test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                use: [
+                    {
+                        loader: 'url-loader',
+                        options: {
+                            limit: 80000,
+                            mimetype: "application/font-woff"
+                        }
+                    }
+                ]
             },
             {
                 test: /\.elm$/,

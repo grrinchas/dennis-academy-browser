@@ -1,12 +1,12 @@
-module TopicModel exposing (..)
+module IconModel exposing (..)
 
 
-type alias TopicId =
+type alias IconId =
     String
 
 
 type alias Topic =
-    { id : TopicId
+    { id : IconId
     , title : String
     , description : String
     , content : String

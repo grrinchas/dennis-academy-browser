@@ -7,8 +7,6 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
 import webpackConfig from '../config/webpack.dev';
 
-
-
 const port = 3000;
 const app = express();
 const bundler = webpack(webpackConfig);

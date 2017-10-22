@@ -7,7 +7,6 @@ import Msgs exposing (Msg)
 import NotFoundPage exposing (notFoundPage)
 import RoutesModel exposing (Route(NotFoundRoute, TopicRoute, TopicsRoute))
 import TopicPage exposing (topicPage)
-import TopicView exposing (maybeTopicTable)
 
 
 page : Model -> Html Msg

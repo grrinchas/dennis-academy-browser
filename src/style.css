@@ -1,3 +1,29 @@
-h1,h2, h3 {
-  color: green;
+
+
+:root {
+    --accent-color: #FF5722;
+    --primary-color: #212121;
+    --bg-color: #303030;
 }
+
+body {
+    background-color: var(--bg-color);
+}
+
+#app {
+    min-width: 320px;
+}
+
+.dg-topic-list li {
+    color: white;
+    border-bottom: 1px solid grey;
+}
+
+.dg-topic-list li:hover {
+    background-color: var(--primary-color);
+}
+.dg-topic-list li .material-icons {
+    color: var(--accent-color);
+
+}
+

@@ -1,5 +1,6 @@
 module TopicApi exposing (..)
 
+import Api exposing (cmsUrl)
 import GraphQl exposing (Root, Value, field, object, toHttpRequest, withSelectors)
 import Json.Decode.Pipeline exposing (decode, required)
 import Msgs exposing (Msg)
@@ -10,7 +11,7 @@ import TopicModel exposing (Topic)
 
 fetchAllTopics : Cmd Msg
 fetchAllTopics =
-    toHttpRequest (GraphQl.query "https://api.graphcms.com/simple/v1/dgacademy" query playersDecoder)
+    toHttpRequest (GraphQl.query cmsUrl query playersDecoder)
         |> RemoteData.sendRequest
         |> Cmd.map Msgs.OnFetchTopics
 
@@ -22,6 +23,7 @@ query =
             |> withSelectors
                 [ field "id"
                 , field "title"
+                , field "description"
                 , field "content"
                 ]
         ]
@@ -37,4 +39,5 @@ playerDecoder =
     decode Topic
         |> required "id" Decode.string
         |> required "title" Decode.string
+        |> required "description" Decode.string
         |> required "content" Decode.string

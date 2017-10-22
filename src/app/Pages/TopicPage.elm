@@ -6,6 +6,7 @@ import Msgs exposing (Msg)
 import NotFoundPage exposing (notFoundPage)
 import RemoteData
 import TopicModel exposing (TopicId)
+import Markdown exposing (Options)
 
 
 topicPage : Model -> TopicId -> Html Msg
@@ -26,10 +27,19 @@ topicPage model topicId =
             in
                 case maybeTopic of
                     Just topic ->
-                        text (topic.content)
+                        Markdown.toHtmlWith highlightOptions [] topic.content
 
                     Nothing ->
                         notFoundPage
 
         RemoteData.Failure err ->
             text (toString err)
+
+
+highlightOptions : Options
+highlightOptions =
+    { githubFlavored = Just { tables = False, breaks = False }
+    , defaultHighlighting = Just "elm"
+    , sanitize = False
+    , smartypants = False
+    }
