@@ -1,10 +1,10 @@
 module TopicView exposing (..)
 
-import Html exposing (Html, a, div, hr, table, tbody, td, text, th, thead, tr)
+import Html exposing (Html, a, div, h2, hr, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (class, href)
 import Html.Events
 import Material.Color exposing (Hue, background, primary, white)
-import Material.Typography exposing (right)
+import Material.Typography exposing (center, right, title)
 import Models exposing (Model)
 import Navigation exposing (newUrl)
 import RoutesModel exposing (Route(TopicRoute))
@@ -22,7 +22,9 @@ import Set
 
 topicList : List Topic -> Model -> Html Msg
 topicList topics model =
-    MList.ul [ Options.cs "dg-topic-list" ] (List.map (topicListItem model) topics)
+    Options.div []
+        [ MList.ul [ Options.cs "dg-topic-list" ] (List.map (topicListItem model) topics)
+        ]
 
 
 topicListItem : Model -> Topic -> Html Msg

@@ -1,14 +1,16 @@
 module TopicPage exposing (..)
 
-import Html exposing (Html, text)
+import Html exposing (Html, h1, text)
 import Models exposing (Model)
-import Msgs exposing (Msg)
+import Msgs exposing (Msg(OnMaterialChange))
 import NotFoundPage exposing (notFoundPage)
 import RemoteData
 import TopicModel exposing (TopicId)
 import Markdown exposing (Options)
-import Material.Options as Options
+import Material.Options as Options exposing (center)
 import Material.Spinner as Loading
+import Material.Button as Button
+import Material.Color as Color exposing (background, primary, white)
 
 
 topicPage : Model -> TopicId -> Html Msg
@@ -32,7 +34,39 @@ topicPage model topicId =
             in
                 case maybeTopic of
                     Just topic ->
-                        Markdown.toHtml [] topic.content
+                        Options.div [ center, Options.css "flex-direction" "column" ]
+                            [ Options.styled h1 [ Color.text primary ] [ text "Description" ]
+                            , Options.div [] []
+                            , Options.styled Markdown.toHtml
+                                [ background white
+                                , Options.css "padding" "20px"
+                                , Options.css "max-width" "500px"
+                                ]
+                                topic.description
+                            , Options.div [ Options.css "height" "20px" ] []
+                            , Options.div [ Options.css "display" "flex", Options.css "width" "540px" ]
+                                [ Button.render OnMaterialChange
+                                    [ 9, 0, 0, 1 ]
+                                    model.mdl
+                                    [ Button.ripple
+                                    , Button.colored
+                                    , Button.raised
+                                    , Button.link ""
+                                    , Options.css "align-self" "start"
+                                    ]
+                                    [ text "No thanks!" ]
+                                , Button.render OnMaterialChange
+                                    [ 9, 0, 0, 1 ]
+                                    model.mdl
+                                    [ Button.ripple
+                                    , Button.colored
+                                    , Button.raised
+                                    , Button.link ""
+                                    , Options.css "margin-left" "auto"
+                                    ]
+                                    [ text "Let's do it!" ]
+                                ]
+                            ]
 
                     Nothing ->
                         notFoundPage

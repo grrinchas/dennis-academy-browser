@@ -34,20 +34,7 @@ maybeTopicTable response model =
                 ]
 
         RemoteData.Success topics ->
-            Layout.render OnMaterialChange
-                model.mdl
-                [ Layout.fixedHeader
-                , background (color Grey S900)
-                ]
-                { header =
-                    [ Options.styled h2 [ title, center ] [ text "Choose a topic" ]
-                    ]
-                , drawer = []
-                , tabs = ( [], [] )
-                , main =
-                    [ topicList topics model
-                    ]
-                }
+            topicList topics model
 
         RemoteData.Failure error ->
             text (toString error)

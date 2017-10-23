@@ -7,14 +7,6 @@ body {
 
     background-color: var(--bg-color);
 }
-.mdl-spinner {
-    width: 84px;
-    height: 84px;
-}
-
-.mdl-spinner__circle {
-    border-width: 5px;
-}
 
 #app {
     min-width: 320px;
