@@ -2,22 +2,26 @@ module Update exposing (..)
 
 import Material
 import Models exposing (Model)
-import Msgs exposing (Msg(OnFetchTopics, OnLocationChange, OnMaterialChange))
-import Routing exposing (parseLocation)
+import Msgs exposing (Msg(OnFetchTopics, OnLocationChange, OnMaterialChange, UpdateRoute))
+import Navigation exposing (newUrl)
+import Routing exposing (parseLocation, toPath)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        -- Update model with new topics fetched from cms
         OnFetchTopics response ->
             ( { model | topics = response }, Cmd.none )
 
-        OnLocationChange location ->
-            let
-                newRoute =
-                    parseLocation location
-            in
-                ( { model | route = newRoute }, Cmd.none )
+        -- Update browsers location
+        UpdateRoute route ->
+            ( model, newUrl <| toPath route )
 
+        -- Update model's current route with new one
+        OnLocationChange location ->
+            ( { model | route = parseLocation location }, Cmd.none )
+
+        -- Material design boilerplate
         OnMaterialChange msg_ ->
             Material.update OnMaterialChange msg_ model

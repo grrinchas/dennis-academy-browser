@@ -1,13 +1,19 @@
 
-
 :root {
-    --accent-color: #FF5722;
-    --primary-color: #212121;
     --bg-color: #303030;
 }
 
 body {
+
     background-color: var(--bg-color);
+}
+.mdl-spinner {
+    width: 84px;
+    height: 84px;
+}
+
+.mdl-spinner__circle {
+    border-width: 5px;
 }
 
 #app {
@@ -15,15 +21,6 @@ body {
 }
 
 .dg-topic-list li {
-    color: white;
-    border-bottom: 1px solid grey;
-}
-
-.dg-topic-list li:hover {
-    background-color: var(--primary-color);
-}
-.dg-topic-list li .material-icons {
-    color: var(--accent-color);
-
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 

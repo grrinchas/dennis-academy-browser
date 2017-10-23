@@ -7,6 +7,8 @@ import NotFoundPage exposing (notFoundPage)
 import RemoteData
 import TopicModel exposing (TopicId)
 import Markdown exposing (Options)
+import Material.Options as Options
+import Material.Spinner as Loading
 
 
 topicPage : Model -> TopicId -> Html Msg
@@ -16,7 +18,10 @@ topicPage model topicId =
             text ""
 
         RemoteData.Loading ->
-            text "Loading ..."
+            Options.div [ Options.center, Options.css "height" "100vh" ]
+                [ Loading.spinner
+                    [ Loading.active True ]
+                ]
 
         RemoteData.Success topics ->
             let
@@ -27,19 +32,10 @@ topicPage model topicId =
             in
                 case maybeTopic of
                     Just topic ->
-                        Markdown.toHtmlWith highlightOptions [] topic.content
+                        Markdown.toHtml [] topic.content
 
                     Nothing ->
                         notFoundPage
 
         RemoteData.Failure err ->
             text (toString err)
-
-
-highlightOptions : Options
-highlightOptions =
-    { githubFlavored = Just { tables = False, breaks = False }
-    , defaultHighlighting = Just "elm"
-    , sanitize = False
-    , smartypants = False
-    }

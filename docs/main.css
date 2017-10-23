@@ -1,2 +1,2 @@
-:root{--accent-color:#ff5722;--primary-color:#212121;--bg-color:#303030}body{background-color:var(--bg-color)}#app{min-width:320px}.dg-topic-list li{color:#fff;border-bottom:1px solid grey}.dg-topic-list li:hover{background-color:var(--primary-color)}.dg-topic-list li .material-icons{color:var(--accent-color)}
+:root{--bg-color:#303030}body{background-color:var(--bg-color)}.mdl-spinner{width:84px;height:84px}.mdl-spinner__circle{border-width:5px}#app{min-width:320px}.dg-topic-list li{border-bottom:1px solid hsla(0,0%,100%,.1)}
 /*# sourceMappingURL=main.css.map*/
