@@ -1,10 +1,10 @@
-module Msgs exposing (..)
+module Messages exposing (..)
 
 import Material
 import Navigation exposing (Location)
-import TopicModel exposing (Topic)
 import RemoteData exposing (WebData)
 import RoutesModel exposing (Route)
+import TopicModel exposing (Topic)
 
 
 type Msg

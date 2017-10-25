@@ -16,21 +16,18 @@ export default merge.smart(common, {
         path: AppConfig.paths.dist,
     },
     module: {
-        rules: [
-            {
-                test: /\.css$/,
-                use: ExtractTextWebpackPlugin.extract({
-                    fallback: 'style-loader',
-                    use: [{
-                        loader: 'css-loader',
-                        options: {
-                            minimize: true,
-                            sourceMap: true,
-                        },
-                    }],
-                }),
-            },
-        ],
+        rules: [{
+            test: /\.scss$/,
+            use: ExtractTextWebpackPlugin.extract({
+                use: [{
+                    loader: "css-loader"
+                }, {
+                    loader: "sass-loader"
+                }],
+                // use style-loader in development
+                fallback: "style-loader"
+            })
+        }]
     },
     plugins: [
         new CleanWebpackPlugin(['docs', 'build']),
@@ -43,5 +40,8 @@ export default merge.smart(common, {
                 NODE_ENV: JSON.stringify('production'),
             },
         }),
+        new Webpack.LoaderOptionsPlugin({
+            minimize: true,
+        })
     ],
 });

@@ -5,12 +5,11 @@ import Html.Attributes exposing (class, href)
 import Html.Events
 import Material.Color exposing (Hue, background, primary, white)
 import Material.Typography exposing (center, right, title)
-import Models exposing (Model)
+import Messages exposing (Msg(UpdateRoute))
 import Navigation exposing (newUrl)
 import RoutesModel exposing (Route(TopicRoute))
 import Routing exposing (toPath)
 import TopicModel exposing (Topic, TopicId)
-import Msgs exposing (Msg(OnLocationChange, OnMaterialChange, UpdateRoute))
 import RemoteData exposing (WebData)
 import Material.List as MList
 import Material.Icon as MIcon exposing (size24, size36)
@@ -20,15 +19,15 @@ import Material.Color as Color
 import Set
 
 
-topicList : List Topic -> Model -> Html Msg
-topicList topics model =
+topicList : List Topic -> Html Msg
+topicList topics =
     Options.div []
-        [ MList.ul [ Options.cs "dg-topic-list" ] (List.map (topicListItem model) topics)
+        [ MList.ul [ Options.cs "dg-topic-list" ] (List.map topicListItem topics)
         ]
 
 
-topicListItem : Model -> Topic -> Html Msg
-topicListItem model topic =
+topicListItem : Topic -> Html Msg
+topicListItem topic =
     MList.li
         [ Options.onClick <| UpdateRoute <| TopicRoute topic.id
         , Color.text white

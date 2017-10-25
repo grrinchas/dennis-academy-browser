@@ -1,7 +1,7 @@
 module Subscriptions exposing (..)
 
-import Models exposing (Model)
-import Msgs exposing (Msg)
+import Model exposing (Model)
+import Messages exposing (Msg)
 
 
 subscriptions : Model -> Sub Msg

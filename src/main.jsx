@@ -1,5 +1,5 @@
 import Elm from './app/Main.elm';
-import './style.css';
+import './main.scss';
 
 const mountNode = document.getElementById('app');
 const app = Elm.Main.embed(mountNode);

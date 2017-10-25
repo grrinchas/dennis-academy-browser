@@ -1,8 +1,8 @@
 module Update exposing (..)
 
 import Material
-import Models exposing (Model)
-import Msgs exposing (Msg(OnFetchTopics, OnLocationChange, OnMaterialChange, UpdateRoute))
+import Model exposing (Model)
+import Messages exposing (Msg(OnFetchTopics, OnLocationChange, OnMaterialChange, UpdateRoute))
 import Navigation exposing (newUrl)
 import Routing exposing (parseLocation, toPath)
 

@@ -13,14 +13,6 @@ export default merge.smart(common, {
         publicPath: '/',
         path: AppConfig.paths.build,
     },
-    module: {
-        rules: [
-            {
-                test: /\.css$/,
-                use: ['style-loader', 'css-loader?sourceMap'],
-            },
-        ],
-    },
     plugins: [
         new Webpack.HotModuleReplacementPlugin(),
         new Webpack.NoEmitOnErrorsPlugin(),
