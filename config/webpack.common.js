@@ -29,6 +29,14 @@ export default {
                     loader: 'elm-webpack-loader?verbose=true&warn=true&forceWatch=true',
                 },
             },
+            {
+                test: /\.(svg|woff|woff2|eot|ttf|otf)$/,
+                loader: 'url-loader',
+                options: {
+                    name: 'fonts/[name].[ext]',
+                    limit: 50,
+                },
+            },
         ],
         noParse: /\.elm$/
     },
