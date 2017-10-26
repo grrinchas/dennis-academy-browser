@@ -1,6 +1,5 @@
 module Messages exposing (..)
 
-import Material
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 import RoutesModel exposing (Route)
@@ -11,4 +10,3 @@ type Msg
     = OnFetchTopics (WebData (List Topic))
     | UpdateRoute Route
     | OnLocationChange Location
-    | OnMaterialChange (Material.Msg Msg)

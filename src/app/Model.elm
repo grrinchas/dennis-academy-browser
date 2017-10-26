@@ -1,14 +1,13 @@
 module Model exposing (..)
 
-import Html exposing (Html, text)
-import Material
-import Messages exposing (Msg)
-import Navigation exposing (Location)
+import Html exposing (Html, div, text)
+import Messages exposing (Msg(OnFetchTopics, OnLocationChange, UpdateRoute))
+import Navigation exposing (Location, newUrl)
 import RemoteData exposing (WebData)
 import RoutesModel exposing (Route(NotFoundRoute, TopicRoute, TopicsRoute))
-import Routing exposing (parseLocation)
+import Routing exposing (parseLocation, toPath)
 import TopicApi exposing (fetchAllTopics)
-import TopicModel exposing (Topic)
+import TopicModel exposing (Topic, TopicId)
 import TopicView exposing (topicList)
 import UrlParser exposing (..)
 
@@ -16,7 +15,6 @@ import UrlParser exposing (..)
 type alias Model =
     { topics : WebData (List Topic)
     , route : Route
-    , mdl : Material.Model
     }
 
 
@@ -24,7 +22,6 @@ initialModel : Location -> Model
 initialModel location =
     { topics = RemoteData.Loading
     , route = parseLocation location
-    , mdl = Material.model
     }
 
 
@@ -47,3 +44,45 @@ mapSuccess view response =
 
         RemoteData.Failure error ->
             text (toString error)
+
+
+page : Model -> Html Msg
+page model =
+    case model.route of
+        TopicsRoute ->
+            mapSuccess topicList model.topics
+
+        TopicRoute id ->
+            mapSuccess (mapTopic id) model.topics
+
+        NotFoundRoute ->
+            notFoundPage
+
+
+mapTopic : TopicId -> List Topic -> Html Msg
+mapTopic id topics =
+    case List.head << List.filter (\topic -> topic.id == id) <| topics of
+        Just topic ->
+            text topic.description
+
+        Nothing ->
+            notFoundPage
+
+
+notFoundPage : Html msg
+notFoundPage =
+    div []
+        [ text "Page is not found" ]
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        OnFetchTopics response ->
+            ( { model | topics = response }, Cmd.none )
+
+        UpdateRoute route ->
+            ( model, newUrl <| toPath route )
+
+        OnLocationChange location ->
+            ( { model | route = parseLocation location }, Cmd.none )

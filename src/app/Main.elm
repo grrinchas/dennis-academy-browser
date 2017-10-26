@@ -1,11 +1,8 @@
 module Main exposing (..)
 
 import Navigation exposing (Location)
-import Model exposing (Model, init, initialModel)
-import Messages exposing (Msg(OnMaterialChange))
-import Subscriptions exposing (subscriptions)
-import Update exposing (update)
-import Views exposing (page)
+import Model exposing (Model, init, initialModel, page, update)
+import Messages exposing (Msg)
 
 
 main : Program Never Model Msg
@@ -14,5 +11,5 @@ main =
         { init = init
         , view = page
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = (\model -> Sub.none)
         }
