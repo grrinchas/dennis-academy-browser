@@ -9,7 +9,8 @@
         "src/app/Api",
         "src/app/Pages",
         "src/app/Routes",
-        "src/app/Topic"
+        "src/app/Topic",
+        "src/app/Views"
     ],
     "exposed-modules": [],
     "dependencies": {

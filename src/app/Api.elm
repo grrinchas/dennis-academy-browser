@@ -1,24 +1,32 @@
-module TopicApi exposing (..)
+module Api exposing (..)
 
-import Api exposing (cmsUrl)
+import GraphQl exposing (toHttpRequest)
+import Messages exposing (Msg)
+import Topic
 import Color exposing (Color)
 import GraphQl exposing (Root, Value, field, object, toHttpRequest, withSelectors)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, required, resolve)
 import Messages exposing (Msg)
 import Json.Decode as Decode exposing (Decoder)
 import RemoteData
-import TopicModel exposing (Icon, Topic)
+import Routes exposing (Route(TopicRoute))
+import Topic exposing (..)
+
+
+cmsUrl : String
+cmsUrl =
+    "https://api.graphcms.com/simple/v1/dgacademy"
 
 
 fetchAllTopics : Cmd Msg
 fetchAllTopics =
-    toHttpRequest (GraphQl.query cmsUrl query topicsDecoder)
+    toHttpRequest (GraphQl.query cmsUrl topicQuery topicsDecoder)
         |> RemoteData.sendRequest
         |> Cmd.map Messages.OnFetchTopics
 
 
-query : Value Root
-query =
+topicQuery : Value Root
+topicQuery =
     object
         [ field "allTopics"
             |> withSelectors

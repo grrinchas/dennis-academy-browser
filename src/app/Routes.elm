@@ -1,17 +1,17 @@
-module Routing exposing (..)
+module Routes exposing (Route(..), parseLocation, toPath, topicUrl)
 
 import Navigation exposing (Location)
-import RoutesModel exposing (Route(NotFoundRoute, TopicRoute, TopicsRoute))
-import TopicModel exposing (TopicId)
+import Topic exposing (TopicId)
+import Topic exposing (TopicId)
 import UrlParser exposing (..)
 
 
-matchers : Parser (Route -> a) a
-matchers =
-    oneOf
-        [ map TopicsRoute top
-        , map TopicRoute (s "topics" </> string)
-        ]
+type Route
+    = TopicsRoute
+    | TopicRoute TopicId
+    | NotFoundRoute
+
+
 
 
 parseLocation : Location -> Route
@@ -35,3 +35,17 @@ toPath route =
 
         NotFoundRoute ->
             ""
+
+
+topicUrl : TopicId -> String
+topicUrl id =
+    toPath <| TopicRoute id
+
+
+
+matchers : Parser (Route -> a) a
+matchers =
+    oneOf
+        [ map TopicsRoute top
+        , map TopicRoute (s "topics" </> string)
+        ]

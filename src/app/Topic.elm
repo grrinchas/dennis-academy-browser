@@ -1,7 +1,4 @@
-module TopicModel exposing (..)
-
-import Color exposing (Color)
-
+module Topic exposing (..)
 
 type alias Icon =
     { url : String
@@ -20,3 +17,6 @@ type alias Topic =
     , icon : Icon
     , colour : String
     }
+
+
+

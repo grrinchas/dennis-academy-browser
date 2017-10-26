@@ -2,8 +2,8 @@ module Messages exposing (..)
 
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
-import RoutesModel exposing (Route)
-import TopicModel exposing (Topic)
+import Routes exposing (Route)
+import Topic exposing (Topic)
 
 
 type Msg
