@@ -12,7 +12,7 @@ import Routes exposing (..)
 import Slug exposing (Slug)
 import Topic exposing (..)
 import UrlParser exposing (..)
-import Views exposing (mainHeader, topicsPage)
+import Views exposing (mainHeader, topicsPage, withHeader)
 
 
 main : Program Never Model Msg
@@ -61,14 +61,12 @@ mapSuccess view response =
 
 page : Model -> Html Msg
 page model =
-    div []
-        [ mainHeader
-        , case model.route of
+         case model.route of
             TopicsRoute ->
-                mapSuccess topicsPage model.topics
+                withHeader (mapSuccess topicsPage model.topics)
 
             TopicRoute id ->
-                mapSuccess (mapTopic id) model.topics
+                withHeader (mapSuccess (mapTopic id) model.topics)
 
             SignUpRoute ->
                 Views.signUpPage
@@ -78,7 +76,6 @@ page model =
 
             NotFoundRoute ->
                 Views.notFoundPage
-        ]
 
 
 mapTopic : Slug -> List Topic -> Html Msg

@@ -21,7 +21,7 @@ body {
     padding: 3px;
 }
 
-.loading {
+.loading, .dg-login {
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -33,7 +33,10 @@ body {
     color: rgba(255, 255, 255, 0.5);
 }
 
-.dg-apps {
-    width: 50px !important;
-    height: 50px !important;
+form {
+    padding: 0 !important;
+}
+
+.dg-login-title {
+    color: white;
 }
