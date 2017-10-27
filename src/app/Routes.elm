@@ -1,6 +1,7 @@
-module Routes exposing (Route(..), parseLocation, toPath, topicUrl)
+module Routes exposing (Route(..), parseLocation, toPath, topicUrl, signUpUrl, loginUrl)
 
 import Navigation exposing (Location)
+import Slug exposing (Slug)
 import Topic exposing (TopicId)
 import Topic exposing (TopicId)
 import UrlParser exposing (..)
@@ -8,20 +9,45 @@ import UrlParser exposing (..)
 
 type Route
     = TopicsRoute
-    | TopicRoute TopicId
+    | TopicRoute Slug
+    | SignUpRoute
+    | LoginRoute
     | NotFoundRoute
-
-
 
 
 parseLocation : Location -> Route
 parseLocation location =
-    case (parseHash matchers location) of
-        Just route ->
-            route
+    if String.length location.pathname > 1 && String.left 2 location.pathname /= "/#" then
+        NotFoundRoute
+    else
+        case (parseHash matchers location) of
+            Just route ->
+                route
 
-        Nothing ->
-            NotFoundRoute
+            Nothing ->
+                NotFoundRoute
+
+
+matchers : Parser (Route -> a) a
+matchers =
+    oneOf
+        [ map TopicsRoute top
+        , map TopicRoute (s "topics" </> topicMatcher)
+        , map SignUpRoute (s "signup")
+        , map LoginRoute (s "login")
+        ]
+
+
+topicMatcher : Parser (Slug -> a) a
+topicMatcher =
+    custom "TOPIC_TITLE" <|
+        \segment ->
+            case Slug.generate segment of
+                Just title ->
+                    Ok title
+
+                Nothing ->
+                    Err "Malformed path"
 
 
 toPath : Route -> String
@@ -31,21 +57,28 @@ toPath route =
             "/"
 
         TopicRoute id ->
-            "#topics/" ++ id
+            "#topics/" ++ Slug.toString id
+
+        SignUpRoute ->
+            "#signup"
+
+        LoginRoute ->
+            "#login"
 
         NotFoundRoute ->
             ""
 
 
-topicUrl : TopicId -> String
+topicUrl : Slug -> String
 topicUrl id =
     toPath <| TopicRoute id
 
 
+signUpUrl : String
+signUpUrl =
+    toPath SignUpRoute
 
-matchers : Parser (Route -> a) a
-matchers =
-    oneOf
-        [ map TopicsRoute top
-        , map TopicRoute (s "topics" </> string)
-        ]
+
+loginUrl : String
+loginUrl =
+    toPath LoginRoute

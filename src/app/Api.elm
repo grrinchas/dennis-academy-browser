@@ -2,12 +2,13 @@ module Api exposing (..)
 
 import GraphQl exposing (toHttpRequest)
 import Messages exposing (Msg)
+import Slug
 import Topic
 import Color exposing (Color)
 import GraphQl exposing (Root, Value, field, object, toHttpRequest, withSelectors)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, required, resolve)
 import Messages exposing (Msg)
-import Json.Decode as Decode exposing (Decoder)
+import Json.Decode as Decode exposing (Decoder, fail, succeed)
 import RemoteData
 import Routes exposing (Route(TopicRoute))
 import Topic exposing (..)
@@ -50,13 +51,24 @@ topicsDecoder =
 
 topicDecoder : Decoder Topic
 topicDecoder =
-    decode Topic
+    decode finalDecoder
         |> required "id" Decode.string
         |> required "title" Decode.string
         |> required "description" Decode.string
         |> required "content" Decode.string
         |> required "icon" iconDecoder
         |> required "colour" Decode.string
+        |> resolve
+
+
+finalDecoder : String -> String -> String -> String -> Icon -> String -> Decoder Topic
+finalDecoder id title desc content icon colour =
+    case Slug.generate title of
+        Just slug ->
+            succeed <| Topic id title slug desc content icon colour
+
+        Nothing ->
+            fail "Can't slugify title"
 
 
 iconDecoder : Decoder Icon

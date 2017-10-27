@@ -1,5 +1,7 @@
 module Topic exposing (..)
 
+import Slug exposing (Slug)
+
 type alias Icon =
     { url : String
     }
@@ -12,6 +14,7 @@ type alias TopicId =
 type alias Topic =
     { id : TopicId
     , title : String
+    , slugTitle : Slug
     , description : String
     , content : String
     , icon : Icon

@@ -3,14 +3,16 @@ module Main exposing (..)
 import Navigation exposing (Location)
 import Messages exposing (Msg)
 import Api exposing (fetchAllTopics)
-import Html exposing (Html, div, text)
+import Html exposing (..)
 import Messages exposing (Msg(OnFetchTopics, OnLocationChange, UpdateRoute))
 import Navigation exposing (Location, newUrl)
 import RemoteData exposing (WebData)
 import Routes exposing (..)
+import Slug exposing (Slug)
 import Topic exposing (..)
 import UrlParser exposing (..)
-import Views exposing (topicsPage)
+import Views exposing (mainHeader, topicsPage)
+
 
 main : Program Never Model Msg
 main =
@@ -20,6 +22,8 @@ main =
         , update = update
         , subscriptions = (\model -> Sub.none)
         }
+
+
 type alias Model =
     { topics : WebData (List Topic)
     , route : Route
@@ -56,20 +60,29 @@ mapSuccess view response =
 
 page : Model -> Html Msg
 page model =
-    case model.route of
-        TopicsRoute ->
-            mapSuccess topicsPage model.topics
+    div []
+        [ mainHeader
+        , case model.route of
+            TopicsRoute ->
+                mapSuccess topicsPage model.topics
 
-        TopicRoute id ->
-            mapSuccess (mapTopic id) model.topics
+            TopicRoute id ->
+                mapSuccess (mapTopic id) model.topics
 
-        NotFoundRoute ->
-            Views.notFoundPage
+            SignUpRoute ->
+                Views.signUpPage
+
+            LoginRoute ->
+                Views.loginPage
+
+            NotFoundRoute ->
+                Views.notFoundPage
+        ]
 
 
-mapTopic : TopicId -> List Topic -> Html Msg
+mapTopic : Slug -> List Topic -> Html Msg
 mapTopic id topics =
-    case List.head << List.filter (\topic -> topic.id == id) <| topics of
+    case List.head << List.filter (\topic -> topic.slugTitle == id) <| topics of
         Just topic ->
             Views.topicPage topic
 
