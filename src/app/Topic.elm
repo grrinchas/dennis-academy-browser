@@ -12,8 +12,8 @@ type alias TopicId =
 
 
 type alias Topic =
-    { id : TopicId
-    , title : String
+    {
+      title : String
     , slugTitle : Slug
     , description : String
     , content : String

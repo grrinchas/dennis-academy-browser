@@ -31,8 +31,7 @@ topicQuery =
     object
         [ field "allTopics"
             |> withSelectors
-                [ field "id"
-                , field "title"
+                [ field "title"
                 , field "description"
                 , field "content"
                 , field
@@ -52,7 +51,6 @@ topicsDecoder =
 topicDecoder : Decoder Topic
 topicDecoder =
     decode finalDecoder
-        |> required "id" Decode.string
         |> required "title" Decode.string
         |> required "description" Decode.string
         |> required "content" Decode.string
@@ -61,11 +59,11 @@ topicDecoder =
         |> resolve
 
 
-finalDecoder : String -> String -> String -> String -> Icon -> String -> Decoder Topic
-finalDecoder id title desc content icon colour =
+finalDecoder : String -> String -> String -> Icon -> String -> Decoder Topic
+finalDecoder title desc content icon colour =
     case Slug.generate title of
         Just slug ->
-            succeed <| Topic id title slug desc content icon colour
+            succeed <| Topic title slug desc content icon colour
 
         Nothing ->
             fail "Can't slugify title"

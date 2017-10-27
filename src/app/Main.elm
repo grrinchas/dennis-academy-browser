@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Html.Attributes exposing (style)
 import Navigation exposing (Location)
 import Messages exposing (Msg)
 import Api exposing (fetchAllTopics)

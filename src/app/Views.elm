@@ -81,7 +81,7 @@ navBar =
     div [ class "navbar-fixed" ]
         [ nav []
             [ div [ class "nav-wrapper" ]
-                [ a [ class "button-collapse show-on-large", href "#" ] [ i [ class "material-icons" ] [ text "menu" ] ]
+                [ a [ class "button-collapse show-on-large", href "#" ] [ i [ class "dg-apps material-icons" ] [ text "apps" ] ]
                 , ul [ id "nav-mobile", class "right" ]
                     [ li [] [ a [ href <| Routes.loginUrl ] [ text "Login" ] ]
                     , li [] [ span [ class "dg-or" ] [ text "or" ] ]

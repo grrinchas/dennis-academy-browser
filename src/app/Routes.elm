@@ -17,15 +17,12 @@ type Route
 
 parseLocation : Location -> Route
 parseLocation location =
-    if String.length location.pathname > 1 && String.left 2 location.pathname /= "/#" then
-        NotFoundRoute
-    else
-        case (parseHash matchers location) of
-            Just route ->
-                route
+    case (parseHash matchers location) of
+        Just route ->
+            route
 
-            Nothing ->
-                NotFoundRoute
+        Nothing ->
+            NotFoundRoute
 
 
 matchers : Parser (Route -> a) a
