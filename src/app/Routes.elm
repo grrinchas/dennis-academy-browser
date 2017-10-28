@@ -1,4 +1,4 @@
-module Routes exposing (Route(..), parseLocation, toPath, topicUrl, signUpUrl, loginUrl, topicsUrl, homeUrl)
+module Routes exposing (Route(..), parseLocation, toPath)
 
 import Navigation exposing (Location)
 import Slug exposing (Slug)
@@ -69,28 +69,3 @@ toPath route =
 
         NotFoundRoute ->
             ""
-
-
-homeUrl : String
-homeUrl =
-    toPath HomeRoute
-
-
-topicsUrl : String
-topicsUrl =
-    toPath TopicsRoute
-
-
-topicUrl : Slug -> String
-topicUrl id =
-    toPath <| TopicRoute id
-
-
-signUpUrl : String
-signUpUrl =
-    toPath SignUpRoute
-
-
-loginUrl : String
-loginUrl =
-    toPath LoginRoute

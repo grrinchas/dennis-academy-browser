@@ -10,6 +10,8 @@ body {
 }
 
 .dg-topic-img {
+    display: block;
+    margin: auto;
     height: 200px;
     width: 200px;
 }
@@ -17,6 +19,10 @@ body {
 .dg-topic-a {
     color: $text-color;
     padding: 3px;
+}
+
+.dg-text-white {
+    color: white !important;
 }
 
 .dg-loading {
@@ -46,6 +52,7 @@ body {
 
 
 
+
 .dg-login-or-signup {
     color: rgba(255, 255, 255, 0.5);
 }
@@ -56,14 +63,12 @@ body {
 }
 
 .dg-registration {
-
-    @extend .valign-wrapper;
-    justify-content: center;
-
     form {
-        @extend .card;
         min-width: 450px;
         padding: 0 !important;
+        margin: 0 !important;
+        @extend .z-depth-0;
+        @extend .card;
 
         .dg-reg-or {
             @extend .card-title;
@@ -88,5 +93,21 @@ body {
 
     .dg-input-field {
         @extend .input-field;
+    }
+}
+
+
+@media screen and (min-width: 600px) {
+
+    .dg-registration {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        margin-left: -225px;
+        margin-top: -350px;
+        form {
+            max-width: 450px;
+            box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) !important;
+        }
     }
 }

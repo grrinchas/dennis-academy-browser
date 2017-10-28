@@ -3,7 +3,7 @@ module Main exposing (..)
 import Brand exposing (Brand)
 import Html.Attributes exposing (style)
 import Navigation exposing (Location)
-import Messages exposing (Msg(OnFetchBrand))
+import Messages exposing (Msg(OnFetchBrand, OnWindowChange))
 import Api exposing (fetchAllTopics, fetchBrand)
 import Html exposing (..)
 import Messages exposing (Msg(OnFetchTopics, OnLocationChange, UpdateRoute))
@@ -12,9 +12,11 @@ import Platform.Cmd exposing (batch)
 import RemoteData exposing (WebData)
 import Routes exposing (..)
 import Slug exposing (Slug)
+import Task
 import Topic exposing (..)
 import UrlParser exposing (..)
-import Views exposing (landingPage, topicsPage, withHeader)
+import Views exposing (landingPage, topicsPageMobile, topicsPageTablet, withHeader)
+import Window exposing (Size, resizes)
 
 
 main : Program Never Model Msg
@@ -23,14 +25,20 @@ main =
         { init = init
         , view = page
         , update = update
-        , subscriptions = (\model -> Sub.none)
+        , subscriptions = subscriptions
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Window.resizes (\size -> OnWindowChange size)
 
 
 type alias Model =
     { topics : WebData (List Topic)
     , brand : WebData Brand
     , route : Route
+    , window : Window.Size
     }
 
 
@@ -39,12 +47,13 @@ initialModel location =
     { topics = RemoteData.Loading
     , brand = RemoteData.Loading
     , route = parseLocation location
+    , window = Size 0 0
     }
 
 
 init : Location -> ( Model, Cmd Msg )
 init location =
-    ( initialModel location, batch [ fetchBrand, fetchAllTopics ] )
+    ( initialModel location, batch [ fetchBrand, fetchAllTopics, Task.perform OnWindowChange Window.size ] )
 
 
 mapSuccess : (a -> Html Msg) -> WebData a -> Html Msg
@@ -70,7 +79,14 @@ page model =
             mapSuccess (withHeader landingPage) model.brand
 
         TopicsRoute ->
-            mapSuccess (withHeader (mapSuccess topicsPage model.topics)) model.brand
+            let
+                view =
+                    if model.window.width <= 600 then
+                        topicsPageMobile
+                    else
+                        topicsPageTablet
+            in
+                mapSuccess (withHeader (mapSuccess view model.topics)) model.brand
 
         TopicRoute id ->
             mapSuccess (withHeader (mapSuccess (mapTopic id) model.topics)) model.brand
@@ -103,6 +119,9 @@ update msg model =
 
         OnFetchBrand response ->
             ( { model | brand = response }, Cmd.none )
+
+        OnWindowChange size ->
+            ( { model | window = size }, Cmd.none )
 
         UpdateRoute route ->
             ( model, newUrl <| toPath route )

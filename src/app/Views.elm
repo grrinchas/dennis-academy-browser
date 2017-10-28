@@ -8,6 +8,7 @@ import Markdown exposing (toHtml)
 import Messages exposing (Msg(UpdateRoute))
 import Routes exposing (Route(HomeRoute, LoginRoute, SignUpRoute, TopicRoute, TopicsRoute), toPath)
 import Topic exposing (..)
+import Window exposing (Size)
 
 
 notFoundPage : Html Msg
@@ -25,13 +26,13 @@ thirdParty : Html Msg
 thirdParty =
     div [ class "row" ]
         [ div [ class "col s12 center-align" ]
-            [ a [ class "btn-large red" ]
+            [ a [ class "btn-floating btn-large red " ]
                 [ text "G"
                 ]
-            , a [ class "btn-large blue", style [ ( "margin", "0 20px" ) ] ]
+            , a [ class "btn-floating btn-large blue", style [ ( "margin", "0 20px" ) ] ]
                 [ text "F"
                 ]
-            , a [ class "btn-large cyan" ]
+            , a [ class "btn-floating btn-large cyan" ]
                 [ text "T"
                 ]
             ]
@@ -107,22 +108,42 @@ inputField icon holder t =
 
 topicPage : Topic -> Html msg
 topicPage topic =
-    toHtml [] topic.content
+    main_ []
+        [ header [ style [ ( "background-color", topic.colour ) ] ]
+            [ div [ class "container" ]
+                [ div [ class "row" ]
+                    [ div [ class "col s12" ]
+                        [ h1 [ class "section dg-text-white center-align" ]
+                            [ img [ class "dg-topic-img", src topic.icon.url ] []
+                            , text
+                                topic.title
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        , section []
+            [ div [ class "container" ]
+                [ toHtml [] topic.content
+                ]
+            ]
+        ]
 
 
-topicsPage : List Topic -> Html Msg
-topicsPage topics =
-    container
-        [ div [ class "row collection hide-on-med-and-up dg-topic-list " ]
-            (List.map
-                topicListItem
-                topics
-            )
-        , div [ class "row hide-on-small-only" ]
-            (List.map
-                topicListCard
-                topics
-            )
+topicsPageMobile : List Topic -> Html Msg
+topicsPageMobile topics =
+    div [ class " collection dg-topic-list " ]
+        (List.map
+            topicListItem
+            topics
+        )
+
+
+topicsPageTablet : List Topic -> Html Msg
+topicsPageTablet topics =
+    div [ class "container" ]
+        [ div [ class "row" ]
+            (List.map topicListCard topics)
         ]
 
 
@@ -150,7 +171,7 @@ topicListCard topic =
 
 topicListItem : Topic -> Html msg
 topicListItem topic =
-    a [ href <| Routes.topicUrl topic.slugTitle, class "collection-item avatar text-black " ]
+    a [ href <| toPath (TopicRoute topic.slugTitle), class "collection-item avatar text-black " ]
         [ img [ src topic.icon.url, class "circle medium dg-topic-a", style [ ( "background-color", topic.colour ) ] ] []
         , span [ class "title dg-topic-a" ] [ text topic.title ]
         , p [ class "dg-topic-a" ] [ text topic.description ]
@@ -170,7 +191,7 @@ navBar brand =
     div [ class "navbar-fixed" ]
         [ nav []
             [ div [ class "nav-wrapper valign-wrapper" ]
-                [ a [ href Routes.topicsUrl, class "button-collapse show-on-large" ] [ icon "apps" ]
+                [ a [ href <| toPath TopicsRoute, class "button-collapse show-on-large" ] [ icon "apps" ]
                 , img [ src brand.logo.url, class "dg-logo", onClick <| UpdateRoute HomeRoute ] []
                 , ul [ class "dg-navbar-links" ]
                     [ li [] [ link LoginRoute "Login" ]

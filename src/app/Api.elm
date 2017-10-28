@@ -20,6 +20,8 @@ cmsUrl =
     "https://api.graphcms.com/simple/v1/dgacademy"
 
 
+
+
 fetchAllTopics : Cmd Msg
 fetchAllTopics =
     toHttpRequest (GraphQl.query cmsUrl topicQuery topicsDecoder)
