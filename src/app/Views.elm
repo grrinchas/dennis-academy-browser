@@ -1,138 +1,107 @@
 module Views exposing (..)
 
+import Brand exposing (Brand)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Markdown exposing (toHtml)
 import Messages exposing (Msg(UpdateRoute))
-import Routes exposing (Route(TopicRoute))
+import Routes exposing (Route(HomeRoute, LoginRoute, SignUpRoute, TopicRoute, TopicsRoute), toPath)
 import Topic exposing (..)
 
 
-notFoundPage : Html msg
+notFoundPage : Html Msg
 notFoundPage =
     div []
         [ text "Page is not found" ]
 
 
-signUpPage : Html msg
-signUpPage =
-    div [ class "container valign-wrapper", style [ ( "justify-content", "center" ) ] ]
-        [ Html.form [ class "card ", style [ ( "min-width", "500px" ), ( "width", "500px" ) ] ]
-            [ div [ class "grey darken-3 valign-wrapper center-align", style [ ( "height", "75px" ), ( "justify-content", "center" ) ] ]
-                [ span [ class "card-title dg-login-title" ] [ text "Sign up with" ]
+landingPage : Html Msg
+landingPage =
+    text "landing page"
+
+
+thirdParty : Html Msg
+thirdParty =
+    div [ class "row" ]
+        [ div [ class "col s12 center-align" ]
+            [ a [ class "btn-large red" ]
+                [ text "G"
                 ]
-            , div [ class "card-content" ]
-                [ div [ class "section row" ]
-                    [ div [ class "col s12 center-align" ]
-                        [ a [ class "btn-large red" ]
-                            [ text "G"
-                            ]
-                        , a [ class "btn-large blue", style [ ( "margin", "0 20px" ) ] ]
-                            [ text "F"
-                            ]
-                        , a [ class "btn-large cyan" ]
-                            [ text "T"
-                            ]
-                        ]
-                    ]
-                , div [ class "row" ]
-                    [ div [ class "col s12" ]
-                        [ span [ class "card-title center-align", style [ ( "font-weight", "bold" ), ( "color", "grey" ) ] ] [ text "or" ]
-                        ]
-                    ]
-                , div [ class "row" ]
-                    [ div [ class "input-field col s12" ]
-                        [ i [ class "material-icons prefix" ] [ text "person" ]
-                        , input [ placeholder "Username" ] []
-                        ]
-                    ]
-                , div [ class "row" ]
-                    [ div [ class "input-field col s12" ]
-                        [ i [ class "material-icons prefix" ] [ text "email" ]
-                        , input [ placeholder "Email", id "email", type_ "email" ] []
-                        ]
-                    ]
-                , div [ class "row" ]
-                    [ div [ class "input-field col s12" ]
-                        [ i [ class "material-icons prefix" ] [ text "lock" ]
-                        , input [ placeholder "Password", id "password", type_ "password" ] []
-                        ]
-                    ]
-                , div [ class "row" ]
-                    [ div [ class "input-field col s12" ]
-                        [ i [ class "material-icons prefix" ] [ text "lock" ]
-                        , input [ placeholder "Repeat Password", id "password", type_ "password" ] []
-                        ]
-                    ]
-                , div [ class "row" ]
-                    [ div [ class "col s12 right-align" ]
-                        [ a [ class "btn" ]
-                            [ text "Sign Up"
-                            ]
-                        ]
-                    ]
+            , a [ class "btn-large blue", style [ ( "margin", "0 20px" ) ] ]
+                [ text "F"
                 ]
-            , div [ class "card-action" ]
-                [ span [] [ text "" ]
-                , a [ href <| Routes.loginUrl ] [ text "Already have account?" ]
+            , a [ class "btn-large cyan" ]
+                [ text "T"
                 ]
             ]
         ]
 
 
-loginPage : Html msg
-loginPage =
-    div [ class "container valign-wrapper", style [ ( "justify-content", "center" ) ] ]
-        [ Html.form [ class "card ", style [ ( "min-width", "500px" ), ( "width", "500px" ) ] ]
-            [ div [ class "grey darken-3 valign-wrapper center-align", style [ ( "height", "75px" ), ( "justify-content", "center" ) ] ]
-                [ span [ class "card-title dg-login-title" ] [ text "Login with" ]
-                ]
-            , div [ class "card-content" ]
-                [ div [ class "section row" ]
-                    [ div [ class "col s12 center-align" ]
-                        [ a [ class "btn-large red" ]
-                            [ text "G"
-                            ]
-                        , a [ class "btn-large blue", style [ ( "margin", "0 20px" ) ] ]
-                            [ text "F"
-                            ]
-                        , a [ class "btn-large cyan" ]
-                            [ text "T"
-                            ]
+regHeader : String -> Html Msg
+regHeader text_ =
+    div [ class "dg-reg-header" ]
+        [ span [ class "dg-reg-title" ] [ text text_ ]
+        ]
+
+
+registration : String -> String -> List (Html Msg) -> List (Html Msg) -> Html Msg
+registration btn header body actions =
+    div [ class "dg-registration" ]
+        [ Html.form []
+            [ regHeader header
+            , div [ class "card-content" ] <|
+                List.append
+                    (List.append
+                        [ thirdParty
+                        , span [ class "dg-reg-or" ] [ text "or" ]
                         ]
-                    ]
-                , div [ class "row" ]
-                    [ div [ class "col s12" ]
-                        [ span [ class "card-title center-align", style [ ( "font-weight", "bold" ), ( "color", "grey" ) ] ] [ text "or" ]
-                        ]
-                    ]
-                , div [ class "row" ]
-                    [ div [ class "input-field col s12" ]
-                        [ i [ class "material-icons prefix" ] [ text "email" ]
-                        , input [ placeholder "Email", id "email", type_ "email" ] []
-                        ]
-                    ]
-                , div [ class "row" ]
-                    [ div [ class "input-field col s12" ]
-                        [ i [ class "material-icons prefix" ] [ text "lock" ]
-                        , input [ placeholder "Password", id "password", type_ "password" ] []
-                        ]
-                    ]
-                , div [ class "row" ]
-                    [ div [ class "col s12 right-align" ]
+                        body
+                    )
+                    ([ div
+                        [ class "right-align" ]
                         [ a [ class "btn" ]
-                            [ text "Login"
+                            [ text btn
                             ]
                         ]
-                    ]
-                ]
+                     ]
+                    )
             , div [ class "card-action" ]
-                [ span [] [ text "" ]
-                , a [ href <| Routes.signUpUrl ] [ text "Don't have account?" ]
-                , a [ href "#", class "right" ] [ text "Forgot password?" ]
-                ]
+                actions
             ]
+        ]
+
+
+signUpPage : Html Msg
+signUpPage =
+    registration "Sign Up"
+        "Sign up with"
+        [ inputField "person" "Username" "text"
+        , inputField "email" "Email" "email"
+        , inputField "lock" "Password" "password"
+        , inputField "lock" "Repeat Password" "password"
+        ]
+        [ link LoginRoute "Already have account?"
+        ]
+
+
+loginPage : Html Msg
+loginPage =
+    registration "Login"
+        "Login with"
+        [ inputField "email" "Email" "email"
+        , inputField "lock" "Password" "password"
+        ]
+        [ link SignUpRoute "Don't have account?"
+        , linkWith "right" HomeRoute "Forgot password?"
+        ]
+
+
+inputField : String -> String -> String -> Html Msg
+inputField icon holder t =
+    div [ class "input-field" ]
+        [ i [ class "material-icons prefix" ] [ text icon ]
+        , input [ placeholder holder, type_ t ] []
         ]
 
 
@@ -143,7 +112,7 @@ topicPage topic =
 
 topicsPage : List Topic -> Html Msg
 topicsPage topics =
-    div [ class "container" ]
+    container
         [ div [ class "row collection hide-on-med-and-up dg-topic-list " ]
             (List.map
                 topicListItem
@@ -155,6 +124,11 @@ topicsPage topics =
                 topics
             )
         ]
+
+
+container : List (Html msg) -> Html msg
+container main =
+    div [ class "container" ] main
 
 
 topicListCard : Topic -> Html Msg
@@ -169,8 +143,7 @@ topicListCard topic =
                 , p [ class "text-black" ] [ text topic.description ]
                 ]
             , div [ class "card-action" ]
-                [ a [ href <| Routes.topicUrl topic.slugTitle ] [ text "Let's go" ]
-                ]
+                [ link (TopicRoute topic.slugTitle) "Let's go" ]
             ]
         ]
 
@@ -184,83 +157,66 @@ topicListItem topic =
         ]
 
 
-withHeader : Html msg -> Html msg
-withHeader main =
+withHeader : Html Msg -> Brand -> Html Msg
+withHeader main brand =
     div []
-        [ navBar
+        [ navBar brand
         , main
         ]
 
 
-mainHeader : Html msg
-mainHeader =
-    navBar
-
-
-navBar : Html msg
-navBar =
+navBar : Brand -> Html Msg
+navBar brand =
     div [ class "navbar-fixed" ]
         [ nav []
-            [ div [ class "nav-wrapper" ]
-                [ a [ class "button-collapse show-on-large", href "#" ] [ i [ class "material-icons" ] [ text "apps" ] ]
-                , ul [ id "nav-mobile", class "right" ]
-                    [ li [] [ a [ href <| Routes.loginUrl ] [ text "Login" ] ]
-                    , li [] [ span [ class "dg-or" ] [ text "or" ] ]
-                    , li [] [ a [ href <| Routes.signUpUrl, class "waves-effect waves-light btn" ] [ text "Sign Up" ] ]
+            [ div [ class "nav-wrapper valign-wrapper" ]
+                [ a [ href Routes.topicsUrl, class "button-collapse show-on-large" ] [ icon "apps" ]
+                , img [ src brand.logo.url, class "dg-logo", onClick <| UpdateRoute HomeRoute ] []
+                , ul [ class "dg-navbar-links" ]
+                    [ li [] [ link LoginRoute "Login" ]
+                    , li [] [ span [ class "dg-login-or-signup" ] [ text "or" ] ]
+                    , li [] [ linkWith "btn" SignUpRoute "Sign Up" ]
                     ]
                 ]
+            ]
+        ]
+
+
+linkWith : String -> Route -> String -> Html Msg
+linkWith class_ route text_ =
+    a [ class class_, href <| toPath route ] [ text text_ ]
+
+
+link : Route -> String -> Html Msg
+link route text =
+    linkWith "" route text
+
+
+icon : String -> Html msg
+icon name =
+    i [ class "material-icons" ] [ text name ]
+
+
+loaderPart : String -> Html msg
+loaderPart color =
+    div [ class ("spinner-layer spinner-" ++ color) ]
+        [ div [ class "circle-clipper left" ]
+            [ div [ class "circle" ] []
+            ]
+        , div [ class "gap-patch" ]
+            [ div [ class "circle" ] []
+            ]
+        , div [ class "circle-clipper right" ]
+            [ div [ class "circle" ] []
             ]
         ]
 
 
 loading : Html msg
 loading =
-    div [ class "loading" ]
-        [ div
-            [ class "preloader-wrapper active" ]
-            [ div [ class "spinner-layer spinner-blue" ]
-                [ div [ class "circle-clipper left" ]
-                    [ div [ class "circle" ] []
-                    ]
-                , div [ class "gap-patch" ]
-                    [ div [ class "circle" ] []
-                    ]
-                , div [ class "circle-clipper right" ]
-                    [ div [ class "circle" ] []
-                    ]
-                ]
-            , div [ class "spinner-layer spinner-red" ]
-                [ div [ class "circle-clipper left" ]
-                    [ div [ class "circle" ] []
-                    ]
-                , div [ class "gap-patch" ]
-                    [ div [ class "circle" ] []
-                    ]
-                , div [ class "circle-clipper right" ]
-                    [ div [ class "circle" ] []
-                    ]
-                ]
-            , div [ class "spinner-layer spinner-yellow" ]
-                [ div [ class "circle-clipper left" ]
-                    [ div [ class "circle" ] []
-                    ]
-                , div [ class "gap-patch" ]
-                    [ div [ class "circle" ] []
-                    ]
-                , div [ class "circle-clipper right" ]
-                    [ div [ class "circle" ] []
-                    ]
-                ]
-            , div [ class "spinner-layer spinner-green" ]
-                [ div [ class "circle-clipper left" ]
-                    [ div [ class "circle" ] []
-                    ]
-                , div [ class "gap-patch" ]
-                    [ div [ class "circle" ] []
-                    ]
-                , div [ class "circle-clipper right" ]
-                    [ div [ class "circle" ] []
-                    ]
-                ]
-            ]
+    div [ class "dg-loading" ]
+        [ div [ class "preloader-wrapper active" ] <|
+            List.map
+                loaderPart
+                [ "blue", "red", "yellow", "green" ]
         ]

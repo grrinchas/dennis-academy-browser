@@ -1,4 +1,4 @@
-module Routes exposing (Route(..), parseLocation, toPath, topicUrl, signUpUrl, loginUrl)
+module Routes exposing (Route(..), parseLocation, toPath, topicUrl, signUpUrl, loginUrl, topicsUrl, homeUrl)
 
 import Navigation exposing (Location)
 import Slug exposing (Slug)
@@ -8,7 +8,8 @@ import UrlParser exposing (..)
 
 
 type Route
-    = TopicsRoute
+    = HomeRoute
+    | TopicsRoute
     | TopicRoute Slug
     | SignUpRoute
     | LoginRoute
@@ -28,7 +29,8 @@ parseLocation location =
 matchers : Parser (Route -> a) a
 matchers =
     oneOf
-        [ map TopicsRoute top
+        [ map HomeRoute top
+        , map TopicsRoute (s "topics")
         , map TopicRoute (s "topics" </> topicMatcher)
         , map SignUpRoute (s "signup")
         , map LoginRoute (s "login")
@@ -50,8 +52,11 @@ topicMatcher =
 toPath : Route -> String
 toPath route =
     case route of
+        HomeRoute ->
+            "#"
+
         TopicsRoute ->
-            "/"
+            "#topics"
 
         TopicRoute id ->
             "#topics/" ++ Slug.toString id
@@ -64,6 +69,16 @@ toPath route =
 
         NotFoundRoute ->
             ""
+
+
+homeUrl : String
+homeUrl =
+    toPath HomeRoute
+
+
+topicsUrl : String
+topicsUrl =
+    toPath TopicsRoute
 
 
 topicUrl : Slug -> String

@@ -2,14 +2,12 @@ $roboto-font-path: "~materialize-css/dist/fonts/roboto/";
 @import "~materialize-css/sass/materialize";
 
 $body-bg-color: #f7f7f7;
-$text-color: rgba(0, 0, 0, 0.87) ;
+$text-color: rgba(0, 0, 0, 0.87);
 
 body {
-
     min-width: 480px;
     background-color: $body-bg-color;
 }
-
 
 .dg-topic-img {
     height: 200px;
@@ -21,22 +19,74 @@ body {
     padding: 3px;
 }
 
-.loading, .dg-login {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.dg-loading {
+    display: block;
+    position: absolute;
+    z-index: 100;
+    left: 50%;
+    top: 50%;
+    margin-left: -25px;
+    margin-top: -25px;
 }
 
-.dg-or {
+.dg-logo {
+    width: 120px;
+    height: 30px;
+
+}
+
+.dg-logo:hover {
+    cursor: pointer;
+
+}
+
+.dg-navbar-links {
+    margin-left: auto;
+}
+
+
+
+.dg-login-or-signup {
     color: rgba(255, 255, 255, 0.5);
 }
 
-form {
-    padding: 0 !important;
+.dg-primary-colour {
+    @extend .grey;
+    @extend .darken-3;
 }
 
-.dg-login-title {
-    color: white;
+.dg-registration {
+
+    @extend .valign-wrapper;
+    justify-content: center;
+
+    form {
+        @extend .card;
+        min-width: 450px;
+        padding: 0 !important;
+
+        .dg-reg-or {
+            @extend .card-title;
+            @extend .center-align;
+            font-weight: bold !important;
+            color: grey;
+        }
+    }
+
+
+    .dg-reg-header {
+        @extend .dg-primary-colour;
+        @extend .valign-wrapper;
+        justify-content: center;
+        height: 64px;
+
+        .dg-reg-title {
+            @extend .card-title;
+            color: white;
+        }
+    }
+
+    .dg-input-field {
+        @extend .input-field;
+    }
 }

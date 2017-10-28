@@ -1,6 +1,7 @@
 module Api exposing (..)
 
-import GraphQl exposing (toHttpRequest)
+import Brand exposing (Brand)
+import GraphQl exposing (toHttpRequest, withArgument)
 import Messages exposing (Msg)
 import Slug
 import Topic
@@ -26,6 +27,13 @@ fetchAllTopics =
         |> Cmd.map Messages.OnFetchTopics
 
 
+fetchBrand : Cmd Msg
+fetchBrand =
+    toHttpRequest (GraphQl.query cmsUrl brandQuery brandDecoder)
+        |> RemoteData.sendRequest
+        |> Cmd.map Messages.OnFetchBrand
+
+
 topicQuery : Value Root
 topicQuery =
     object
@@ -43,9 +51,35 @@ topicQuery =
         ]
 
 
+brandQuery : Value Root
+brandQuery =
+    object
+        [ field "Brand"
+            |> withArgument "name" (GraphQl.string "dgacademy")
+            |> withSelectors
+                [ field "primaryColour"
+                , field "secondaryColour"
+                , field
+                    "logo"
+                    |> withSelectors
+                        [ field "url" ]
+                ]
+        ]
+
+
 topicsDecoder : Decoder (List Topic)
 topicsDecoder =
     Decode.field "allTopics" (Decode.list topicDecoder)
+
+
+brandDecoder : Decoder Brand
+brandDecoder =
+    Decode.field "Brand"
+        (decode Brand
+            |> required "logo" iconDecoder
+            |> required "primaryColour" Decode.string
+            |> required "secondaryColour" Decode.string
+        )
 
 
 topicDecoder : Decoder Topic

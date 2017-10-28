@@ -1,18 +1,20 @@
 module Main exposing (..)
 
+import Brand exposing (Brand)
 import Html.Attributes exposing (style)
 import Navigation exposing (Location)
-import Messages exposing (Msg)
-import Api exposing (fetchAllTopics)
+import Messages exposing (Msg(OnFetchBrand))
+import Api exposing (fetchAllTopics, fetchBrand)
 import Html exposing (..)
 import Messages exposing (Msg(OnFetchTopics, OnLocationChange, UpdateRoute))
 import Navigation exposing (Location, newUrl)
+import Platform.Cmd exposing (batch)
 import RemoteData exposing (WebData)
 import Routes exposing (..)
 import Slug exposing (Slug)
 import Topic exposing (..)
 import UrlParser exposing (..)
-import Views exposing (mainHeader, topicsPage, withHeader)
+import Views exposing (landingPage, topicsPage, withHeader)
 
 
 main : Program Never Model Msg
@@ -27,6 +29,7 @@ main =
 
 type alias Model =
     { topics : WebData (List Topic)
+    , brand : WebData Brand
     , route : Route
     }
 
@@ -34,13 +37,14 @@ type alias Model =
 initialModel : Location -> Model
 initialModel location =
     { topics = RemoteData.Loading
+    , brand = RemoteData.Loading
     , route = parseLocation location
     }
 
 
 init : Location -> ( Model, Cmd Msg )
 init location =
-    ( initialModel location, fetchAllTopics )
+    ( initialModel location, batch [ fetchBrand, fetchAllTopics ] )
 
 
 mapSuccess : (a -> Html Msg) -> WebData a -> Html Msg
@@ -61,21 +65,24 @@ mapSuccess view response =
 
 page : Model -> Html Msg
 page model =
-         case model.route of
-            TopicsRoute ->
-                withHeader (mapSuccess topicsPage model.topics)
+    case model.route of
+        HomeRoute ->
+            mapSuccess (withHeader landingPage) model.brand
 
-            TopicRoute id ->
-                withHeader (mapSuccess (mapTopic id) model.topics)
+        TopicsRoute ->
+            mapSuccess (withHeader (mapSuccess topicsPage model.topics)) model.brand
 
-            SignUpRoute ->
-                Views.signUpPage
+        TopicRoute id ->
+            mapSuccess (withHeader (mapSuccess (mapTopic id) model.topics)) model.brand
 
-            LoginRoute ->
-                Views.loginPage
+        SignUpRoute ->
+            Views.signUpPage
 
-            NotFoundRoute ->
-                Views.notFoundPage
+        LoginRoute ->
+            Views.loginPage
+
+        NotFoundRoute ->
+            Views.notFoundPage
 
 
 mapTopic : Slug -> List Topic -> Html Msg
@@ -93,6 +100,9 @@ update msg model =
     case msg of
         OnFetchTopics response ->
             ( { model | topics = response }, Cmd.none )
+
+        OnFetchBrand response ->
+            ( { model | brand = response }, Cmd.none )
 
         UpdateRoute route ->
             ( model, newUrl <| toPath route )
