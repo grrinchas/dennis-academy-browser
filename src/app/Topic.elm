@@ -2,24 +2,19 @@ module Topic exposing (..)
 
 import Slug exposing (Slug)
 
-type alias Icon =
-    { url : String
-    }
-
 
 type alias TopicId =
     String
 
 
 type alias Topic =
-    {
-      title : String
+    { id : TopicId
+    , title : String
     , slugTitle : Slug
     , description : String
     , content : String
-    , icon : Icon
+    , icon : String
     , colour : String
+    , next : Maybe Slug
+    , previous : Maybe Slug
     }
-
-
-

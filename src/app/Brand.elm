@@ -1,10 +1,8 @@
 module Brand exposing (..)
 
-import Topic exposing (Icon)
-
 
 type alias Brand =
-    { logo: Icon
+    { logo: String
     , primaryColour: String
     , secondaryColour: String
     }

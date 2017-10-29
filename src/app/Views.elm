@@ -7,6 +7,7 @@ import Html.Events exposing (onClick)
 import Markdown exposing (toHtml)
 import Messages exposing (Msg(UpdateRoute))
 import Routes exposing (Route(HomeRoute, LoginRoute, SignUpRoute, TopicRoute, TopicsRoute), toPath)
+import Slug exposing (Slug)
 import Topic exposing (..)
 import Window exposing (Size)
 
@@ -82,7 +83,7 @@ signUpPage =
         , inputField "lock" "Password" "password"
         , inputField "lock" "Repeat Password" "password"
         ]
-        [ link LoginRoute "Already have account?"
+        [ link "Already have account?" LoginRoute
         ]
 
 
@@ -93,8 +94,8 @@ loginPage =
         [ inputField "email" "Email" "email"
         , inputField "lock" "Password" "password"
         ]
-        [ link SignUpRoute "Don't have account?"
-        , linkWith "right" HomeRoute "Forgot password?"
+        [ link "Don't have account?" SignUpRoute
+        , linkWith "right" "Forgot password?" HomeRoute
         ]
 
 
@@ -106,28 +107,51 @@ inputField icon holder t =
         ]
 
 
-topicPage : Topic -> Html msg
+topicPage : Topic -> Html Msg
 topicPage topic =
-    main_ []
-        [ header [ style [ ( "background-color", topic.colour ) ] ]
-            [ div [ class "container" ]
-                [ div [ class "row" ]
-                    [ div [ class "col s12" ]
-                        [ h1 [ class "section dg-text-white center-align" ]
-                            [ img [ class "dg-topic-img", src topic.icon.url ] []
-                            , text
-                                topic.title
-                            ]
-                        ]
-                    ]
+    main_ [ style [ ( "background-color", topic.colour ) ] ]
+        [ header [ class "section" ]
+            [ h1 [ class "dg-text-white center-align" ]
+                [ img [ class "dg-topic-img", src topic.icon ] []
+                , text
+                    topic.title
                 ]
             ]
-        , section []
-            [ div [ class "container" ]
-                [ toHtml [] topic.content
+        , section [ class "card z-depth-2 dg-topic-content" ]
+            [ div [ class "card-content", onClick <| UpdateRoute <| TopicRoute <| topic.slugTitle ]
+                [ toHtml [ class "" ] topic.content ]
+            , div [ class "valign-wrapper card-action grey darken-3" ]
+                [ mapSlug prevTopic topic.previous
+                , mapSlug nextTopic topic.next
                 ]
             ]
         ]
+
+
+prevTopic : Slug -> Html msg
+prevTopic slug =
+    a [ href <| toPath <| TopicRoute slug, class "btn-large dg-slug-topic" ]
+        [ iconWith "left" "navigate_before"
+        , text "Previous"
+        ]
+
+
+nextTopic : Slug -> Html msg
+nextTopic slug =
+    a [ href <| toPath <| TopicRoute slug, class "btn-large dg-slug-topic dg-right" ]
+        [ iconWith "right" "navigate_next "
+        , text "Next"
+        ]
+
+
+mapSlug : (Slug -> Html msg) -> Maybe Slug -> Html msg
+mapSlug view maybeSlug =
+    case maybeSlug of
+        Just slug ->
+            view slug
+
+        Nothing ->
+            div [] []
 
 
 topicsPageMobile : List Topic -> Html Msg
@@ -157,14 +181,14 @@ topicListCard topic =
     div [ class "col m6 xl4" ]
         [ div [ class "card medium hoverable" ]
             [ div [ class "card-image", style [ ( "background-color", topic.colour ) ], onClick <| UpdateRoute <| TopicRoute <| topic.slugTitle ]
-                [ img [ src topic.icon.url, class "dg-topic-img" ] []
+                [ img [ src topic.icon, class "dg-topic-img" ] []
                 ]
             , div [ class "card-content", onClick <| UpdateRoute <| TopicRoute <| topic.slugTitle ]
                 [ span [ class "card-title" ] [ text topic.title ]
                 , p [ class "text-black" ] [ text topic.description ]
                 ]
             , div [ class "card-action" ]
-                [ link (TopicRoute topic.slugTitle) "Let's go" ]
+                [ link "Let's go" (TopicRoute topic.slugTitle) ]
             ]
         ]
 
@@ -172,7 +196,7 @@ topicListCard topic =
 topicListItem : Topic -> Html msg
 topicListItem topic =
     a [ href <| toPath (TopicRoute topic.slugTitle), class "collection-item avatar text-black " ]
-        [ img [ src topic.icon.url, class "circle medium dg-topic-a", style [ ( "background-color", topic.colour ) ] ] []
+        [ img [ src topic.icon, class "circle medium dg-topic-a", style [ ( "background-color", topic.colour ) ] ] []
         , span [ class "title dg-topic-a" ] [ text topic.title ]
         , p [ class "dg-topic-a" ] [ text topic.description ]
         ]
@@ -192,30 +216,35 @@ navBar brand =
         [ nav []
             [ div [ class "nav-wrapper valign-wrapper" ]
                 [ a [ href <| toPath TopicsRoute, class "button-collapse show-on-large" ] [ icon "apps" ]
-                , img [ src brand.logo.url, class "dg-logo", onClick <| UpdateRoute HomeRoute ] []
+                , img [ src brand.logo, class "dg-logo", onClick <| UpdateRoute HomeRoute ] []
                 , ul [ class "dg-navbar-links" ]
-                    [ li [] [ link LoginRoute "Login" ]
+                    [ li [] [ link "Login" LoginRoute ]
                     , li [] [ span [ class "dg-login-or-signup" ] [ text "or" ] ]
-                    , li [] [ linkWith "btn" SignUpRoute "Sign Up" ]
+                    , li [] [ a [ class "btn", href <| toPath SignUpRoute, style [ ( "background-color", brand.primaryColour ) ] ] [ text "Sign Up" ] ]
                     ]
                 ]
             ]
         ]
 
 
-linkWith : String -> Route -> String -> Html Msg
-linkWith class_ route text_ =
+linkWith : String -> String -> Route -> Html Msg
+linkWith class_ text_ route =
     a [ class class_, href <| toPath route ] [ text text_ ]
 
 
-link : Route -> String -> Html Msg
-link route text =
-    linkWith "" route text
+link : String -> Route -> Html Msg
+link text route =
+    linkWith "" text route
 
 
 icon : String -> Html msg
 icon name =
     i [ class "material-icons" ] [ text name ]
+
+
+iconWith : String -> String -> Html msg
+iconWith cl name =
+    i [ class <| "material-icons " ++ cl ] [ text name ]
 
 
 loaderPart : String -> Html msg
@@ -240,4 +269,24 @@ loading =
             List.map
                 loaderPart
                 [ "blue", "red", "yellow", "green" ]
+        ]
+
+
+footer_ : Html Msg
+footer_ =
+    footer [ class "page-footer" ]
+        [ div [ class "container" ]
+            [ div [ class "row" ]
+                [ div [ class "col s12 l6" ]
+                    [ h5 [ class "white-text" ]
+                        [ text "This is a footer" ]
+                    , p
+                        [ class "grey-text text-lighten-4" ]
+                        [ text "Some more information in the footer" ]
+                    ]
+                ]
+            ]
+        , div [ class "footer-copyright" ]
+            [ div [ class "container" ] [ text "© 2017 Copyright Dennis Grinch" ]
+            ]
         ]

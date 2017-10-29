@@ -86,7 +86,7 @@ page model =
                     else
                         topicsPageTablet
             in
-                mapSuccess (withHeader (mapSuccess view model.topics)) model.brand
+                mapSuccess view model.topics
 
         TopicRoute id ->
             mapSuccess (withHeader (mapSuccess (mapTopic id) model.topics)) model.brand

@@ -3,13 +3,12 @@ module Api exposing (..)
 import Brand exposing (Brand)
 import GraphQl exposing (toHttpRequest, withArgument)
 import Messages exposing (Msg)
-import Slug
-import Topic
+import Slug exposing (Slug)
 import Color exposing (Color)
 import GraphQl exposing (Root, Value, field, object, toHttpRequest, withSelectors)
-import Json.Decode.Pipeline exposing (custom, decode, hardcoded, required, resolve)
+import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, required, resolve)
 import Messages exposing (Msg)
-import Json.Decode as Decode exposing (Decoder, fail, succeed)
+import Json.Decode as Decode exposing (Decoder, decodeString, fail, nullable, string, succeed)
 import RemoteData
 import Routes exposing (Route(TopicRoute))
 import Topic exposing (..)
@@ -18,8 +17,6 @@ import Topic exposing (..)
 cmsUrl : String
 cmsUrl =
     "https://api.graphcms.com/simple/v1/dgacademy"
-
-
 
 
 fetchAllTopics : Cmd Msg
@@ -41,14 +38,14 @@ topicQuery =
     object
         [ field "allTopics"
             |> withSelectors
-                [ field "title"
+                [ field "id"
+                , field "title"
                 , field "description"
                 , field "content"
-                , field
-                    "icon"
-                    |> withSelectors
-                        [ field "url" ]
+                , field "icon" |> withSelectors [ field "url" ]
                 , field "colour"
+                , field "nextTopic" |> withSelectors [ field "title" ]
+                , field "previousTopic" |> withSelectors [ field "title" ]
                 ]
         ]
 
@@ -78,7 +75,7 @@ brandDecoder : Decoder Brand
 brandDecoder =
     Decode.field "Brand"
         (decode Brand
-            |> required "logo" iconDecoder
+            |> required "logo" (Decode.field "url" string)
             |> required "primaryColour" Decode.string
             |> required "secondaryColour" Decode.string
         )
@@ -87,25 +84,32 @@ brandDecoder =
 topicDecoder : Decoder Topic
 topicDecoder =
     decode finalDecoder
+        |> required "id" Decode.string
         |> required "title" Decode.string
         |> required "description" Decode.string
         |> required "content" Decode.string
-        |> required "icon" iconDecoder
+        |> required "icon" (Decode.field "url" string)
         |> required "colour" Decode.string
+        |> required "nextTopic" (nullable (Decode.field "title" string |> Decode.andThen slugDecoder))
+        |> required "previousTopic" (nullable (Decode.field "title" string |> Decode.andThen slugDecoder))
         |> resolve
 
 
-finalDecoder : String -> String -> String -> Icon -> String -> Decoder Topic
-finalDecoder title desc content icon colour =
+slugDecoder : String -> Decoder Slug
+slugDecoder title =
     case Slug.generate title of
         Just slug ->
-            succeed <| Topic title slug desc content icon colour
+            succeed slug
 
         Nothing ->
             fail "Can't slugify title"
 
 
-iconDecoder : Decoder Icon
-iconDecoder =
-    decode Icon
-        |> required "url" Decode.string
+finalDecoder : String -> String -> String -> String -> String -> String -> Maybe Slug -> Maybe Slug -> Decoder Topic
+finalDecoder id title desc content icon colour next prev =
+    case Slug.generate title of
+        Just slug ->
+            succeed <| Topic id title slug desc content icon colour next prev
+
+        Nothing ->
+            fail "Can't slugify title"
