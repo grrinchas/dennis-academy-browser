@@ -15,7 +15,7 @@ import Slug exposing (Slug)
 import Task
 import Topic exposing (..)
 import UrlParser exposing (..)
-import Views exposing (landingPage, topicsPageMobile, topicsPageTablet, withHeader)
+import Views exposing (landingPage, topicPageMobile, topicPageTablet, topicsPageMobile, topicsPageTablet, withHeader)
 import Window exposing (Size, resizes)
 
 
@@ -89,7 +89,7 @@ page model =
                 mapSuccess view model.topics
 
         TopicRoute id ->
-            mapSuccess (withHeader (mapSuccess (mapTopic id) model.topics)) model.brand
+            mapSuccess (withHeader (mapSuccess (mapTopic model id) model.topics)) model.brand
 
         SignUpRoute ->
             Views.signUpPage
@@ -101,11 +101,18 @@ page model =
             Views.notFoundPage
 
 
-mapTopic : Slug -> List Topic -> Html Msg
-mapTopic id topics =
+mapTopic : Model -> Slug -> List Topic -> Html Msg
+mapTopic model id topics =
     case List.head << List.filter (\topic -> topic.slugTitle == id) <| topics of
         Just topic ->
-            Views.topicPage topic
+                 let
+                        view =
+                            if model.window.width <= 600 then
+                                topicPageMobile
+                            else
+                                topicPageTablet
+                    in
+            view topic
 
         Nothing ->
             Views.notFoundPage

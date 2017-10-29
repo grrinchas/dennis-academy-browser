@@ -52,12 +52,9 @@ body {
 
 .dg-topic-content {
     margin: auto;
-    max-width: 1100px;
+    max-width: 800px;
     color: $text-color;
     word-wrap: break-word;
-    p, ul, ol {
-        font-size: 21px;
-    }
 }
 
 
@@ -71,14 +68,19 @@ body {
 }
 
 .dg-slug-topic {
-   width: 200px;
+   width: 150px;
     font-weight: bold;
-    letter-spacing: 2px;
 }
 
 .dg-right {
     margin-left: auto;
 }
+
+.dg-center {
+    @extend .valign-wrapper;
+    justify-content: center;
+}
+
 
 .dg-registration {
     form {
@@ -117,7 +119,7 @@ body {
 @media screen and (min-width: 480px) {
     .dg-topic-content {
         .card-content {
-            padding:  75px;
+            padding:  50px;
         }
     }
 }

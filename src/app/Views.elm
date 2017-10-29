@@ -62,7 +62,7 @@ registration btn header body actions =
                     )
                     ([ div
                         [ class "right-align" ]
-                        [ a [ class "btn" ]
+                        [ a [ class "btn grey darken-3" ]
                             [ text btn
                             ]
                         ]
@@ -107,8 +107,8 @@ inputField icon holder t =
         ]
 
 
-topicPage : Topic -> Html Msg
-topicPage topic =
+topicPage_ : Topic -> Html Msg
+topicPage_ topic =
     main_ [ style [ ( "background-color", topic.colour ) ] ]
         [ header [ class "section" ]
             [ h1 [ class "dg-text-white center-align" ]
@@ -119,7 +119,7 @@ topicPage topic =
             ]
         , section [ class "card z-depth-2 dg-topic-content" ]
             [ div [ class "card-content", onClick <| UpdateRoute <| TopicRoute <| topic.slugTitle ]
-                [ toHtml [ class "" ] topic.content ]
+                [ toHtml [ class "" ] "ne" ]
             , div [ class "valign-wrapper card-action grey darken-3" ]
                 [ mapSlug prevTopic topic.previous
                 , mapSlug nextTopic topic.next
@@ -128,17 +128,77 @@ topicPage topic =
         ]
 
 
+topicPageMobile : Topic -> Html Msg
+topicPageMobile topic =
+    main_ [ style [ ( "background-color", topic.colour ) ] ]
+        [ header [ class "section" ]
+            [ h1 [ class "dg-text-white center-align" ]
+                [ img [ class "dg-topic-img", src topic.icon ] []
+                , text
+                    topic.title
+                ]
+            ]
+        , div [ class " collection dg-topic-list " ]
+            (List.map questionListItem topic.questions)
+        , section [ class "section container valign-wrapper dg-center" ]
+            [ mapSlug prevTopic topic.previous
+            , a [ href <| toPath TopicsRoute, class "btn grey darken-3" ] [ icon "apps" ]
+            , mapSlug nextTopic topic.next
+            ]
+        ]
+
+
+topicPageTablet : Topic -> Html Msg
+topicPageTablet topic =
+    main_ [ style [ ( "background-color", topic.colour ) ] ]
+        [ header [ class "section" ]
+            [ h1 [ class "dg-text-white center-align" ]
+                [ img [ class "dg-topic-img", src topic.icon ] []
+                , text
+                    topic.title
+                ]
+            ]
+        , section [ class "section container" ]
+            [ div [ class "row" ]
+                (List.map questionListCard topic.questions)
+            ]
+        , section [ class "section container valign-wrapper dg-center" ]
+            [ mapSlug prevTopic topic.previous
+            , a [ href <| toPath TopicsRoute, class "btn grey darken-3" ] [ icon "apps" ]
+            , mapSlug nextTopic topic.next
+            ]
+        ]
+
+
+questionListCard : Question -> Html Msg
+questionListCard question =
+    div [ class "col m6 xl4" ]
+        [ div [ class "card small hoverable dg-center" ]
+            [ div [ class "card-content" ]
+                [ span [ class "card-title center-align" ] [ text <| question.title ++ "?" ]
+                ]
+            ]
+        ]
+
+
+questionListItem : Question -> Html msg
+questionListItem question =
+    a [ class "collection-item text-black " ]
+        [ span [ class " dg-topic-a" ] [ text <| question.title ++ "?" ]
+        ]
+
+
 prevTopic : Slug -> Html msg
 prevTopic slug =
-    a [ href <| toPath <| TopicRoute slug, class "btn-large dg-slug-topic" ]
+    a [ href <| toPath <| TopicRoute slug, class "btn dg-slug-topic grey darken-3" ]
         [ iconWith "left" "navigate_before"
-        , text "Previous"
+        , text "Prev"
         ]
 
 
 nextTopic : Slug -> Html msg
 nextTopic slug =
-    a [ href <| toPath <| TopicRoute slug, class "btn-large dg-slug-topic dg-right" ]
+    a [ href <| toPath <| TopicRoute slug, class "btn dg-slug-topic grey darken-3" ]
         [ iconWith "right" "navigate_next "
         , text "Next"
         ]
