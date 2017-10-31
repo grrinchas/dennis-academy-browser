@@ -2,6 +2,9 @@ module Main exposing (..)
 
 import Brand exposing (Brand)
 import Html.Attributes exposing (style)
+import Layout
+import Loader
+import NavBar
 import Navigation exposing (Location)
 import Messages exposing (Msg(OnFetchBrand, OnWindowChange))
 import Api exposing (fetchAllTopics, fetchBrand)
@@ -9,13 +12,17 @@ import Html exposing (..)
 import Messages exposing (Msg(OnFetchTopics, OnLocationChange, UpdateRoute))
 import Navigation exposing (Location, newUrl)
 import Platform.Cmd exposing (batch)
+import Registration
 import RemoteData exposing (WebData)
+import Responsive exposing (..)
 import Routes exposing (..)
 import Slug exposing (Slug)
 import Task
 import Topic exposing (..)
+import TopicPage
+import TopicsPage
 import UrlParser exposing (..)
-import Views exposing (landingPage, topicPageMobile, topicPageTablet, topicsPageMobile, topicsPageTablet, withHeader)
+import Views exposing (landingPage)
 import Window exposing (Size, resizes)
 
 
@@ -39,6 +46,7 @@ type alias Model =
     , brand : WebData Brand
     , route : Route
     , window : Window.Size
+    , responsive : Responsive
     }
 
 
@@ -48,6 +56,7 @@ initialModel location =
     , brand = RemoteData.Loading
     , route = parseLocation location
     , window = Size 0 0
+    , responsive = Mobile
     }
 
 
@@ -63,7 +72,7 @@ mapSuccess view response =
             text ""
 
         RemoteData.Loading ->
-            Views.loading
+            Loader.loading
 
         RemoteData.Success data ->
             view data
@@ -72,30 +81,43 @@ mapSuccess view response =
             text (toString error)
 
 
+requestHeader : Model -> Html Msg
+requestHeader model =
+    mapSuccess NavBar.navBar model.brand
+
+
+requestTopic : Slug -> Model -> Html Msg
+requestTopic id model =
+    mapSuccess (mapTopic model id) model.topics
+
+
+requestTopics : Model -> Html Msg
+requestTopics model =
+    case model.responsive of
+        Mobile ->
+            mapSuccess TopicsPage.mobile model.topics
+
+        Tablet ->
+            mapSuccess TopicsPage.tablet model.topics
+
+
 page : Model -> Html Msg
 page model =
     case model.route of
         HomeRoute ->
-            mapSuccess (withHeader landingPage) model.brand
+            Layout.headerMain model.responsive (requestHeader model) landingPage
 
         TopicsRoute ->
-            let
-                view =
-                    if model.window.width <= 600 then
-                        topicsPageMobile
-                    else
-                        topicsPageTablet
-            in
-                mapSuccess view model.topics
+            Layout.headerMain model.responsive (requestHeader model) (requestTopics model)
 
         TopicRoute id ->
-            mapSuccess (withHeader (mapSuccess (mapTopic model id) model.topics)) model.brand
+            Layout.noContainer (requestHeader model) (requestTopic id model)
 
         SignUpRoute ->
-            Views.signUpPage
+            Registration.signUpPage
 
         LoginRoute ->
-            Views.loginPage
+            Registration.loginPage
 
         NotFoundRoute ->
             Views.notFoundPage
@@ -105,14 +127,12 @@ mapTopic : Model -> Slug -> List Topic -> Html Msg
 mapTopic model id topics =
     case List.head << List.filter (\topic -> topic.slugTitle == id) <| topics of
         Just topic ->
-                 let
-                        view =
-                            if model.window.width <= 600 then
-                                topicPageMobile
-                            else
-                                topicPageTablet
-                    in
-            view topic
+            case model.responsive of
+                Mobile ->
+                    TopicPage.mobile topic
+
+                Tablet ->
+                    TopicPage.tablet topic
 
         Nothing ->
             Views.notFoundPage
@@ -128,7 +148,10 @@ update msg model =
             ( { model | brand = response }, Cmd.none )
 
         OnWindowChange size ->
-            ( { model | window = size }, Cmd.none )
+            if (size.width <= 600) then
+                ( { model | responsive = Mobile }, Cmd.none )
+            else
+                ( { model | responsive = Tablet }, Cmd.none )
 
         UpdateRoute route ->
             ( model, newUrl <| toPath route )
