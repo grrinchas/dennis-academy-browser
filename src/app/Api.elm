@@ -41,7 +41,14 @@ topicQuery =
                 [ field "id"
                 , field "title"
                 , field "description"
-                , field "questions" |> withSelectors [ field "id", field "title", field "answer" ]
+                , field "questions"
+                    |> withSelectors
+                        [ field "id"
+                        , field "title"
+                        , field "answer"
+                        , field "nextQuestion" |> withSelectors [ field "title" ]
+                        , field "previousQuestion" |> withSelectors [ field "title" ]
+                        ]
                 , field "icon" |> withSelectors [ field "url" ]
                 , field "colour"
                 , field "nextTopic" |> withSelectors [ field "title" ]
@@ -83,7 +90,7 @@ brandDecoder =
 
 topicDecoder : Decoder Topic
 topicDecoder =
-    decode finalDecoder
+    decode finalTopicDecoder
         |> required "id" Decode.string
         |> required "title" Decode.string
         |> required "description" Decode.string
@@ -97,10 +104,13 @@ topicDecoder =
 
 questionsDecoder : Decoder Question
 questionsDecoder =
-    decode Question
+    decode finalQuestionDecoder
         |> required "id" Decode.string
         |> required "title" Decode.string
         |> required "answer" Decode.string
+        |> required "nextQuestion" (nullable (Decode.field "title" string |> Decode.andThen slugDecoder))
+        |> required "previousQuestion" (nullable (Decode.field "title" string |> Decode.andThen slugDecoder))
+        |> resolve
 
 
 slugDecoder : String -> Decoder Slug
@@ -113,8 +123,18 @@ slugDecoder title =
             fail "Can't slugify title"
 
 
-finalDecoder : String -> String -> String -> List Question -> String -> String -> Maybe Slug -> Maybe Slug -> Decoder Topic
-finalDecoder id title desc questions icon colour next prev =
+finalQuestionDecoder : String -> String -> String -> Maybe Slug -> Maybe Slug -> Decoder Question
+finalQuestionDecoder id title answer next prev =
+    case Slug.generate title of
+        Just slug ->
+            succeed <| Question id title slug answer next prev
+
+        Nothing ->
+            fail "Can't slugify question title"
+
+
+finalTopicDecoder : String -> String -> String -> List Question -> String -> String -> Maybe Slug -> Maybe Slug -> Decoder Topic
+finalTopicDecoder id title desc questions icon colour next prev =
     case Slug.generate title of
         Just slug ->
             succeed <| Topic id title slug desc questions icon colour next prev

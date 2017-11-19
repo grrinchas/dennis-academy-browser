@@ -12,6 +12,7 @@ import Html exposing (..)
 import Messages exposing (Msg(OnFetchTopics, OnLocationChange, UpdateRoute))
 import Navigation exposing (Location, newUrl)
 import Platform.Cmd exposing (batch)
+import QuestionPage
 import Registration
 import RemoteData exposing (WebData)
 import Responsive exposing (..)
@@ -86,11 +87,6 @@ requestHeader model =
     mapSuccess NavBar.navBar model.brand
 
 
-requestTopic : Slug -> Model -> Html Msg
-requestTopic id model =
-    mapSuccess (mapTopic model id) model.topics
-
-
 requestTopics : Model -> Html Msg
 requestTopics model =
     case model.responsive of
@@ -101,26 +97,9 @@ requestTopics model =
             mapSuccess TopicsPage.tablet model.topics
 
 
-page : Model -> Html Msg
-page model =
-    case model.route of
-        HomeRoute ->
-            Layout.headerMain model.responsive (requestHeader model) landingPage
-
-        TopicsRoute ->
-            Layout.headerMain model.responsive (requestHeader model) (requestTopics model)
-
-        TopicRoute id ->
-            Layout.noContainer (requestHeader model) (requestTopic id model)
-
-        SignUpRoute ->
-            Registration.signUpPage
-
-        LoginRoute ->
-            Registration.loginPage
-
-        NotFoundRoute ->
-            Views.notFoundPage
+requestTopic : Slug -> Model -> Html Msg
+requestTopic id model =
+    mapSuccess (mapTopic model id) model.topics
 
 
 mapTopic : Model -> Slug -> List Topic -> Html Msg
@@ -135,6 +114,56 @@ mapTopic model id topics =
                     TopicPage.tablet topic
 
         Nothing ->
+            Views.notFoundPage
+
+
+requestQuestion : Slug -> Slug -> Model -> Html Msg
+requestQuestion topicId questionId model =
+    mapSuccess (mapQuestion topicId questionId model) model.topics
+
+
+mapQuestion : Slug -> Slug -> Model -> List Topic -> Html Msg
+mapQuestion topicId questionId model topics =
+    case List.head << List.filter (\topic -> topic.slugTitle == topicId) <| topics of
+        Just topic ->
+            case List.head << List.filter (\question -> question.slugTitle == questionId) <| topic.questions of
+                Just question ->
+                    case model.responsive of
+                        Mobile ->
+                            QuestionPage.mobile topic question
+
+                        Tablet ->
+                            QuestionPage.tablet topic question
+
+                Nothing ->
+                    Views.notFoundPage
+
+        Nothing ->
+            Views.notFoundPage
+
+
+page : Model -> Html Msg
+page model =
+    case model.route of
+        HomeRoute ->
+            Layout.headerMain model.responsive (requestHeader model) landingPage
+
+        TopicsRoute ->
+            Layout.headerMain model.responsive (requestHeader model) (requestTopics model)
+
+        TopicRoute id ->
+            Layout.noContainer (requestHeader model) (requestTopic id model)
+
+        QuestionRoute topic question ->
+            Layout.noContainer (requestHeader model) (requestQuestion topic question model)
+
+        SignUpRoute ->
+            Registration.signUpPage
+
+        LoginRoute ->
+            Registration.loginPage
+
+        NotFoundRoute ->
             Views.notFoundPage
 
 

@@ -2,8 +2,9 @@ module TopicPage exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Messages exposing (Msg(UpdateRoute))
-import Routes exposing (Route(TopicRoute, TopicsRoute), toPath)
+import Routes exposing (Route(QuestionRoute, TopicRoute, TopicsRoute), toPath)
 import Slug exposing (Slug)
 import Text
 import Topic exposing (Question, Topic)
@@ -31,12 +32,12 @@ topicNavigation topic =
 
 tablet : Topic -> Html Msg
 tablet topic =
-    topicPage (section [ class "section container" ] [ div [ class "row" ] (List.map questionListCard topic.questions) ]) topic
+    topicPage (section [ class "section container" ] [ div [ class "row" ] (List.map (questionListCard topic) topic.questions) ]) topic
 
 
 mobile : Topic -> Html Msg
 mobile topic =
-    topicPage (section [ class "dg-no-margins collection" ] (List.map listItem topic.questions)) topic
+    topicPage (section [ class "dg-no-margins collection" ] (List.map (listItem topic) topic.questions)) topic
 
 
 topicPage : Html Msg -> Topic -> Html Msg
@@ -48,17 +49,17 @@ topicPage questions topic =
         ]
 
 
-listItem : Question -> Html msg
-listItem question =
-    a [ class "collection-item" ]
+listItem : Topic -> Question -> Html msg
+listItem topic question =
+    a [ class "collection-item", href <| toPath <| QuestionRoute topic.slugTitle question.slugTitle ]
         [ span [ class "dg-text-black" ] [ text <| question.title ++ "?" ]
         ]
 
 
-questionListCard : Question -> Html Msg
-questionListCard question =
+questionListCard : Topic -> Question -> Html Msg
+questionListCard topic question =
     div [ class "col m6 xl4" ]
-        [ div [ class "card small hoverable dg-center" ]
+        [ div [ class "card small hoverable dg-center", onClick <| UpdateRoute <| QuestionRoute topic.slugTitle question.slugTitle ]
             [ div [ class "card-content" ]
                 [ span [ class "card-title center-align" ] [ text <| question.title ++ "?" ]
                 ]
@@ -68,7 +69,7 @@ questionListCard question =
 
 toTopicsPage : Html msg
 toTopicsPage =
-    a [ class "btn dg-primary-colour", href <| toPath TopicsRoute ] [ appsIcon ]
+    a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| toPath TopicsRoute ] [ appsIcon ]
 
 
 toNextTopic : Topic -> Html msg

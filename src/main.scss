@@ -75,6 +75,13 @@ body {
     margin-left: auto;
 }
 
+.dg-question {
+   background-color: $body-bg-color;
+    max-width: 800px;
+    .card {
+        padding: 30px;
+    }
+}
 
 .dg-topic-nav-btn {
     margin-right: 3px;

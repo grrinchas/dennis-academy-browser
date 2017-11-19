@@ -14,7 +14,10 @@ type alias QuestionId =
 type alias Question =
     { id : QuestionId
     , title : String
+    , slugTitle : Slug
     , answer : String
+    , next : Maybe Slug
+    , previous : Maybe Slug
     }
 
 
