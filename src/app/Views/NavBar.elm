@@ -12,7 +12,7 @@ import Text
 navBar : Brand -> Html Msg
 navBar brand =
     div [ class "navbar-fixed" ]
-        [ nav []
+        [ nav [ class " dg-primary-colour" ]
             [ div [ class "nav-wrapper valign-wrapper" ]
                 [ toTopicsPage
                 , img [ src brand.logo, class "dg-logo", onClick <| UpdateRoute HomeRoute ] []

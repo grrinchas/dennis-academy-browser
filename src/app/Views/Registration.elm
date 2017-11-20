@@ -26,16 +26,17 @@ thirdParty =
 
 regHeader : String -> Html Msg
 regHeader text_ =
-    div [ class "dg-primary-colour dg-center dg-text-white dg-nav-height card-title" ]
+    div [ class "dg-primary-colour dg-center dg-text-white dg-nav-height card-title dg-reg-header" ]
         [ span [] [ text text_ ]
         ]
 
 
 registration : String -> String -> List (Html Msg) -> List (Html Msg) -> Html Msg
 registration btn header body actions =
-    div [ class "dg-center dg-registration" ]
-        [ Html.form []
+    div [ class "dg-center dg-registration " ]
+        [ Html.form [ class "" ]
             [ regHeader header
+            , div [ class "divider" ] []
             , div [ class "card-content" ] <|
                 List.append
                     (List.append

@@ -22,9 +22,9 @@ justHeader content =
 
 headerMain : Responsive -> Html msg -> Html msg -> Html msg
 headerMain responsive header main =
-    div [] [ justHeader header, justMain responsive main ]
+    div [ class "dg-layout" ] [ justHeader header, justMain responsive main ]
 
 
 noContainer : Html msg -> Html msg -> Html msg
 noContainer header main =
-    div [] [ justHeader header, main_ [] [ main ] ]
+    div [ class "dg-layout-no-container" ] [ justHeader header, main_ [] [ main ] ]

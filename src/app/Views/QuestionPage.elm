@@ -31,7 +31,7 @@ questionNavigation topic question =
 
 questionsPage : Html Msg -> Topic -> Question -> Html Msg
 questionsPage answer topic question =
-    div []
+    div [ class "dg-question", style [ ( "background-color", topic.colour ) ] ]
         [ questionHeader topic question
         , answer
         , questionNavigation topic question
@@ -41,9 +41,9 @@ questionsPage answer topic question =
 tablet : Topic -> Question -> Html Msg
 tablet topic question =
     questionsPage
-        (section [ class "section", style [ ( "background-color", topic.colour ) ] ]
-            [ div [ class "container dg-question" ]
-                [ div [ class "card" ]
+        (section [ class "section" ]
+            [ div [ class "container" ]
+                [ div [ class "card  z-depth-0" ]
                     [ text question.answer
                     ]
                 ]
@@ -57,8 +57,10 @@ mobile : Topic -> Question -> Html Msg
 mobile topic question =
     questionsPage
         (section [ class "section" ]
-            [ div [ class "container dg-question" ]
-                [ text question.answer
+            [ div [ class "container" ]
+                [ div [ class "card  z-depth-0" ]
+                    [ text question.answer
+                    ]
                 ]
             ]
         )
