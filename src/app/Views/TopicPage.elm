@@ -32,7 +32,7 @@ topicNavigation topic =
 
 tablet : Topic -> Html Msg
 tablet topic =
-    topicPage (section [ class "section container" ] [ div [ class "row" ] (List.map (questionListCard topic) topic.questions) ]) topic
+    topicPage (section [ class "section container" ] [ div [ class "row dg-no-margins" ] (List.map (questionListCard topic) topic.questions) ]) topic
 
 
 mobile : Topic -> Html Msg

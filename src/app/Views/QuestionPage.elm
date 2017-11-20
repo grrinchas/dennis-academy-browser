@@ -2,6 +2,7 @@ module QuestionPage exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Markdown
 import Messages exposing (Msg)
 import Routes exposing (Route(QuestionRoute, TopicRoute, TopicsRoute), toPath)
 import Slug exposing (Slug)
@@ -12,9 +13,11 @@ import Topic exposing (Question, Topic)
 questionHeader : Topic -> Question -> Html Msg
 questionHeader topic question =
     section [ class "section", style [ ( "background-color", topic.colour ) ] ]
-        [ h1 [ class "dg-text-white center-align" ]
-            [ img [ class "dg-topic-img", src topic.icon ] []
-            , text <| question.title ++ "?"
+        [ div [ class "container" ]
+            [ h1 [ class "dg-text-white center-align" ]
+                [ img [ class "dg-topic-img", src topic.icon ] []
+                , text <| question.title ++ "?"
+                ]
             ]
         ]
 
@@ -31,7 +34,7 @@ questionNavigation topic question =
 
 questionsPage : Html Msg -> Topic -> Question -> Html Msg
 questionsPage answer topic question =
-    div []
+    div [ class "dg-question" ]
         [ questionHeader topic question
         , answer
         , questionNavigation topic question
@@ -42,10 +45,10 @@ tablet : Topic -> Question -> Html Msg
 tablet topic question =
     questionsPage
         (section [ class "section", style [ ( "background-color", topic.colour ) ] ]
-            [ div [ class "container dg-question" ]
-                [ div [ class "card" ]
-                    [ text question.answer
-                    ]
+            [ div [ class "container" ]
+                [ Markdown.toHtml
+                    []
+                    question.answer
                 ]
             ]
         )
@@ -57,8 +60,8 @@ mobile : Topic -> Question -> Html Msg
 mobile topic question =
     questionsPage
         (section [ class "section" ]
-            [ div [ class "container dg-question" ]
-                [ text question.answer
+            [ div [ class "container" ]
+                [ Markdown.toHtml [] question.answer
                 ]
             ]
         )
