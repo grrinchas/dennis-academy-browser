@@ -26,7 +26,7 @@ thirdParty =
 
 regHeader : String -> Html Msg
 regHeader text_ =
-    div [ class "dg-primary-colour dg-center dg-text-white dg-nav-height card-title" ]
+    div [ class "dg-center dg-nav-height card-title dg-reg-header" ]
         [ span [] [ text text_ ]
         ]
 
@@ -36,6 +36,7 @@ registration btn header body actions =
     div [ class "dg-center dg-registration" ]
         [ Html.form []
             [ regHeader header
+            , div [ class "divider" ] []
             , div [ class "card-content" ] <|
                 List.append
                     (List.append

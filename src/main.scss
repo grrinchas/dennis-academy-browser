@@ -126,6 +126,14 @@ body {
     .dg-registration {
         height: 100%;
         @extend .dg-primary-colour;
+        .dg-reg-header {
+            background-color: $body-bg-color ;
+            color: $text-color;
+        }
+        .card {
+
+            background-color: $body-bg-color ;
+        }
         form {
             max-width: 450px;
             box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) !important;
