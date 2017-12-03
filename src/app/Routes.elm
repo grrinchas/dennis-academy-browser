@@ -1,6 +1,7 @@
 module Routes exposing (..)
 
 import Navigation exposing (Location)
+import Question.Model exposing (Question)
 import RemoteData exposing (WebData)
 import Slug exposing (Slug)
 import Topic.Model as Topic exposing (Topic)
@@ -11,7 +12,7 @@ type Route
     = HomeRoute
     | TopicsRoute
     | TopicRoute Topic
-    | QuestionRoute Slug Slug
+    | QuestionRoute Topic Question
     | SignUpRoute
     | LoginRoute
     | VerifyEmailRoute
@@ -34,7 +35,7 @@ matchers topics =
         [ map HomeRoute top
         , map TopicsRoute (s "topics")
         , map TopicRoute (s "topics" </> topicMatcher topics)
-        , map QuestionRoute (s "topics" </> slugMatcher </> slugMatcher)
+        , map QuestionRoute (s "topics" </> topicMatcher topics </> questionMatcher topics)
         , map SignUpRoute (s "signup")
         , map LoginRoute (s "login")
         , map VerifyEmailRoute (s "verify-email")
@@ -53,19 +54,26 @@ topicMatcher topics =
                     Err "Malformed Path"
 
 
-slugMatcher : Parser (Slug -> a) a
-slugMatcher =
+questionMatcher : List Topic -> Parser (Question -> a) a
+questionMatcher topics =
     custom "TOPIC_TITLE" <|
         \segment ->
-            case Slug.generate segment of
-                Just title ->
-                    Ok title
+            case Slug.generate segment |> Maybe.andThen (\x -> Topic.findQuestion x topics) of
+                Just topic ->
+                    Ok topic
 
                 Nothing ->
-                    Err "Malformed path"
+                    Err "Malformed Path"
+
 
 toTopic : Slug -> String
-toTopic slug = "#topics/" ++ Slug.toString slug
+toTopic slug =
+    "#topics/" ++ Slug.toString slug
+
+
+toQuestion : Slug -> Slug -> String
+toQuestion topic question =
+    "#topics/" ++ Slug.toString topic ++ "/" ++ Slug.toString question
 
 
 toPath : Route -> String
@@ -81,7 +89,7 @@ toPath route =
             "#topics/" ++ Slug.toString topic.slug
 
         QuestionRoute topic question ->
-            "#topics/" ++ Slug.toString topic ++ "/" ++ Slug.toString question
+            "#topics/" ++ Slug.toString topic.slug ++ "/" ++ Slug.toString question.slug
 
         SignUpRoute ->
             "#signup"

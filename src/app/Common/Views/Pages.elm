@@ -73,22 +73,6 @@ topics brand topics =
     map2 topicsPage brand topics
 
 
-questionPage : Slug -> Slug -> Brand -> List Topic -> View Msg
-questionPage questionId topicId brand topics =
-    let
-        topic =
-            List.head topics
-    in
-        Maybe.andThen (findQuestion questionId) topic
-            |> mapNotFound2 Question.view topic
-            |> Layout.noContainer (NavBar.view brand)
-
-
-findQuestion : Slug -> Topic -> Maybe Question
-findQuestion id topic =
-    List.head << List.filter (\question -> question.slugTitle == id) <| topic.questions
-
-
 mapNotFound : (a -> View Msg) -> Maybe a -> View Msg
 mapNotFound view maybe =
     case maybe of
@@ -114,9 +98,9 @@ topic topic brand =
     Topic.view topic
 
 
-question : Slug -> Slug -> WebData Brand -> WebData (List Topic) -> View Msg
-question questionId topicId brand topics =
-    map2 (questionPage questionId topicId) brand topics
+question : Topic -> Question -> WebData Brand -> View Msg
+question topic question brand =
+    Question.view topic question
 
 
 signUp : WebData User -> View Msg

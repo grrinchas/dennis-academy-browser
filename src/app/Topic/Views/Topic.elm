@@ -60,7 +60,7 @@ topicPage questions topic =
 
 listItem : Topic -> Question -> Html msg
 listItem topic question =
-    a [ class "collection-item", href <| toPath <| QuestionRoute question.slugTitle question.slugTitle ]
+    a [ class "collection-item", href <| toPath <| QuestionRoute topic question ]
         [ span [ class "dg-text-black" ] [ text <| question.title ++ "?" ]
         ]
 
@@ -68,7 +68,7 @@ listItem topic question =
 questionListCard : Topic -> Question -> Html Msg
 questionListCard topic question =
     div [ class "col m6 xl4" ]
-        [ div [ class "card small hoverable dg-center", onClick <| UpdateRoute <| QuestionRoute question.slugTitle question.slugTitle ]
+        [ div [ class "card small hoverable dg-center", onClick <| UpdateRoute <| QuestionRoute topic question ]
             [ div [ class "card-content" ]
                 [ span [ class "card-title center-align" ] [ text <| question.title ++ "?" ]
                 ]

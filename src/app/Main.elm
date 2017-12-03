@@ -96,7 +96,7 @@ page model =
             Pages.topic id model.brand
 
         QuestionRoute topic question ->
-            Pages.question question topic model.brand model.topics
+            Pages.question topic question model.brand
 
         SignUpRoute ->
             Pages.signUp model.user

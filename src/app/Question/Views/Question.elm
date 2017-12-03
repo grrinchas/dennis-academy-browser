@@ -34,10 +34,10 @@ questionHeader topic question =
 questionNavigation : Topic -> Question -> Html msg
 questionNavigation topic question =
     section [ class "section dg-center", style [ ( "background-color", topic.colour ) ] ]
-        [--toPreviousQuestion topic question
-         -- toTopicsPage
-         --toQuestionsPage topic
-         --toNextQuestion topic question
+        [ toPreviousQuestion topic question
+        , toTopicsPage
+        , toQuestionsPage topic
+        , toNextQuestion topic question
         ]
 
 
@@ -78,61 +78,57 @@ mobile topic question =
         question
 
 
-
-{-
-
-   toTopicsPage : Html msg
-   toTopicsPage =
-       a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| toPath TopicsRoute ] [ appsIcon ]
+toTopicsPage : Html msg
+toTopicsPage =
+    a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| toPath TopicsRoute ] [ appsIcon ]
 
 
-   toQuestionsPage : Topic -> Html msg
-   toQuestionsPage topic =
-       a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| toPath <| TopicRoute topic ] [ upIcon ]
+toQuestionsPage : Topic -> Html msg
+toQuestionsPage topic =
+    a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| toPath <| TopicRoute topic ] [ upIcon ]
 
 
-   toNextQuestion : Topic -> Question -> Html msg
-   toNextQuestion topic question =
-       mapSlug (navLink [ Text.next, nextIcon ] topic.slugTitle) question.next
+toNextQuestion : Topic -> Question -> Html msg
+toNextQuestion topic question =
+    mapSlug (navLink [ Text.next, nextIcon ] topic.slug) question.next
 
 
-   toPreviousQuestion : Topic -> Question -> Html msg
-   toPreviousQuestion topic question =
-       mapSlug (navLink [ Text.previous, previousIcon ] topic.slugTitle) question.previous
+toPreviousQuestion : Topic -> Question -> Html msg
+toPreviousQuestion topic question =
+    mapSlug (navLink [ Text.previous, previousIcon ] topic.slug) question.previous
 
 
-   navLink : List (Html msg) -> Slug -> Slug -> Html msg
-   navLink content topic question =
-       a [ href <| toPath <| QuestionRoute topic question, class "btn dg-topic-nav-btn dg-primary-colour" ]
-           content
+navLink : List (Html msg) -> Slug -> Slug -> Html msg
+navLink content topic question =
+    a [ href <| Routes.toQuestion topic question, class "btn dg-topic-nav-btn dg-primary-colour" ]
+        content
 
 
-   mapSlug : (Slug -> Html msg) -> Maybe Slug -> Html msg
-   mapSlug view maybeSlug =
-       case maybeSlug of
-           Just slug ->
-               view slug
+mapSlug : (Slug -> Html msg) -> Maybe Slug -> Html msg
+mapSlug view maybeSlug =
+    case maybeSlug of
+        Just slug ->
+            view slug
 
-           Nothing ->
-               a [] []
-
-
-   appsIcon : Html msg
-   appsIcon =
-       i [ class "material-icons" ] [ text "apps" ]
+        Nothing ->
+            a [] []
 
 
-   upIcon : Html msg
-   upIcon =
-       i [ class "material-icons" ] [ text "menu" ]
+appsIcon : Html msg
+appsIcon =
+    i [ class "material-icons" ] [ text "apps" ]
 
 
-   nextIcon : Html msg
-   nextIcon =
-       i [ class "material-icons right" ] [ text "navigate_next" ]
+upIcon : Html msg
+upIcon =
+    i [ class "material-icons" ] [ text "menu" ]
 
 
-   previousIcon : Html msg
-   previousIcon =
-       i [ class "material-icons left" ] [ text "navigate_before" ]
--}
+nextIcon : Html msg
+nextIcon =
+    i [ class "material-icons right" ] [ text "navigate_next" ]
+
+
+previousIcon : Html msg
+previousIcon =
+    i [ class "material-icons left" ] [ text "navigate_before" ]
