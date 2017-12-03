@@ -5,7 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(UpdateRoute))
-import Routes exposing (Route(QuestionRoute, TopicRoute, TopicsRoute), toPath)
+import Routes exposing (..)
 import Slug exposing (Slug)
 import Common.Views.Text as Text
 import Question.Model exposing (Question)
@@ -60,7 +60,7 @@ topicPage questions topic =
 
 listItem : Topic -> Question -> Html msg
 listItem topic question =
-    a [ class "collection-item", href <| toPath <| QuestionRoute topic.slugTitle question.slugTitle ]
+    a [ class "collection-item", href <| toPath <| QuestionRoute question.slugTitle question.slugTitle ]
         [ span [ class "dg-text-black" ] [ text <| question.title ++ "?" ]
         ]
 
@@ -68,7 +68,7 @@ listItem topic question =
 questionListCard : Topic -> Question -> Html Msg
 questionListCard topic question =
     div [ class "col m6 xl4" ]
-        [ div [ class "card small hoverable dg-center", onClick <| UpdateRoute <| QuestionRoute topic.slugTitle question.slugTitle ]
+        [ div [ class "card small hoverable dg-center", onClick <| UpdateRoute <| QuestionRoute question.slugTitle question.slugTitle ]
             [ div [ class "card-content" ]
                 [ span [ class "card-title center-align" ] [ text <| question.title ++ "?" ]
                 ]
@@ -79,6 +79,11 @@ questionListCard topic question =
 toTopicsPage : Html msg
 toTopicsPage =
     a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| toPath TopicsRoute ] [ appsIcon ]
+
+
+appsIcon : Html msg
+appsIcon =
+    i [ class "material-icons" ] [ text "apps" ]
 
 
 toNextTopic : Topic -> Html msg
@@ -93,7 +98,7 @@ toPreviousTopic topic =
 
 navLink : List (Html msg) -> Slug -> Html msg
 navLink content slug =
-    a [ href <| toPath <| TopicRoute slug, class "btn dg-topic-nav-btn dg-primary-colour" ]
+    a [ href <| Routes.toTopic slug, class "btn dg-topic-nav-btn dg-primary-colour" ]
         content
 
 
@@ -105,11 +110,6 @@ mapSlug view maybeSlug =
 
         Nothing ->
             a [] []
-
-
-appsIcon : Html msg
-appsIcon =
-    i [ class "material-icons" ] [ text "apps" ]
 
 
 nextIcon : Html msg

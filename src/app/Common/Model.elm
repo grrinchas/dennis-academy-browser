@@ -2,6 +2,7 @@ module Common.Model exposing (..)
 
 import Either exposing (Either)
 import Html exposing (Html)
+import Slug exposing (Slug)
 
 
 type alias Id =
@@ -23,6 +24,7 @@ type alias Icon =
 type alias Colour =
     String
 
+type alias SlugTitle = Slug
 
 type Responsive
     = Mobile
@@ -48,3 +50,5 @@ type alias Brand =
     , primaryColour : String
     , secondaryColour : String
     }
+
+

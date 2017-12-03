@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Common.Api exposing (fetchBrand)
 import Common.Model exposing (Brand, Responsive(Mobile, Tablet), View)
+import Common.Views.ErrorPage
 import Common.Views.LandingPage as LandingPage exposing (landingPage)
 import Common.Views.NotFoundPage
 import Common.Views.Pages
@@ -9,7 +10,7 @@ import Html.Attributes exposing (style)
 import Common.Views.Layout as Layout
 import Common.Views.Loader as Loader
 import Common.Views.NavBar as NavBar
-import Navigation exposing (Location)
+import Navigation exposing (Location, load)
 import Messages exposing (..)
 import Html exposing (..)
 import Messages exposing (Msg(OnFetchTopics, OnLocationChange, UpdateRoute))
@@ -18,7 +19,7 @@ import Platform.Cmd exposing (batch)
 import User.Api
 import User.Model exposing (SignUpForm, User)
 import User.Views.Registration as Registration
-import RemoteData exposing (WebData)
+import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
 import Routes exposing (..)
 import Slug exposing (Slug)
 import Task
@@ -47,7 +48,7 @@ subscriptions model =
 type alias Model =
     { topics : WebData (List Topic)
     , brand : WebData Brand
-    , route : Route
+    , location : Location
     , window : Window.Size
     , responsive : Responsive
     , signUpForm : SignUpForm
@@ -59,7 +60,7 @@ initialModel : Location -> Model
 initialModel location =
     { topics = RemoteData.Loading
     , brand = RemoteData.Loading
-    , route = parseLocation location
+    , location = location
     , window = Size 0 0
     , responsive = Mobile
     , signUpForm = SignUpForm Nothing Nothing Nothing Nothing
@@ -84,7 +85,7 @@ view model =
 
 page : Model -> View Msg
 page model =
-    case model.route of
+    case parseLocation model.location <| RemoteData.withDefault [] model.topics of
         HomeRoute ->
             Pages.landing model.brand
 
@@ -92,7 +93,7 @@ page model =
             Pages.topics model.brand model.topics
 
         TopicRoute id ->
-            Pages.topic id model.brand model.topics
+            Pages.topic id model.brand
 
         QuestionRoute topic question ->
             Pages.question question topic model.brand model.topics
@@ -107,7 +108,7 @@ page model =
             Pages.emptyPage
 
         NotFoundRoute ->
-            Pages.emptyPage
+            Common.Views.NotFoundPage.view
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -120,16 +121,13 @@ update msg model =
             ( { model | brand = response }, Cmd.none )
 
         OnWindowChange size ->
-            if (size.width <= 600) then
-                ( { model | responsive = Mobile }, Cmd.none )
-            else
-                ( { model | responsive = Tablet }, Cmd.none )
+            onWindowChange model size
 
         UpdateRoute route ->
             ( model, newUrl <| toPath route )
 
         OnLocationChange location ->
-            ( { model | route = parseLocation location }, Cmd.none )
+            ( { model | location = location }, Cmd.none )
 
         OnUserSignUp response ->
             ( { model | user = response }, Cmd.none )
@@ -158,3 +156,11 @@ update msg model =
                                 Debug.log "" model.signUpForm.username
                         in
                             ( model, User.Api.signUp model.signUpForm )
+
+
+onWindowChange : Model -> Size -> ( Model, Cmd Msg )
+onWindowChange model size =
+    if (size.width <= 600) then
+        ( { model | responsive = Mobile }, Cmd.none )
+    else
+        ( { model | responsive = Tablet }, Cmd.none )

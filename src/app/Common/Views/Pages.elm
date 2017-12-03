@@ -73,27 +73,15 @@ topics brand topics =
     map2 topicsPage brand topics
 
 
-topicPage : Slug -> Brand -> List Topic -> View Msg
-topicPage id brand topics =
-    findTopic id topics
-        |> mapNotFound Topic.view
-        |> Layout.noContainer (NavBar.view brand)
-
-
 questionPage : Slug -> Slug -> Brand -> List Topic -> View Msg
 questionPage questionId topicId brand topics =
     let
         topic =
-            findTopic topicId topics
+            List.head topics
     in
         Maybe.andThen (findQuestion questionId) topic
             |> mapNotFound2 Question.view topic
             |> Layout.noContainer (NavBar.view brand)
-
-
-findTopic : Slug -> List Topic -> Maybe Topic
-findTopic id =
-    List.head << List.filter (\topic -> topic.slugTitle == id)
 
 
 findQuestion : Slug -> Topic -> Maybe Question
@@ -121,9 +109,9 @@ mapNotFound2 view ma mb =
             NotFoundPage.view
 
 
-topic : Slug -> WebData Brand -> WebData (List Topic) -> View Msg
-topic id brand topics =
-    map2 (topicPage id) brand topics
+topic : Topic -> WebData Brand -> View Msg
+topic topic brand =
+    Topic.view topic
 
 
 question : Slug -> Slug -> WebData Brand -> WebData (List Topic) -> View Msg

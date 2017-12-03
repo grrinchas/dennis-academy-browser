@@ -9,6 +9,7 @@ import Question.Model exposing (Question)
 import Slug exposing (Slug)
 import Topic.Model exposing (Topic)
 
+
 decodeTopics : Decoder.Decoder (List Topic)
 decodeTopics =
     Decoder.field "allTopics" (Decoder.list decodeTopic)
@@ -26,7 +27,6 @@ decodeTopic =
         |> Pipeline.required "nextTopic" (Decoder.nullable (Decoder.field "title" Decoder.string |> Decoder.andThen decodeSlug))
         |> Pipeline.required "previousTopic" (Decoder.nullable (Decoder.field "title" Decoder.string |> Decoder.andThen decodeSlug))
         |> Pipeline.resolve
-
 
 
 finalTopicDecoder : Id -> Title -> Description -> List Question -> Icon -> Colour -> Maybe Slug -> Maybe Slug -> Decoder.Decoder Topic

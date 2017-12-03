@@ -18,13 +18,15 @@ mobile topics =
             topics
         )
 
+
 listItem : Topic -> Html msg
 listItem topic =
-    a [ href <| toPath <| TopicRoute topic.slugTitle, class "collection-item avatar" ]
+    a [ href <| Routes.toPath <| TopicRoute topic, class "collection-item avatar" ]
         [ img [ src topic.icon, class "circle", style [ ( "background-color", topic.colour ) ] ] []
         , span [ class "title dg-text-black" ] [ text topic.title ]
         , p [ class "dg-text-black" ] [ text topic.description ]
         ]
+
 
 view : List Topic -> View Msg
 view topics =
@@ -43,15 +45,15 @@ listCard : Topic -> Html Msg
 listCard topic =
     div [ class "col m6 xl4" ]
         [ div [ class "card medium hoverable" ]
-            [ div [ class "card-image", style [ ( "background-color", topic.colour ) ], onClick <| UpdateRoute <| TopicRoute <| topic.slugTitle ]
+            [ div [ class "card-image", style [ ( "background-color", topic.colour ) ], onClick <| UpdateRoute <| TopicRoute topic ]
                 [ img [ src topic.icon, class "dg-topic-img" ] []
                 ]
-            , div [ class "card-content", onClick <| UpdateRoute <| TopicRoute <| topic.slugTitle ]
+            , div [ class "card-content", onClick <| UpdateRoute <| TopicRoute <| topic ]
                 [ span [ class "card-title" ] [ text topic.title ]
                 , p [ class "text-black" ] [ text topic.description ]
                 ]
             , div [ class "card-action" ]
-                [ a [ href <| toPath <| TopicRoute topic.slugTitle ] [ Text.readMore ]
+                [ a [ href <| Routes.toPath <| TopicRoute topic ] [ Text.readMore ]
                 ]
             ]
         ]
