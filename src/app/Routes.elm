@@ -2,8 +2,6 @@ module Routes exposing (Route(..), parseLocation, toPath)
 
 import Navigation exposing (Location)
 import Slug exposing (Slug)
-import Topic exposing (TopicId)
-import Topic exposing (TopicId)
 import UrlParser exposing (..)
 
 
@@ -14,6 +12,7 @@ type Route
     | QuestionRoute Slug Slug
     | SignUpRoute
     | LoginRoute
+    | VerifyEmailRoute
     | NotFoundRoute
 
 
@@ -36,6 +35,7 @@ matchers =
         , map QuestionRoute (s "topics" </> slugMatcher </> slugMatcher)
         , map SignUpRoute (s "signup")
         , map LoginRoute (s "login")
+        , map VerifyEmailRoute (s "verify-email")
         ]
 
 
@@ -71,6 +71,9 @@ toPath route =
 
         LoginRoute ->
             "#login"
+
+        VerifyEmailRoute ->
+            "#verify-email"
 
         NotFoundRoute ->
             ""

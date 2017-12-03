@@ -1,11 +1,20 @@
 module Messages exposing (..)
 
-import Brand exposing (Brand)
+import Common.Model exposing (Brand)
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 import Routes exposing (Route)
-import Topic exposing (Topic)
+import Topic.Model exposing (Topic)
+import User.Model exposing (User)
 import Window exposing (Size)
+
+
+type Form
+    = Username String
+    | Email String
+    | Password String
+    | Repeat String
+    | Submit
 
 
 type Msg
@@ -14,3 +23,5 @@ type Msg
     | OnWindowChange Size
     | UpdateRoute Route
     | OnLocationChange Location
+    | OnUserSignUp (WebData User)
+    | OnSignUpForm Form

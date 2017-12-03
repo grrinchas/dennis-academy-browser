@@ -1,10 +1,28 @@
-module Registration exposing (..)
+module User.Views.Registration exposing (..)
 
+import Common.Model exposing (View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Messages exposing (Msg)
+import Html.Events exposing (onClick, onInput)
+import Messages exposing (..)
 import Routes exposing (Route(LoginRoute, SignUpRoute), toPath)
-import Text
+import Common.Views.Text as Text
+import User.Model exposing (User)
+
+
+user : User -> Html msg
+user user =
+    div []
+        [ p [] [ text user.id ]
+        , p [] [ text user.username ]
+        , p [] [ text user.email ]
+        , p [] []
+        ]
+
+
+userView : User -> View msg
+userView u =
+    { mobile = user u, tablet = user u }
 
 
 thirdParty : Html Msg
@@ -31,7 +49,7 @@ regHeader text_ =
         ]
 
 
-registration : String -> String -> List (Html Msg) -> List (Html Msg) -> Html Msg
+registration : Html Msg -> String -> List (Html Msg) -> List (Html Msg) -> Html Msg
 registration btn header body actions =
     div [ class "dg-center dg-registration" ]
         [ Html.form []
@@ -47,9 +65,7 @@ registration btn header body actions =
                     )
                     ([ div
                         [ class "right-align" ]
-                        [ a [ class "btn dg-primary-colour" ]
-                            [ text btn
-                            ]
+                        [ btn
                         ]
                      ]
                     )
@@ -61,23 +77,33 @@ registration btn header body actions =
 
 signUpPage : Html Msg
 signUpPage =
-    registration "Sign Up"
+    registration (a [ class "btn dg-primary-colour", onClick <| OnSignUpForm Submit ] [ text "SignUp" ])
         "Sign up with"
-        [ inputField "person" "Username" "text"
-        , inputField "email" "Email" "email"
-        , inputField "lock" "Password" "password"
-        , inputField "lock" "Repeat Password" "password"
+        [ inputField "person" <| input [ placeholder "Person", type_ "text", onInput (\x -> OnSignUpForm <| Username x) ] []
+        , inputField "email" <| input [ placeholder "Email", type_ "email", onInput (\x -> OnSignUpForm <| Email x) ] []
+        , inputField "lock" <| input [ placeholder "Password", type_ "password", onInput (\x -> OnSignUpForm <| Password x) ] []
+        , inputField "lock" <| input [ placeholder "Repeat Password", type_ "password", onInput (\x -> OnSignUpForm <| Repeat x) ] []
         ]
         [ a [ href <| toPath LoginRoute ] [ Text.alreadyHaveAccount ]
         ]
 
 
+signUpView : View Msg
+signUpView =
+    { mobile = signUpPage, tablet = signUpPage }
+
+
+loginView : View Msg
+loginView =
+    { mobile = loginPage, tablet = loginPage }
+
+
 loginPage : Html Msg
 loginPage =
-    registration "Login"
+    registration (a [ class "btn dg-primary-colour" ] [ text "Login" ])
         "Login with"
-        [ inputField "email" "Email" "email"
-        , inputField "lock" "Password" "password"
+        [ inputField "email" <| input [ placeholder "Email", type_ "email" ] []
+        , inputField "lock" <| input [ placeholder "Repeat Password", type_ "password" ] []
         ]
         [ a [ href <| toPath SignUpRoute ]
             [ Text.doNotHaveAccount ]
@@ -87,9 +113,9 @@ loginPage =
         ]
 
 
-inputField : String -> String -> String -> Html Msg
-inputField icon holder t =
+inputField : String -> Html Msg -> Html Msg
+inputField icon input =
     div [ class "input-field" ]
         [ i [ class "material-icons prefix" ] [ text icon ]
-        , input [ placeholder holder, type_ t ] []
+        , input
         ]

@@ -1,7 +1,6 @@
-module Text exposing (..)
+module Common.Views.Text exposing (..)
 
 import Html exposing (Html, text)
-import Topic exposing (Topic)
 
 
 next : Html msg
@@ -48,12 +47,3 @@ alreadyHaveAccount : Html msg
 alreadyHaveAccount =
     text "Already have an account?"
 
-
-topicDescription : Topic -> Html msg
-topicDescription topic =
-    text topic.description
-
-
-topicTitle : Topic -> Html msg
-topicTitle topic =
-    text topic.title

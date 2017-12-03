@@ -1,12 +1,13 @@
-module TopicsPage exposing (mobile, tablet)
+module Topic.Views.Topics exposing (..)
 
+import Common.Model exposing (Responsive(Mobile, Tablet), View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(UpdateRoute))
 import Routes exposing (Route(TopicRoute), toPath)
-import Text
-import Topic exposing (Topic)
+import Common.Views.Text as Text
+import Topic.Model exposing (Topic)
 
 
 mobile : List Topic -> Html Msg
@@ -17,7 +18,6 @@ mobile topics =
             topics
         )
 
-
 listItem : Topic -> Html msg
 listItem topic =
     a [ href <| toPath <| TopicRoute topic.slugTitle, class "collection-item avatar" ]
@@ -25,6 +25,12 @@ listItem topic =
         , span [ class "title dg-text-black" ] [ text topic.title ]
         , p [ class "dg-text-black" ] [ text topic.description ]
         ]
+
+view : List Topic -> View Msg
+view topics =
+    { mobile = mobile topics
+    , tablet = tablet topics
+    }
 
 
 tablet : List Topic -> Html Msg

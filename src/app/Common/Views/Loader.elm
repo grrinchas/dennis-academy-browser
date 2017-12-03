@@ -1,4 +1,4 @@
-module Loader exposing (..)
+module Common.Views.Loader exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)

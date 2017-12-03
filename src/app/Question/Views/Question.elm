@@ -1,13 +1,22 @@
-module QuestionPage exposing (..)
+module Question.Views.Question exposing (..)
 
+import Common.Model exposing (View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Markdown
 import Messages exposing (Msg)
 import Routes exposing (Route(QuestionRoute, TopicRoute, TopicsRoute), toPath)
 import Slug exposing (Slug)
-import Text
-import Topic exposing (Question, Topic)
+import Common.Views.Text as Text
+import Question.Model exposing (Question)
+import Topic.Model exposing (Topic)
+
+
+view : Topic -> Question -> View Msg
+view topic question =
+    { mobile = mobile topic question
+    , tablet = tablet topic question
+    }
 
 
 questionHeader : Topic -> Question -> Html Msg

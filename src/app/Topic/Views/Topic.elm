@@ -1,13 +1,15 @@
-module TopicPage exposing (..)
+module Topic.Views.Topic exposing (..)
 
+import Common.Model exposing (Responsive(Mobile, Tablet), View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(UpdateRoute))
 import Routes exposing (Route(QuestionRoute, TopicRoute, TopicsRoute), toPath)
 import Slug exposing (Slug)
-import Text
-import Topic exposing (Question, Topic)
+import Common.Views.Text as Text
+import Question.Model exposing (Question)
+import Topic.Model exposing (Topic)
 
 
 topicHeader : Topic -> Html Msg
@@ -38,6 +40,13 @@ tablet topic =
 mobile : Topic -> Html Msg
 mobile topic =
     topicPage (section [ class "dg-no-margins collection" ] (List.map (listItem topic) topic.questions)) topic
+
+
+view : Topic -> View Msg
+view topic =
+    { mobile = mobile topic
+    , tablet = tablet topic
+    }
 
 
 topicPage : Html Msg -> Topic -> Html Msg
