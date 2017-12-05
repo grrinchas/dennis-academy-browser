@@ -2,14 +2,9 @@ module Main exposing (..)
 
 import Common.Api exposing (fetchBrand)
 import Common.Model exposing (Brand, Responsive(Mobile, Tablet), View)
-import Common.Views.ErrorPage
-import Common.Views.LandingPage as LandingPage exposing (landingPage)
 import Common.Views.NotFoundPage
 import Common.Views.Pages
-import Html.Attributes exposing (style)
-import Common.Views.Layout as Layout
 import Common.Views.Loader as Loader
-import Common.Views.NavBar as NavBar
 import Navigation exposing (Location, load)
 import Messages exposing (..)
 import Html exposing (..)
@@ -18,16 +13,16 @@ import Navigation exposing (Location, newUrl)
 import Platform.Cmd exposing (batch)
 import User.Api
 import User.Model exposing (SignUpForm, User)
-import User.Views.Registration as Registration
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
 import Routes exposing (..)
 import Slug exposing (Slug)
 import Task
 import Topic.Api exposing (fetchAllTopics)
 import Topic.Model exposing (Topic)
-import UrlParser exposing (..)
 import Window exposing (Size, resizes)
 import Common.Views.Pages as Pages
+import Common.Views.NotFoundPage as NotFoundPage
+import Question.Model exposing (Question)
 
 
 main : Program Never Model Msg
@@ -53,6 +48,7 @@ type alias Model =
     , responsive : Responsive
     , signUpForm : SignUpForm
     , user : WebData User
+    , toast : String
     }
 
 
@@ -63,8 +59,9 @@ initialModel location =
     , location = location
     , window = Size 0 0
     , responsive = Mobile
-    , signUpForm = SignUpForm Nothing Nothing Nothing Nothing
+    , signUpForm = SignUpForm "Dennis" "nezinau1" "nezinau1" "dg@acou.com"
     , user = RemoteData.NotAsked
+    , toast = ""
     }
 
 
@@ -85,21 +82,24 @@ view model =
 
 page : Model -> View Msg
 page model =
-    case parseLocation model.location <| RemoteData.withDefault [] model.topics of
+    case parseLocation model.location of
         HomeRoute ->
-            Pages.landing model.brand
+            map Pages.landing model.brand
 
         TopicsRoute ->
-            Pages.topics model.brand model.topics
+            map2 Pages.topics model.brand model.topics
 
         TopicRoute id ->
-            Pages.topic id model.brand
+            RemoteData.map (findTopic id) model.topics
+                |> map2 Pages.topic model.brand
 
         QuestionRoute topic question ->
-            Pages.question topic question model.brand
+            RemoteData.map (findQuestion question) model.topics
+                |> RemoteData.append (RemoteData.map (findTopic topic) model.topics)
+                |> map2 Pages.question model.brand
 
         SignUpRoute ->
-            Pages.signUp model.user
+            Pages.signUp model.user model.signUpForm
 
         LoginRoute ->
             Pages.login
@@ -108,7 +108,20 @@ page model =
             Pages.emptyPage
 
         NotFoundRoute ->
-            Common.Views.NotFoundPage.view
+            NotFoundPage.view
+
+
+findTopic : Slug -> List Topic -> Maybe Topic
+findTopic id =
+    List.head << List.filter (\topic -> topic.slug == id)
+
+
+findQuestion : Slug -> List Topic -> Maybe Question
+findQuestion id topics =
+    List.map Topic.Model.questions topics
+        |> List.concat
+        |> List.filter (\question -> question.slug == id)
+        |> List.head
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -133,29 +146,30 @@ update msg model =
             ( { model | user = response }, Cmd.none )
 
         OnSignUpForm form ->
-            let
-                oldForm =
-                    model.signUpForm
-            in
-                case form of
-                    Username text ->
-                        ( { model | signUpForm = { oldForm | username = Just text } }, Cmd.none )
+            onSignUpForm form model.signUpForm model
+        DisplayToast message ->
+            ( { model | toast = message }, Cmd.none )
 
-                    Email text ->
-                        ( { model | signUpForm = { oldForm | email = Just text } }, Cmd.none )
 
-                    Password text ->
-                        ( { model | signUpForm = { oldForm | password = Just text } }, Cmd.none )
 
-                    Repeat text ->
-                        ( { model | signUpForm = { oldForm | repeat = Just text } }, Cmd.none )
+onSignUpForm : Form -> SignUpForm -> Model -> ( Model, Cmd Msg )
+onSignUpForm msg oldForm model =
+    case msg of
+        Username text ->
+            ( { model | signUpForm = { oldForm | username = text } }, Cmd.none )
 
-                    Submit ->
-                        let
-                            _ =
-                                Debug.log "" model.signUpForm.username
-                        in
-                            ( model, User.Api.signUp model.signUpForm )
+        Email text ->
+            ( { model | signUpForm = { oldForm | email = text } }, Cmd.none )
+
+        Password text ->
+            ( { model | signUpForm = { oldForm | password = text } }, Cmd.none )
+
+        Repeat text ->
+            ( { model | signUpForm = { oldForm | repeat = text } }, Cmd.none )
+
+        Submit user ->
+            ( { model | user = RemoteData.Loading, signUpForm = SignUpForm "" "" "" "" }, Maybe.withDefault Cmd.none <| Maybe.map User.Api.signUp user )
+
 
 
 onWindowChange : Model -> Size -> ( Model, Cmd Msg )
@@ -164,3 +178,35 @@ onWindowChange model size =
         ( { model | responsive = Mobile }, Cmd.none )
     else
         ( { model | responsive = Tablet }, Cmd.none )
+
+
+map : (a -> View m) -> WebData a -> View m
+map view response =
+    case response of
+        RemoteData.NotAsked ->
+            { mobile = text "", tablet = text "" }
+
+        RemoteData.Loading ->
+            { mobile = Loader.loading, tablet = Loader.loading }
+
+        RemoteData.Success data ->
+            view data
+
+        RemoteData.Failure error ->
+            { mobile = text (toString error), tablet = text (toString error) }
+
+
+map2 : (a -> b -> View m) -> WebData a -> WebData b -> View m
+map2 f a b =
+    case a of
+        RemoteData.NotAsked ->
+            { mobile = text "", tablet = text "" }
+
+        RemoteData.Loading ->
+            { mobile = Loader.loading, tablet = Loader.loading }
+
+        RemoteData.Success data ->
+            map (f data) b
+
+        RemoteData.Failure error ->
+            { mobile = text (toString error), tablet = text (toString error) }

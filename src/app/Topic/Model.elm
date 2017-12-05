@@ -23,17 +23,17 @@ findTopic title =
     List.head << List.filter (\topic -> topic.title == title)
 
 
-findSlug : Slug -> List Topic -> Maybe Topic
-findSlug slug =
-    List.head << List.filter (\topic -> topic.slug == slug)
+contains : Slug -> List Topic -> Bool
+contains slug =
+    List.isEmpty << List.filter (\topic -> topic.slug == slug)
 
 
-findQuestion : Slug -> List Topic -> Maybe Question
-findQuestion slug topics =
+containsQuestion : Slug -> List Topic -> Bool
+containsQuestion slug topics =
     List.map questions topics
         |> List.concat
         |> List.filter (\question -> question.slug == slug)
-        |> List.head
+        |> List.isEmpty
 
 
 questions : Topic -> List Question

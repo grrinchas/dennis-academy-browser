@@ -60,7 +60,7 @@ topicPage questions topic =
 
 listItem : Topic -> Question -> Html msg
 listItem topic question =
-    a [ class "collection-item", href <| toPath <| QuestionRoute topic question ]
+    a [ class "collection-item", href <| toPath <| QuestionRoute topic.slug question.slug ]
         [ span [ class "dg-text-black" ] [ text <| question.title ++ "?" ]
         ]
 
@@ -68,7 +68,7 @@ listItem topic question =
 questionListCard : Topic -> Question -> Html Msg
 questionListCard topic question =
     div [ class "col m6 xl4" ]
-        [ div [ class "card small hoverable dg-center", onClick <| UpdateRoute <| QuestionRoute topic question ]
+        [ div [ class "card small hoverable dg-center", onClick <| UpdateRoute <| QuestionRoute topic.slug question.slug ]
             [ div [ class "card-content" ]
                 [ span [ class "card-title center-align" ] [ text <| question.title ++ "?" ]
                 ]
@@ -78,7 +78,7 @@ questionListCard topic question =
 
 toTopicsPage : Html msg
 toTopicsPage =
-    a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| toPath TopicsRoute ] [ appsIcon ]
+    a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| Routes.toPath TopicsRoute ] [ appsIcon ]
 
 
 appsIcon : Html msg
@@ -98,7 +98,7 @@ toPreviousTopic topic =
 
 navLink : List (Html msg) -> Slug -> Html msg
 navLink content slug =
-    a [ href <| Routes.toTopic slug, class "btn dg-topic-nav-btn dg-primary-colour" ]
+    a [ href <| Routes.toPath <| TopicRoute slug, class "btn dg-topic-nav-btn dg-primary-colour" ]
         content
 
 

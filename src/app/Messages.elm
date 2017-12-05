@@ -5,7 +5,7 @@ import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 import Routes exposing (Route)
 import Topic.Model exposing (Topic)
-import User.Model exposing (User)
+import User.Model exposing (User, ValidUser)
 import Window exposing (Size)
 
 
@@ -14,7 +14,7 @@ type Form
     | Email String
     | Password String
     | Repeat String
-    | Submit
+    | Submit (Maybe ValidUser)
 
 
 type Msg
@@ -25,3 +25,4 @@ type Msg
     | OnLocationChange Location
     | OnUserSignUp (WebData User)
     | OnSignUpForm Form
+    | DisplayToast String

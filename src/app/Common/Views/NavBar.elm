@@ -44,7 +44,7 @@ toSignUpPage brand =
 
 toTopicsPage : Html msg
 toTopicsPage =
-    a [ class "button-collapse show-on-large", href <| toPath TopicsRoute ] [ appsIcon ]
+    a [ class "button-collapse show-on-large", href <| Routes.toPath TopicsRoute ] [ appsIcon ]
 
 
 appsIcon : Html msg

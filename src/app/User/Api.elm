@@ -5,15 +5,14 @@ import Http exposing (jsonBody)
 import Messages exposing (Msg)
 import RemoteData
 import User.Decoders exposing (decodeUser)
-import User.Model exposing (SignUpForm)
+import User.Model exposing (SignUpForm, ValidUser)
 
 
 signUpUrl : String
 signUpUrl =
     "https://nookit.eu.auth0.com/dbconnections/signup"
 
-
-signUp : SignUpForm -> Cmd Msg
+signUp : ValidUser -> Cmd Msg
 signUp user =
     Http.post signUpUrl (jsonBody <| encodeUser user) decodeUser
         |> RemoteData.sendRequest

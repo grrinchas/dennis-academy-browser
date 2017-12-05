@@ -21,7 +21,7 @@ mobile topics =
 
 listItem : Topic -> Html msg
 listItem topic =
-    a [ href <| Routes.toPath <| TopicRoute topic, class "collection-item avatar" ]
+    a [ href <| Routes.toPath <| TopicRoute topic.slug, class "collection-item avatar" ]
         [ img [ src topic.icon, class "circle", style [ ( "background-color", topic.colour ) ] ] []
         , span [ class "title dg-text-black" ] [ text topic.title ]
         , p [ class "dg-text-black" ] [ text topic.description ]
@@ -45,15 +45,15 @@ listCard : Topic -> Html Msg
 listCard topic =
     div [ class "col m6 xl4" ]
         [ div [ class "card medium hoverable" ]
-            [ div [ class "card-image", style [ ( "background-color", topic.colour ) ], onClick <| UpdateRoute <| TopicRoute topic ]
+            [ div [ class "card-image", style [ ( "background-color", topic.colour ) ], onClick <| UpdateRoute <| TopicRoute topic.slug ]
                 [ img [ src topic.icon, class "dg-topic-img" ] []
                 ]
-            , div [ class "card-content", onClick <| UpdateRoute <| TopicRoute <| topic ]
+            , div [ class "card-content", onClick <| UpdateRoute <| TopicRoute <| topic.slug ]
                 [ span [ class "card-title" ] [ text topic.title ]
                 , p [ class "text-black" ] [ text topic.description ]
                 ]
             , div [ class "card-action" ]
-                [ a [ href <| Routes.toPath <| TopicRoute topic ] [ Text.readMore ]
+                [ a [ href <| Routes.toPath <| TopicRoute topic.slug ] [ Text.readMore ]
                 ]
             ]
         ]

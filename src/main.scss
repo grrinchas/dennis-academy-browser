@@ -3,6 +3,8 @@ $roboto-font-path: "~materialize-css/dist/fonts/roboto/";
 
 $body-bg-color: #f7f7f7;
 $text-color: rgba(0, 0, 0, 0.87);
+$success-color: color("green", "base") !default;
+$error-color: color("red", "base") !default;
 
 html, body, #app {
     height: 100%;
@@ -20,6 +22,42 @@ body {
     width: 200px;
 }
 
+.dg-input {
+    margin-bottom: 3px !important;
+}
+
+.dg-not-valid, .dg-not-valid:focus {
+    border-bottom: 1px solid $error-color !important;
+    box-shadow: 0 1px 0 0 $error-color !important;
+}
+
+.dg-valid, .dg-valid:focus {
+    border-bottom: 1px solid $success-color !important;
+    box-shadow: 0 1px 0 0 $success-color !important;
+}
+
+.dg-response-error {
+    @extend .section;
+    @extend .valign-wrapper;
+    padding-left: 24px;
+    padding-right: 24px;
+    background-color: $error-color;
+    color: white;
+    div, i {
+        display: inline-block !important;
+    }
+    i {
+        padding-right: 18px;
+    }
+
+}
+
+.dg-data-error {
+    color: $error-color;
+    font-size: small;
+    margin-left: 42px;
+}
+
 .dg-text-black {
     color: $text-color;
 }
@@ -35,7 +73,6 @@ body {
 .dg-text-bold {
     font-weight: bold !important;
 }
-
 
 .dg-loading {
     display: block;
@@ -72,7 +109,7 @@ body {
 }
 
 .dg-no-margins {
-    margin: 0!important;
+    margin: 0 !important;
 }
 
 .dg-right {
@@ -87,8 +124,6 @@ body {
         }
     }
 }
-
-
 
 .dg-topic-nav-btn {
     margin-right: 3px;
@@ -109,9 +144,6 @@ body {
     }
 }
 
-
-
-
 @media screen and (min-width: 600px) {
 
     .dg-question {
@@ -127,12 +159,12 @@ body {
         height: 100%;
         @extend .dg-primary-colour;
         .dg-reg-header {
-            background-color: $body-bg-color ;
+            background-color: $body-bg-color;
             color: $text-color;
         }
         .card {
 
-            background-color: $body-bg-color ;
+            background-color: $body-bg-color;
         }
         form {
             max-width: 450px;

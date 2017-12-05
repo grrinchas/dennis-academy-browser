@@ -7,7 +7,7 @@ import Html.Events exposing (onClick, onInput)
 import Messages exposing (..)
 import Routes exposing (Route(LoginRoute, SignUpRoute), toPath)
 import Common.Views.Text as Text
-import User.Model exposing (User)
+import User.Model exposing (SignUpForm, User)
 
 
 user : User -> Html msg
@@ -74,25 +74,6 @@ registration btn header body actions =
             ]
         ]
 
-
-signUpPage : Html Msg
-signUpPage =
-    registration (a [ class "btn dg-primary-colour", onClick <| OnSignUpForm Submit ] [ text "SignUp" ])
-        "Sign up with"
-        [ inputField "person" <| input [ placeholder "Person", type_ "text", onInput (\x -> OnSignUpForm <| Username x) ] []
-        , inputField "email" <| input [ placeholder "Email", type_ "email", onInput (\x -> OnSignUpForm <| Email x) ] []
-        , inputField "lock" <| input [ placeholder "Password", type_ "password", onInput (\x -> OnSignUpForm <| Password x) ] []
-        , inputField "lock" <| input [ placeholder "Repeat Password", type_ "password", onInput (\x -> OnSignUpForm <| Repeat x) ] []
-        ]
-        [ a [ href <| toPath LoginRoute ] [ Text.alreadyHaveAccount ]
-        ]
-
-
-signUpView : View Msg
-signUpView =
-    { mobile = signUpPage, tablet = signUpPage }
-
-
 loginView : View Msg
 loginView =
     { mobile = loginPage, tablet = loginPage }
@@ -119,3 +100,5 @@ inputField icon input =
         [ i [ class "material-icons prefix" ] [ text icon ]
         , input
         ]
+
+

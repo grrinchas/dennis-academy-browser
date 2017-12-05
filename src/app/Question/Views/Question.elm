@@ -80,12 +80,12 @@ mobile topic question =
 
 toTopicsPage : Html msg
 toTopicsPage =
-    a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| toPath TopicsRoute ] [ appsIcon ]
+    a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| Routes.toPath TopicsRoute ] [ appsIcon ]
 
 
 toQuestionsPage : Topic -> Html msg
 toQuestionsPage topic =
-    a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| toPath <| TopicRoute topic ] [ upIcon ]
+    a [ class "btn dg-primary-colour dg-topic-nav-btn", href <| Routes.toPath <| TopicRoute topic.slug ] [ upIcon ]
 
 
 toNextQuestion : Topic -> Question -> Html msg
@@ -100,7 +100,7 @@ toPreviousQuestion topic question =
 
 navLink : List (Html msg) -> Slug -> Slug -> Html msg
 navLink content topic question =
-    a [ href <| Routes.toQuestion topic question, class "btn dg-topic-nav-btn dg-primary-colour" ]
+    a [ href <| Routes.toPath <| QuestionRoute topic question, class "btn dg-topic-nav-btn dg-primary-colour" ]
         content
 
 

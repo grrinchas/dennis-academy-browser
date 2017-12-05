@@ -5,7 +5,6 @@ import Common.Views.Loader as Loader
 import Common.Views.NavBar as NavBar
 import Common.Views.Layout as Layout
 import Common.Views.NotFoundPage as NotFoundPage
-import Common.Views.LandingPage as LandingPage
 import User.Views.Registration as Registration
 import Question.Model exposing (Question)
 import Topic.Views.Topics as Topics
@@ -14,9 +13,9 @@ import Question.Views.Question as Question
 import Html exposing (..)
 import Messages exposing (..)
 import RemoteData exposing (WebData)
-import Slug exposing (Slug)
 import Topic.Model exposing (Topic)
-import User.Model exposing (User)
+import User.Model exposing (SignUpForm, User)
+import User.Views.SignUp as UserView
 
 
 emptyPage : View msg
@@ -26,97 +25,58 @@ emptyPage =
     }
 
 
-landing : WebData Brand -> View Msg
+landing : Brand -> View Msg
 landing brand =
-    map NavBar.view brand
+    NavBar.view brand
 
 
-map : (a -> View m) -> WebData a -> View m
-map view response =
-    case response of
-        RemoteData.NotAsked ->
-            { mobile = text "", tablet = text "" }
-
-        RemoteData.Loading ->
-            { mobile = Loader.loading, tablet = Loader.loading }
-
-        RemoteData.Success data ->
-            view data
-
-        RemoteData.Failure error ->
-            { mobile = text (toString error), tablet = text (toString error) }
-
-
-map2 : (a -> b -> View m) -> WebData a -> WebData b -> View m
-map2 f a b =
-    case a of
-        RemoteData.NotAsked ->
-            { mobile = text "", tablet = text "" }
-
-        RemoteData.Loading ->
-            { mobile = Loader.loading, tablet = Loader.loading }
-
-        RemoteData.Success data ->
-            map (f data) b
-
-        RemoteData.Failure error ->
-            { mobile = text (toString error), tablet = text (toString error) }
-
-
-topicsPage : Brand -> List Topic -> View Msg
-topicsPage b t =
-    Layout.headerMain (NavBar.view b) (Topics.view t)
-
-
-topics : WebData Brand -> WebData (List Topic) -> View Msg
+topics : Brand -> List Topic -> View Msg
 topics brand topics =
-    map2 topicsPage brand topics
+    Layout.headerMain (NavBar.view brand) (Topics.view topics)
 
 
-mapNotFound : (a -> View Msg) -> Maybe a -> View Msg
-mapNotFound view maybe =
+topic : Brand -> Maybe Topic -> View Msg
+topic brand maybe =
     case maybe of
-        Just a ->
-            view a
+        Just topic ->
+            Layout.noContainer (NavBar.view brand) (Topic.view topic)
 
         Nothing ->
             NotFoundPage.view
 
 
-mapNotFound2 : (a -> b -> View Msg) -> Maybe a -> Maybe b -> View Msg
-mapNotFound2 view ma mb =
-    case ma of
-        Just a ->
-            mapNotFound (view a) mb
+question : Brand -> ( Maybe Topic, Maybe Question ) -> View Msg
+question brand maybeData =
+    case maybeData of
+        ( Just topic, Just question ) ->
+            Layout.noContainer (NavBar.view brand) (Question.view topic question)
 
-        Nothing ->
+        _ ->
             NotFoundPage.view
 
 
-topic : Topic -> WebData Brand -> View Msg
-topic topic brand =
-    Topic.view topic
-
-
-question : Topic -> Question -> WebData Brand -> View Msg
-question topic question brand =
-    Question.view topic question
-
-
-signUp : WebData User -> View Msg
-signUp user =
+signUp : WebData User -> SignUpForm -> View Msg
+signUp user form =
     case user of
         RemoteData.NotAsked ->
-            Registration.signUpView
+            let
+                _ =
+                    Debug.log "" "not asked"
+            in
+                UserView.signUpView form Nothing
 
         RemoteData.Loading ->
-            { mobile = Loader.loading, tablet = Loader.loading }
+            let
+                _ =
+                    Debug.log "" "loading"
+            in
+                { mobile = Loader.loading, tablet = Loader.loading }
 
         RemoteData.Success user ->
             Registration.userView user
 
         RemoteData.Failure error ->
-            { mobile = text (toString error), tablet = text (toString error) }
+            UserView.errorView error form
 
 
 login : View Msg

@@ -1,5 +1,6 @@
 module Routes exposing (..)
 
+import Common.Model exposing (Brand)
 import Navigation exposing (Location)
 import Question.Model exposing (Question)
 import RemoteData exposing (WebData)
@@ -11,17 +12,17 @@ import UrlParser exposing (..)
 type Route
     = HomeRoute
     | TopicsRoute
-    | TopicRoute Topic
-    | QuestionRoute Topic Question
+    | TopicRoute Slug
+    | QuestionRoute Slug Slug
     | SignUpRoute
     | LoginRoute
     | VerifyEmailRoute
     | NotFoundRoute
 
 
-parseLocation : Location -> List Topic -> Route
-parseLocation location topics =
-    case (parseHash (matchers topics) location) of
+parseLocation : Location -> Route
+parseLocation location =
+    case parseHash matchers location of
         Just route ->
             route
 
@@ -29,51 +30,29 @@ parseLocation location topics =
             NotFoundRoute
 
 
-matchers : List Topic -> Parser (Route -> a) a
-matchers topics =
+matchers : Parser (Route -> a) a
+matchers =
     oneOf
         [ map HomeRoute top
         , map TopicsRoute (s "topics")
-        , map TopicRoute (s "topics" </> topicMatcher topics)
-        , map QuestionRoute (s "topics" </> topicMatcher topics </> questionMatcher topics)
+        , map TopicRoute (s "topics" </> slugMatcher)
+        , map QuestionRoute (s "topics" </> slugMatcher </> slugMatcher)
         , map SignUpRoute (s "signup")
         , map LoginRoute (s "login")
         , map VerifyEmailRoute (s "verify-email")
         ]
 
 
-topicMatcher : List Topic -> Parser (Topic -> a) a
-topicMatcher topics =
+slugMatcher : Parser (Slug -> a) a
+slugMatcher =
     custom "TOPIC_TITLE" <|
         \segment ->
-            case Slug.generate segment |> Maybe.andThen (\x -> Topic.findSlug x topics) of
-                Just topic ->
-                    Ok topic
+            case Slug.generate segment of
+                Just slug ->
+                    Ok slug
 
                 Nothing ->
                     Err "Malformed Path"
-
-
-questionMatcher : List Topic -> Parser (Question -> a) a
-questionMatcher topics =
-    custom "TOPIC_TITLE" <|
-        \segment ->
-            case Slug.generate segment |> Maybe.andThen (\x -> Topic.findQuestion x topics) of
-                Just topic ->
-                    Ok topic
-
-                Nothing ->
-                    Err "Malformed Path"
-
-
-toTopic : Slug -> String
-toTopic slug =
-    "#topics/" ++ Slug.toString slug
-
-
-toQuestion : Slug -> Slug -> String
-toQuestion topic question =
-    "#topics/" ++ Slug.toString topic ++ "/" ++ Slug.toString question
 
 
 toPath : Route -> String
@@ -86,10 +65,10 @@ toPath route =
             "#topics"
 
         TopicRoute topic ->
-            "#topics/" ++ Slug.toString topic.slug
+            "#topics/" ++ Slug.toString topic
 
         QuestionRoute topic question ->
-            "#topics/" ++ Slug.toString topic.slug ++ "/" ++ Slug.toString question.slug
+            "#topics/" ++ Slug.toString topic ++ "/" ++ Slug.toString question
 
         SignUpRoute ->
             "#signup"
