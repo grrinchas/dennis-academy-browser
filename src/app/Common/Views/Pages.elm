@@ -4,7 +4,7 @@ import Common.Model exposing (Brand, Responsive(Mobile, Tablet), View)
 import Common.Views.Loader as Loader
 import Common.Views.NavBar as NavBar
 import Common.Views.Layout as Layout
-import Common.Views.NotFoundPage as NotFoundPage
+import Common.Views.ErrorPage as ErrorPage
 import User.Views.Registration as Registration
 import Question.Model exposing (Question)
 import Topic.Views.Topics as Topics
@@ -41,8 +41,7 @@ topic brand maybe =
         Just topic ->
             Layout.noContainer (NavBar.view brand) (Topic.view topic)
 
-        Nothing ->
-            NotFoundPage.view
+        Nothing -> notFound
 
 
 question : Brand -> ( Maybe Topic, Maybe Question ) -> View Msg
@@ -51,19 +50,13 @@ question brand maybeData =
         ( Just topic, Just question ) ->
             Layout.noContainer (NavBar.view brand) (Question.view topic question)
 
-        _ ->
-            NotFoundPage.view
+        _ -> notFound
 
 
 signUp : WebData User -> SignUpForm -> View Msg
 signUp user form =
     case user of
-        RemoteData.NotAsked ->
-            let
-                _ =
-                    Debug.log "" "not asked"
-            in
-                UserView.signUpView form Nothing
+        RemoteData.NotAsked -> UserView.signUpView form Nothing
 
         RemoteData.Loading ->
             let
@@ -82,3 +75,7 @@ signUp user form =
 login : View Msg
 login =
     Registration.loginView
+
+
+notFound : View Msg
+notFound = ErrorPage.notFound

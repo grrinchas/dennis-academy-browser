@@ -2,8 +2,6 @@ module Main exposing (..)
 
 import Common.Api exposing (fetchBrand)
 import Common.Model exposing (Brand, Responsive(Mobile, Tablet), View)
-import Common.Views.NotFoundPage
-import Common.Views.Pages
 import Common.Views.Loader as Loader
 import Navigation exposing (Location, load)
 import Messages exposing (..)
@@ -21,7 +19,6 @@ import Topic.Api exposing (fetchAllTopics)
 import Topic.Model exposing (Topic)
 import Window exposing (Size, resizes)
 import Common.Views.Pages as Pages
-import Common.Views.NotFoundPage as NotFoundPage
 import Question.Model exposing (Question)
 
 
@@ -107,8 +104,8 @@ page model =
         VerifyEmailRoute ->
             Pages.emptyPage
 
-        NotFoundRoute ->
-            NotFoundPage.view
+        NotFoundRoute -> Pages.notFound
+
 
 
 findTopic : Slug -> List Topic -> Maybe Topic
@@ -147,6 +144,7 @@ update msg model =
 
         OnSignUpForm form ->
             onSignUpForm form model.signUpForm model
+
         DisplayToast message ->
             ( { model | toast = message }, Cmd.none )
 
