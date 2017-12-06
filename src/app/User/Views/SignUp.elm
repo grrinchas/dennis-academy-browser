@@ -46,78 +46,97 @@ thirdParty =
         ]
 
 
+signUpHeader : Html msg
+signUpHeader =
+    div [ class "dg-center dg-nav-height card-title dg-reg-header" ] [ span [] [ text "Sign up with" ] ]
+
+
+inputIcon : String -> Html msg
+inputIcon str =
+    i [ class "material-icons prefix" ] [ text str ]
+
+
+errorResponse : String -> Html msg
+errorResponse response =
+    div [ class "dg-response-error" ] [ i [ class "material-icons prefix " ] [ text "error_outline" ], div [] [ text response ] ]
+
+
+validStyle : Bool -> Attribute msg
+validStyle bool =
+    classList [ ( "dg-valid", bool ), ( "dg-not-valid", not bool ) ]
+
+
+validMsg : String -> Html msg
+validMsg msg =
+    div [ class "dg-data-error" ] [ text msg ]
+
+
 signUpPage : SignUpForm -> Maybe String -> Html Msg
 signUpPage form response =
     div [ class "dg-center dg-registration" ]
         [ Html.form []
-            [ div [ class "dg-center dg-nav-height card-title dg-reg-header" ]
-                [ span [] [ text "Sign up with" ]
-                ]
-            , if response == Nothing then
-                div [ class "divider" ] []
-              else
-                div [ class "dg-response-error" ] [ i [ class "material-icons prefix " ] [ text "error_outline" ], div [] [ text <| Maybe.withDefault "" response ] ]
-            , div [ class "divider" ] []
+            [ signUpHeader
+            , Maybe.map errorResponse response |> Maybe.withDefault (div [ class "divider" ] [])
             , div [ class "card-content" ]
                 [ thirdParty
                 , span [ class "dg-text-grey dg-text-bold card-title center-align" ] [ Text.or ]
                 , div [ class "input-field" ]
-                    [ i [ class "material-icons prefix" ] [ text "person" ]
+                    [ inputIcon "person"
                     , input
                         [ type_ "text"
                         , placeholder "Username"
                         , value form.username
                         , maxlength 30
                         , onInput (\x -> OnSignUpForm <| Username x)
-                        , classList [ ( "dg-valid", isValid <| username form.username ), ( "dg-not-valid", not <| isValid <| username form.username ) ]
+                        , username form.username |> isValid |> validStyle
                         , class "dg-input"
                         ]
                         []
-                    , div [ class "dg-data-error" ] [ text <| validateUsername form.username ]
+                    , validMsg <| validateUsername form.username
                     ]
                 , div [ class "input-field" ]
-                    [ i [ class "material-icons prefix" ] [ text "email" ]
+                    [ inputIcon "email"
                     , input
                         [ type_ "email"
                         , placeholder "Email"
                         , value form.email
                         , onInput (\x -> OnSignUpForm <| Email x)
-                        , classList [ ( "dg-valid", isValid <| email form.email ), ( "dg-not-valid", not <| isValid <| email form.email ) ]
+                        , email form.email |> isValid |> validStyle
                         , class "dg-input"
                         ]
                         []
-                    , div [ class "dg-data-error" ] [ text <| validateEmail form.email ]
+                    , validMsg <| validateEmail form.email
                     ]
                 , div [ class "input-field" ]
-                    [ i [ class "material-icons prefix" ] [ text "lock" ]
+                    [ inputIcon "lock"
                     , input
                         [ type_ "password"
                         , placeholder "Password"
                         , value form.password
                         , onInput (\x -> OnSignUpForm <| Password x)
-                        , classList [ ( "dg-valid", isValid <| password form.password ), ( "dg-not-valid", not <| isValid <| password form.password ) ]
+                        , password form.password |> isValid |> validStyle
                         , class "dg-input"
                         ]
                         []
-                    , div [ class "dg-data-error" ] [ text <| validatePassword form.password ]
+                    , validMsg <| validatePassword form.password
                     ]
                 , div [ class "input-field" ]
-                    [ i [ class "material-icons prefix" ] [ text "lock" ]
+                    [ inputIcon "lock"
                     , input
                         [ type_ "password"
                         , placeholder "Password Repeat"
                         , value form.repeat
                         , onInput (\x -> OnSignUpForm <| Repeat x)
-                        , classList [ ( "dg-valid", isValid <| repeatPassword form.password form.repeat ), ( "dg-not-valid", not <| isValid <| repeatPassword form.password form.repeat ) ]
+                        , (form.password == form.repeat && isValid (password form.repeat)) |> validStyle
                         , class "dg-input"
                         ]
                         []
-                    , div [ class "dg-data-error" ] [ text <| validateRepeat form.password form.repeat ]
+                    , validMsg <| validateRepeat form.password form.repeat
                     ]
                 , div [ class "valign-wrapper" ]
                     [ a
                         [ class "btn dg-primary-colour dg-right "
-                        , classList [ ( "disabled", allValid form ) ]
+                        , classList [ ( "disabled", not <| validForm form ) ]
                         , onClick <| OnSignUpForm <| Submit <| validUser form
                         ]
                         [ text "SignUp" ]
@@ -128,32 +147,6 @@ signUpPage form response =
                 ]
             ]
         ]
-
-
-errorView : Http.Error -> SignUpForm -> View Msg
-errorView err form =
-    case err of
-        Http.BadStatus response ->
-            if response.status.code == 400 then
-                case Json.Decode.decodeString User.Decoders.decodeError response.body of
-                    Ok result ->
-                        case result.code of
-                            UsernameTaken ->
-                                signUpView form <| Just "Username is taken."
-
-                            EmailTaken ->
-                                signUpView form <| Just "Email is taken."
-
-                            _ ->
-                                signUpView form <| Just ("Response code is not recognised: " ++ response.body)
-
-                    Err msg ->
-                        signUpView form <| Just ("Json parsing has failed: " ++ msg)
-            else
-                signUpView form <| Just ("Response code is not recognised" ++ response.body)
-
-        _ ->
-            signUpView form <| Just "Serious error"
 
 
 validUser : SignUpForm -> Maybe ValidUser
@@ -167,24 +160,16 @@ isValid result =
     Result.toMaybe result |> (==) Nothing |> not
 
 
-allValid : SignUpForm -> Bool
-allValid form =
-    [ username form.username, email form.email, password form.password, repeatPassword form.password form.repeat ]
+validInputs : SignUpForm -> Bool
+validInputs form =
+    [ username form.username, email form.email, password form.password, password form.repeat ]
         |> List.map isValid
-        |> List.any ((==) False)
+        |> List.all ((==) True)
 
 
-validateRepeat : String -> String -> String
-validateRepeat pass repeat =
-    case repeatPassword pass repeat of
-        Err Empty ->
-            "Please enter."
-
-        Ok _ ->
-            String.fromChar (Char.fromCode 96)
-
-        _ ->
-            "Do not match."
+validForm : SignUpForm -> Bool
+validForm form =
+    form.password == form.repeat && validInputs form
 
 
 validatePassword : String -> String
@@ -201,6 +186,19 @@ validatePassword pass =
 
         _ ->
             String.fromChar (Char.fromCode 96)
+
+
+validateRepeat : String -> String -> String
+validateRepeat pass repeat =
+    case password repeat |> isValid of
+        True ->
+            if pass /= repeat then
+                "Do not match."
+            else
+                String.fromChar (Char.fromCode 96)
+
+        False ->
+            validatePassword repeat
 
 
 validateEmail : String -> String
@@ -235,3 +233,29 @@ validateUsername name =
 signUpView : SignUpForm -> Maybe String -> View Msg
 signUpView form response =
     { mobile = signUpPage form response, tablet = signUpPage form response }
+
+
+errorView : Http.Error -> SignUpForm -> View Msg
+errorView err form =
+    case err of
+        Http.BadStatus response ->
+            if response.status.code == 400 then
+                case Json.Decode.decodeString User.Decoders.decodeError response.body of
+                    Ok result ->
+                        case result.code of
+                            UsernameTaken ->
+                                signUpView form <| Just "Username is taken."
+
+                            EmailTaken ->
+                                signUpView form <| Just "Email is taken."
+
+                            _ ->
+                                signUpView form <| Just ("Response code is not recognised: " ++ response.body)
+
+                    Err msg ->
+                        signUpView form <| Just ("Json parsing has failed: " ++ msg)
+            else
+                signUpView form <| Just ("Response code is not recognised" ++ response.body)
+
+        _ ->
+            signUpView form <| Just "Serious error"
