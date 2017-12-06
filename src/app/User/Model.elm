@@ -1,4 +1,4 @@
-module User.Model exposing (Valid, SignUpForm, User, ErrorResponse, ValidUser, Error(..), repeatPassword, username, password, email, toString)
+module User.Model exposing (Valid, SignUpForm, User, ErrorResponse, ValidUser, Error(..), initialSignUp, username, password, email, toString)
 
 import Common.Model exposing (..)
 import Regex exposing (Regex)
@@ -24,10 +24,10 @@ type alias ValidUser =
 
 
 type alias SignUpForm =
-    { username : String
-    , password : String
-    , repeat : String
-    , email : String
+    { username : Maybe String
+    , password : Maybe String
+    , repeat : Maybe String
+    , email : Maybe String
     }
 
 
@@ -42,54 +42,65 @@ type alias User =
 type Error
     = Empty
     | WrongSize
+    | NotEntered
     | DoNotMatch
     | UsernameTaken
     | EmailTaken
     | CatchAll
 
 
-repeatPassword : String -> String -> Result Error Valid
-repeatPassword pass repeat =
-    if String.isEmpty repeat then
-        Err Empty
-    else if (pass /= repeat) then
-        Err DoNotMatch
-    else
-        Ok (Valid repeat)
+initialSignUp : SignUpForm
+initialSignUp =
+    SignUpForm Nothing Nothing Nothing Nothing
 
 
-password : String -> Result Error Valid
-password pass =
-    if String.isEmpty pass then
-        Err Empty
-    else if String.length pass < 6 then
-        Err WrongSize
-    else if not <| Regex.contains (Regex.regex "\\d") pass then
-        Err DoNotMatch
-    else
-        Ok (Valid pass)
+password : Maybe String -> Result Error Valid
+password maybe =
+    case maybe of
+        Nothing ->
+            Err NotEntered
+
+        Just pass ->
+            if String.isEmpty pass then
+                Err Empty
+            else if String.length pass < 6 then
+                Err WrongSize
+            else if not <| Regex.contains (Regex.regex "\\d") pass then
+                Err DoNotMatch
+            else
+                Ok (Valid pass)
 
 
-username : String -> Result Error Valid
-username name =
-    if String.isEmpty name then
-        Err Empty
-    else if not <| Regex.contains (Regex.regex "^\\w*$") name then
-        Err DoNotMatch
-    else if String.length name > 30 then
-        Err WrongSize
-    else
-        Ok (Valid name)
+username : Maybe String -> Result Error Valid
+username maybe =
+    case maybe of
+        Nothing ->
+            Err NotEntered
+
+        Just name ->
+            if String.isEmpty name then
+                Err Empty
+            else if not <| Regex.contains (Regex.regex "^\\w*$") name then
+                Err DoNotMatch
+            else if String.length name > 30 then
+                Err WrongSize
+            else
+                Ok (Valid name)
 
 
-email : String -> Result Error Valid
-email email =
-    if String.isEmpty email then
-        Err Empty
-    else if not <| Regex.contains emailRegex email then
-        Err DoNotMatch
-    else
-        Ok (Valid email)
+email : Maybe String -> Result Error Valid
+email maybe =
+    case maybe of
+        Nothing ->
+            Err NotEntered
+
+        Just email ->
+            if String.isEmpty email then
+                Err Empty
+            else if not <| Regex.contains emailRegex email then
+                Err DoNotMatch
+            else
+                Ok (Valid email)
 
 
 emailRegex : Regex

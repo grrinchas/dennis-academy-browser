@@ -62,9 +62,29 @@ errorResponse response =
     div [ class "dg-response-error" ] [ i [ class "material-icons prefix " ] [ text "error_outline" ], div [] [ text response ] ]
 
 
-validStyle : Bool -> Attribute msg
-validStyle bool =
+validClass : Bool -> Attribute msg
+validClass bool =
     classList [ ( "dg-valid", bool ), ( "dg-not-valid", not bool ) ]
+
+
+validStyle : (Maybe String -> Result Error Valid) -> Maybe String -> Attribute msg
+validStyle f m =
+    case m of
+        Just _ ->
+            f m |> isValid |> validClass
+
+        Nothing ->
+            classList []
+
+
+validRepeatStyle : Maybe String -> Maybe String -> Attribute msg
+validRepeatStyle pass repeat =
+    case repeat of
+        Just _ ->
+            validClass <| (isValid <| password repeat) && pass == repeat
+
+        Nothing ->
+            classList []
 
 
 validMsg : String -> Html msg
@@ -86,10 +106,10 @@ signUpPage form response =
                     , input
                         [ type_ "text"
                         , placeholder "Username"
-                        , value form.username
+                        , value <| Maybe.withDefault "" form.username
                         , maxlength 30
                         , onInput (\x -> OnSignUpForm <| Username x)
-                        , username form.username |> isValid |> validStyle
+                        , validStyle username form.username
                         , class "dg-input"
                         ]
                         []
@@ -100,9 +120,9 @@ signUpPage form response =
                     , input
                         [ type_ "email"
                         , placeholder "Email"
-                        , value form.email
+                        , value <| Maybe.withDefault "" form.email
                         , onInput (\x -> OnSignUpForm <| Email x)
-                        , email form.email |> isValid |> validStyle
+                        , validStyle email form.email
                         , class "dg-input"
                         ]
                         []
@@ -113,9 +133,9 @@ signUpPage form response =
                     , input
                         [ type_ "password"
                         , placeholder "Password"
-                        , value form.password
+                        , value <| Maybe.withDefault "" form.password
                         , onInput (\x -> OnSignUpForm <| Password x)
-                        , password form.password |> isValid |> validStyle
+                        , validStyle password form.password
                         , class "dg-input"
                         ]
                         []
@@ -126,9 +146,9 @@ signUpPage form response =
                     , input
                         [ type_ "password"
                         , placeholder "Password Repeat"
-                        , value form.repeat
+                        , value <| Maybe.withDefault "" form.repeat
                         , onInput (\x -> OnSignUpForm <| Repeat x)
-                        , (form.password == form.repeat && isValid (password form.repeat)) |> validStyle
+                        , validRepeatStyle form.password form.repeat
                         , class "dg-input"
                         ]
                         []
@@ -150,15 +170,23 @@ signUpPage form response =
         ]
 
 
+isEntered : Maybe String -> Bool
+isEntered str =
+    str /= Nothing
+
+
 validUser : SignUpForm -> Maybe ValidUser
 validUser form =
-    Result.map3 ValidUser (username form.username) (email form.email) (password form.password)
-        |> Result.toMaybe
+    if form.repeat == form.password then
+        Result.map3 ValidUser (username form.username) (email form.email) (password form.password)
+            |> Result.toMaybe
+    else
+        Nothing
 
 
-isValid : Result a b -> Bool
-isValid result =
-    Result.toMaybe result |> (==) Nothing |> not
+isValid : Result Error Valid -> Bool
+isValid str =
+    Result.toMaybe str |> (/=) Nothing
 
 
 validInputs : SignUpForm -> Bool
@@ -173,7 +201,7 @@ validForm form =
     form.password == form.repeat && validInputs form
 
 
-validatePassword : String -> String
+validatePassword : Maybe String -> String
 validatePassword pass =
     case password pass of
         Err Empty ->
@@ -189,7 +217,7 @@ validatePassword pass =
             String.fromChar (Char.fromCode 96)
 
 
-validateRepeat : String -> String -> String
+validateRepeat : Maybe String -> Maybe String -> String
 validateRepeat pass repeat =
     case password repeat |> isValid of
         True ->
@@ -202,7 +230,7 @@ validateRepeat pass repeat =
             validatePassword repeat
 
 
-validateEmail : String -> String
+validateEmail : Maybe String -> String
 validateEmail e =
     case email e of
         Err Empty ->
@@ -215,7 +243,7 @@ validateEmail e =
             String.fromChar (Char.fromCode 96)
 
 
-validateUsername : String -> String
+validateUsername : Maybe String -> String
 validateUsername name =
     case username name of
         Err Empty ->

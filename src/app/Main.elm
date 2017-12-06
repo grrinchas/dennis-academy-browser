@@ -10,7 +10,7 @@ import Messages exposing (Msg(OnFetchTopics, OnLocationChange, UpdateRoute))
 import Navigation exposing (Location, newUrl)
 import Platform.Cmd exposing (batch)
 import User.Api
-import User.Model exposing (SignUpForm, User)
+import User.Model exposing (SignUpForm, User, initialSignUp)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
 import Routes exposing (..)
 import Slug exposing (Slug)
@@ -45,7 +45,6 @@ type alias Model =
     , responsive : Responsive
     , signUpForm : SignUpForm
     , user : WebData User
-    , toast : String
     }
 
 
@@ -56,9 +55,8 @@ initialModel location =
     , location = location
     , window = Size 0 0
     , responsive = Mobile
-    , signUpForm = SignUpForm "Dennis" "nezinau1" "nezinau1" "dg@acou.com"
+    , signUpForm = initialSignUp
     , user = RemoteData.NotAsked
-    , toast = ""
     }
 
 
@@ -145,27 +143,24 @@ update msg model =
         OnSignUpForm form ->
             onSignUpForm form model.signUpForm model
 
-        DisplayToast message ->
-            ( { model | toast = message }, Cmd.none )
-
 
 onSignUpForm : Form -> SignUpForm -> Model -> ( Model, Cmd Msg )
 onSignUpForm msg oldForm model =
     case msg of
         Username text ->
-            ( { model | signUpForm = { oldForm | username = text } }, Cmd.none )
+            ( { model | signUpForm = { oldForm | username = Just text } }, Cmd.none )
 
         Email text ->
-            ( { model | signUpForm = { oldForm | email = text } }, Cmd.none )
+            ( { model | signUpForm = { oldForm | email = Just text } }, Cmd.none )
 
         Password text ->
-            ( { model | signUpForm = { oldForm | password = text } }, Cmd.none )
+            ( { model | signUpForm = { oldForm | password = Just text } }, Cmd.none )
 
         Repeat text ->
-            ( { model | signUpForm = { oldForm | repeat = text } }, Cmd.none )
+            ( { model | signUpForm = { oldForm | repeat = Just text } }, Cmd.none )
 
         Submit user ->
-            ( { model | user = RemoteData.Loading, signUpForm = SignUpForm "" "" "" "" }, Maybe.withDefault Cmd.none <| Maybe.map User.Api.signUp user )
+            ( { model | user = RemoteData.Loading, signUpForm = initialSignUp }, Maybe.withDefault Cmd.none <| Maybe.map User.Api.signUp user )
 
 
 onWindowChange : Model -> Size -> ( Model, Cmd Msg )

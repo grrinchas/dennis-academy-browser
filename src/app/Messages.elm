@@ -25,4 +25,3 @@ type Msg
     | OnLocationChange Location
     | OnUserSignUp (WebData User)
     | OnSignUpForm Form
-    | DisplayToast String
