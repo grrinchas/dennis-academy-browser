@@ -130,9 +130,6 @@ body {
     @extend .dg-primary-colour;
     @extend .dg-text-grey;
 
-    i, span {
-        display: inline-block !important;
-    }
     span {
         font-weight: bold;
         font-size: 28px;
@@ -146,9 +143,6 @@ body {
         background-color: lighten($error-color, 30);
         @extend .z-depth-0;
         color: $error-color;
-
-
-
     }
 
 }

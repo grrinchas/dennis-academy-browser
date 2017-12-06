@@ -5,6 +5,7 @@ import Common.Views.Loader as Loader
 import Common.Views.NavBar as NavBar
 import Common.Views.Layout as Layout
 import Common.Views.ErrorPage as ErrorPage
+import Http exposing (Error(BadPayload, BadStatus, BadUrl, NetworkError, Timeout), Response)
 import User.Views.Registration as Registration
 import Question.Model exposing (Question)
 import Topic.Views.Topics as Topics
@@ -41,7 +42,8 @@ topic brand maybe =
         Just topic ->
             Layout.noContainer (NavBar.view brand) (Topic.view topic)
 
-        Nothing -> notFound
+        Nothing ->
+            notFound
 
 
 question : Brand -> ( Maybe Topic, Maybe Question ) -> View Msg
@@ -50,26 +52,29 @@ question brand maybeData =
         ( Just topic, Just question ) ->
             Layout.noContainer (NavBar.view brand) (Question.view topic question)
 
-        _ -> notFound
+        _ ->
+            notFound
 
 
 signUp : WebData User -> SignUpForm -> View Msg
 signUp user form =
     case user of
-        RemoteData.NotAsked -> UserView.signUpView form Nothing
+        RemoteData.NotAsked ->
+            UserView.signUpView form Nothing
 
         RemoteData.Loading ->
-            let
-                _ =
-                    Debug.log "" "loading"
-            in
-                { mobile = Loader.loading, tablet = Loader.loading }
+            { mobile = Loader.loading, tablet = Loader.loading }
 
         RemoteData.Success user ->
             Registration.userView user
 
-        RemoteData.Failure error ->
-            UserView.errorView error form
+        RemoteData.Failure err ->
+            case err of
+                BadStatus response ->
+                    UserView.errorView response form
+
+                _ ->
+                    error err
 
 
 login : View Msg
@@ -78,4 +83,24 @@ login =
 
 
 notFound : View Msg
-notFound = ErrorPage.notFound
+notFound =
+    ErrorPage.notFound
+
+
+error : Http.Error -> View msg
+error error =
+    case error of
+        BadUrl _ ->
+            ErrorPage.networkError
+
+        Timeout ->
+            ErrorPage.networkError
+
+        NetworkError ->
+            ErrorPage.networkError
+
+        BadStatus response ->
+            ErrorPage.userError response
+
+        BadPayload _ response ->
+            ErrorPage.userError response

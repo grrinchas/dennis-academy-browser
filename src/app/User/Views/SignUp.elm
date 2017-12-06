@@ -5,13 +5,14 @@ import Common.Model exposing (View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Http
+import Http exposing (Response)
 import Json.Decode
 import Messages exposing (..)
 import Routes exposing (Route(LoginRoute, SignUpRoute), toPath)
 import Common.Views.Text as Text
 import User.Decoders
 import User.Model exposing (..)
+import Common.Views.ErrorPage as ErrorPage
 
 
 user : User -> Html msg
@@ -235,27 +236,22 @@ signUpView form response =
     { mobile = signUpPage form response, tablet = signUpPage form response }
 
 
-errorView : Http.Error -> SignUpForm -> View Msg
-errorView err form =
-    case err of
-        Http.BadStatus response ->
-            if response.status.code == 400 then
-                case Json.Decode.decodeString User.Decoders.decodeError response.body of
-                    Ok result ->
-                        case result.code of
-                            UsernameTaken ->
-                                signUpView form <| Just "Username is taken."
+errorView : Response String -> SignUpForm -> View Msg
+errorView response form =
+    if response.status.code == 400 then
+        case Json.Decode.decodeString User.Decoders.decodeError response.body of
+            Ok result ->
+                case result.code of
+                    UsernameTaken ->
+                        signUpView form <| Just "Username is taken."
 
-                            EmailTaken ->
-                                signUpView form <| Just "Email is taken."
+                    EmailTaken ->
+                        signUpView form <| Just "Email is taken."
 
-                            _ ->
-                                signUpView form <| Just ("Response code is not recognised: " ++ response.body)
+                    _ ->
+                        ErrorPage.userError response
 
-                    Err msg ->
-                        signUpView form <| Just ("Json parsing has failed: " ++ msg)
-            else
-                signUpView form <| Just ("Response code is not recognised" ++ response.body)
-
-        _ ->
-            signUpView form <| Just "Serious error"
+            Err msg ->
+                ErrorPage.userError response
+    else
+        ErrorPage.userError response

@@ -32,4 +32,3 @@ brandQuery =
                         [ GraphQl.field "url" ]
                 ]
         ]
-

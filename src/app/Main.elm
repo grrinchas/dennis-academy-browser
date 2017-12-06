@@ -104,8 +104,8 @@ page model =
         VerifyEmailRoute ->
             Pages.emptyPage
 
-        NotFoundRoute -> Pages.notFound
-
+        NotFoundRoute ->
+            Pages.notFound
 
 
 findTopic : Slug -> List Topic -> Maybe Topic
@@ -149,7 +149,6 @@ update msg model =
             ( { model | toast = message }, Cmd.none )
 
 
-
 onSignUpForm : Form -> SignUpForm -> Model -> ( Model, Cmd Msg )
 onSignUpForm msg oldForm model =
     case msg of
@@ -167,7 +166,6 @@ onSignUpForm msg oldForm model =
 
         Submit user ->
             ( { model | user = RemoteData.Loading, signUpForm = SignUpForm "" "" "" "" }, Maybe.withDefault Cmd.none <| Maybe.map User.Api.signUp user )
-
 
 
 onWindowChange : Model -> Size -> ( Model, Cmd Msg )
@@ -191,7 +189,7 @@ map view response =
             view data
 
         RemoteData.Failure error ->
-            { mobile = text (toString error), tablet = text (toString error) }
+            Pages.error error
 
 
 map2 : (a -> b -> View m) -> WebData a -> WebData b -> View m
@@ -207,4 +205,4 @@ map2 f a b =
             map (f data) b
 
         RemoteData.Failure error ->
-            { mobile = text (toString error), tablet = text (toString error) }
+            Pages.error error
