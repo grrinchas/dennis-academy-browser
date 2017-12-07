@@ -2,7 +2,6 @@ module Main exposing (..)
 
 import Common.Api exposing (fetchBrand)
 import Common.Model exposing (Brand, Responsive(Mobile, Tablet), View)
-import Common.Views.Loader as Loader
 import Navigation exposing (Location, load)
 import Messages exposing (..)
 import Html exposing (..)
@@ -10,7 +9,7 @@ import Messages exposing (Msg(OnFetchTopics, OnLocationChange, UpdateRoute))
 import Navigation exposing (Location, newUrl)
 import Platform.Cmd exposing (batch)
 import User.Api
-import User.Model exposing (SignUpForm, User, initialSignUp)
+import User.Model exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
 import Routes exposing (..)
 import Slug exposing (Slug)
@@ -43,8 +42,9 @@ type alias Model =
     , location : Location
     , window : Window.Size
     , responsive : Responsive
-    , signUpForm : SignUpForm
+    , userForm : UserForm
     , user : WebData User
+    , token : WebData Token
     }
 
 
@@ -55,8 +55,9 @@ initialModel location =
     , location = location
     , window = Size 0 0
     , responsive = Mobile
-    , signUpForm = initialSignUp
+    , userForm = initialUserForm
     , user = RemoteData.NotAsked
+    , token = RemoteData.NotAsked
     }
 
 
@@ -94,13 +95,13 @@ page model =
                 |> map2 Pages.question model.brand
 
         SignUpRoute ->
-            Pages.signUp model.user model.signUpForm
+            Pages.signUp model.user model.userForm
 
         LoginRoute ->
-            Pages.login
+            Pages.login model.token model.userForm
 
         VerifyEmailRoute ->
-            Pages.emptyPage
+            Pages.verifyEmail model.user
 
         NotFoundRoute ->
             Pages.notFound
@@ -128,39 +129,61 @@ update msg model =
         OnFetchBrand response ->
             ( { model | brand = response }, Cmd.none )
 
+        OnLocationChange response ->
+            ( { model | location = response }, Cmd.none )
+
+        OnUserSignUp response ->
+            ( { model | user = response }, Cmd.none )
+
+        OnUserLogin response ->
+            ( { model | token = response }, Cmd.none )
+
         OnWindowChange size ->
             onWindowChange model size
 
         UpdateRoute route ->
             ( model, newUrl <| toPath route )
 
-        OnLocationChange location ->
-            ( { model | location = location }, Cmd.none )
-
-        OnUserSignUp response ->
-            ( { model | user = response }, Cmd.none )
-
         OnSignUpForm form ->
-            onSignUpForm form model.signUpForm model
+            onSignUpForm form model.userForm model
+
+        OnLoginForm form ->
+            onLoginForm form model.userForm model
 
 
-onSignUpForm : Form -> SignUpForm -> Model -> ( Model, Cmd Msg )
+onLoginForm : Form -> UserForm -> Model -> ( Model, Cmd Msg )
+onLoginForm msg oldForm model =
+    case msg of
+        Email text ->
+            ( { model | userForm = { oldForm | email = Just text } }, Cmd.none )
+
+        Password text ->
+            ( { model | userForm = { oldForm | password = Just text } }, Cmd.none )
+
+        Submit user ->
+            ( { model | token = RemoteData.Loading, userForm = initialUserForm }, Maybe.withDefault Cmd.none <| Maybe.map User.Api.login user )
+
+        _ ->
+            ( model, Cmd.none )
+
+
+onSignUpForm : Form -> UserForm -> Model -> ( Model, Cmd Msg )
 onSignUpForm msg oldForm model =
     case msg of
         Username text ->
-            ( { model | signUpForm = { oldForm | username = Just text } }, Cmd.none )
+            ( { model | userForm = { oldForm | username = Just text } }, Cmd.none )
 
         Email text ->
-            ( { model | signUpForm = { oldForm | email = Just text } }, Cmd.none )
+            ( { model | userForm = { oldForm | email = Just text } }, Cmd.none )
 
         Password text ->
-            ( { model | signUpForm = { oldForm | password = Just text } }, Cmd.none )
+            ( { model | userForm = { oldForm | password = Just text } }, Cmd.none )
 
         Repeat text ->
-            ( { model | signUpForm = { oldForm | repeat = Just text } }, Cmd.none )
+            ( { model | userForm = { oldForm | repeat = Just text } }, Cmd.none )
 
         Submit user ->
-            ( { model | user = RemoteData.Loading, signUpForm = initialSignUp }, Maybe.withDefault Cmd.none <| Maybe.map User.Api.signUp user )
+            ( { model | user = RemoteData.Loading, userForm = initialUserForm }, Maybe.withDefault Cmd.none <| Maybe.map User.Api.signUp user )
 
 
 onWindowChange : Model -> Size -> ( Model, Cmd Msg )
@@ -174,11 +197,11 @@ onWindowChange model size =
 map : (a -> View m) -> WebData a -> View m
 map view response =
     case response of
-        RemoteData.NotAsked ->
-            { mobile = text "", tablet = text "" }
+        NotAsked ->
+            Pages.emptyPage
 
-        RemoteData.Loading ->
-            { mobile = Loader.loading, tablet = Loader.loading }
+        Loading ->
+            Pages.emptyPage
 
         RemoteData.Success data ->
             view data
@@ -190,11 +213,11 @@ map view response =
 map2 : (a -> b -> View m) -> WebData a -> WebData b -> View m
 map2 f a b =
     case a of
-        RemoteData.NotAsked ->
-            { mobile = text "", tablet = text "" }
+        NotAsked ->
+            Pages.emptyPage
 
-        RemoteData.Loading ->
-            { mobile = Loader.loading, tablet = Loader.loading }
+        Loading ->
+            Pages.emptyPage
 
         RemoteData.Success data ->
             map (f data) b

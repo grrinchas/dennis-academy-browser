@@ -2,7 +2,8 @@ module User.Decoders exposing (..)
 
 import Json.Decode as Decoder
 import Json.Decode.Pipeline as Pipeline
-import User.Model exposing (Error(CatchAll, EmailTaken, UsernameTaken), ErrorResponse, User)
+import User.Model exposing (Token, User)
+import User.Validator exposing (..)
 
 
 decodeUser : Decoder.Decoder User
@@ -12,6 +13,14 @@ decodeUser =
         |> Pipeline.required "username" Decoder.string
         |> Pipeline.required "email" Decoder.string
         |> Pipeline.required "email_verified" Decoder.bool
+
+
+decodeToken : Decoder.Decoder Token
+decodeToken =
+    Pipeline.decode Token
+        |> Pipeline.required "access_token" Decoder.string
+        |> Pipeline.required "token_type" Decoder.string
+        |> Pipeline.required "expires_in" Decoder.int
 
 
 decodeError : Decoder.Decoder ErrorResponse

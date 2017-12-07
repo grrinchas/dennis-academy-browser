@@ -5,7 +5,8 @@ import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 import Routes exposing (Route)
 import Topic.Model exposing (Topic)
-import User.Model exposing (User, ValidUser)
+import User.Model exposing (Token, User)
+import User.Validator exposing (ValidUser)
 import Window exposing (Size)
 
 
@@ -24,4 +25,6 @@ type Msg
     | UpdateRoute Route
     | OnLocationChange Location
     | OnUserSignUp (WebData User)
+    | OnUserLogin (WebData Token)
     | OnSignUpForm Form
+    | OnLoginForm Form

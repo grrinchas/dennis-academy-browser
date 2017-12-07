@@ -81,3 +81,6 @@ toPath route =
 
         NotFoundRoute ->
             ""
+
+
+-- TODO: Create route for error page

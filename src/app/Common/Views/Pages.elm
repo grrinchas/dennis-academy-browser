@@ -1,22 +1,25 @@
 module Common.Views.Pages exposing (..)
 
 import Common.Model exposing (Brand, Responsive(Mobile, Tablet), View)
-import Common.Views.Loader as Loader
 import Common.Views.NavBar as NavBar
 import Common.Views.Layout as Layout
 import Common.Views.ErrorPage as ErrorPage
 import Http exposing (Error(BadPayload, BadStatus, BadUrl, NetworkError, Timeout), Response)
-import User.Views.Registration as Registration
+import Json.Decode
 import Question.Model exposing (Question)
 import Topic.Views.Topics as Topics
 import Topic.Views.Topic as Topic
 import Question.Views.Question as Question
 import Html exposing (..)
 import Messages exposing (..)
-import RemoteData exposing (WebData)
+import RemoteData exposing (RemoteData(NotAsked), WebData)
 import Topic.Model exposing (Topic)
-import User.Model exposing (SignUpForm, User)
-import User.Views.SignUp as UserView
+import User.Decoders
+import User.Model exposing (Token, User, UserForm)
+import User.Validator exposing (Error(EmailTaken, UsernameTaken))
+import User.Views.Home as UserHome
+import User.Views.Registration as Registration
+import User.Views.VerifyEmail as VerifyEmail
 
 
 emptyPage : View msg
@@ -26,9 +29,21 @@ emptyPage =
     }
 
 
+notFound : View Msg
+notFound =
+    ErrorPage.notFound
+
+
+loading : View msg
+loading =
+    { mobile = Layout.loading
+    , tablet = Layout.loading
+    }
+
+
 landing : Brand -> View Msg
 landing brand =
-    NavBar.view brand
+    Layout.headerMain (NavBar.view brand) (emptyPage)
 
 
 topics : Brand -> List Topic -> View Msg
@@ -56,35 +71,67 @@ question brand maybeData =
             notFound
 
 
-signUp : WebData User -> SignUpForm -> View Msg
+signUp : WebData User -> UserForm -> View Msg
 signUp user form =
     case user of
-        RemoteData.NotAsked ->
-            UserView.signUpView form Nothing
+        NotAsked ->
+            Layout.onlyMain <| Registration.signUpView form Nothing
 
         RemoteData.Loading ->
-            { mobile = Loader.loading, tablet = Loader.loading }
+            Layout.withLoader (Layout.onlyMain <| Registration.signUpView form Nothing)
 
         RemoteData.Success user ->
-            Registration.userView user
+            emptyPage
 
         RemoteData.Failure err ->
             case err of
                 BadStatus response ->
-                    UserView.errorView response form
+                    case Json.Decode.decodeString User.Decoders.decodeError response.body of
+                        Ok result ->
+                            case result.code of
+                                UsernameTaken ->
+                                    Layout.onlyMain <| Registration.signUpView form <| Just "Username is taken."
+
+                                EmailTaken ->
+                                    Layout.onlyMain <| Registration.signUpView form <| Just "Username is taken."
+
+                                _ ->
+                                    error err
+
+                        _ ->
+                            error err
 
                 _ ->
                     error err
 
 
-login : View Msg
-login =
-    Registration.loginView
+verifyEmail : WebData User -> View Msg
+verifyEmail user =
+    emptyPage
 
 
-notFound : View Msg
-notFound =
-    ErrorPage.notFound
+login : WebData Token -> UserForm -> View Msg
+login user form =
+    case user of
+        RemoteData.NotAsked ->
+            Registration.loginView form Nothing
+
+        RemoteData.Loading ->
+            Layout.withLoader (Registration.loginView form Nothing)
+
+        RemoteData.Success token ->
+            { mobile = text <| Basics.toString token, tablet = text <| Basics.toString token }
+
+        RemoteData.Failure err ->
+            case err of
+                BadStatus response ->
+                    if response.status.code == 403 then
+                        Registration.loginView form <| Just "Wrong email or password."
+                    else
+                        error err
+
+                _ ->
+                    error err
 
 
 error : Http.Error -> View msg

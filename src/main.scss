@@ -1,7 +1,7 @@
 $roboto-font-path: "~materialize-css/dist/fonts/roboto/";
 @import "~materialize-css/sass/materialize";
 
-$body-bg-color: #f7f7f7;
+$body-bg-color: #f1f1f1;
 $text-color: rgba(0, 0, 0, 0.87);
 $success-color: color("green", "base") !default;
 $error-color: color("red", "base") !default;
@@ -13,6 +13,14 @@ html, body, #app {
 body {
     min-width: 600px;
     background-color: $body-bg-color;
+}
+
+.dg-visible {
+    display: block;
+}
+
+.dg-invisible {
+    display: none;
 }
 
 .dg-topic-img {
@@ -74,15 +82,30 @@ body {
     font-weight: bold !important;
 }
 
-.dg-loading {
-    display: block;
-    position: absolute;
-    z-index: 100;
-    left: 50%;
-    top: 50%;
-    margin-left: -25px;
-    margin-top: -25px;
+.dg-loading-wrapper {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-color: red;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    cursor: pointer;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.5);
+    .dg-loader {
+        display: block;
+        position: absolute;
+        z-index: 100;
+        left: 50%;
+        top: 50%;
+        margin-left: -25px;
+        margin-top: -25px;
+    }
+
 }
+
 
 .dg-logo {
     width: 120px;
@@ -157,12 +180,42 @@ body {
 }
 
 .dg-registration {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+
+    .or {
+        font-weight: bold !important;
+        text-align: center;
+        display: block;
+    }
+
+    @extend .dg-primary-colour;
+    .dg-reg-header, .btn {
+        background-color: #313131;
+        color: $body-bg-color;
+    }
+
+    i, input {
+        color: $body-bg-color;
+    }
+
+    input::placeholder, .or {
+        color: #717171;
+    }
+    .disabled {
+
+        background-color: #616161 !important;
+    }
+
     form {
         padding: 0 !important;
         margin: 0 !important;
         width: 600px;
+        background-color: #515151 !important;
         @extend .z-depth-0;
         @extend .card;
+
     }
 }
 
@@ -179,18 +232,8 @@ body {
 
     .dg-registration {
         height: 100%;
-        @extend .dg-primary-colour;
-        .dg-reg-header {
-            background-color: $body-bg-color;
-            color: $text-color;
-        }
-        .card {
-
-            background-color: $body-bg-color;
-        }
         form {
             max-width: 450px;
-            box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) !important;
         }
     }
 

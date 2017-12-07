@@ -36,6 +36,3 @@ topicQuery =
                 , GraphQl.field "previousTopic" |> withSelectors [ GraphQl.field "title" ]
                 ]
         ]
-
-
-
