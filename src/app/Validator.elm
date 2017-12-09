@@ -1,7 +1,7 @@
-module User.Validator exposing (ErrorResponse, Valid, ValidUser, Error(..), username, password, email, toString, isValid, validLoginInputs, validLoginUser, validSignUpInputs, validSignUpUser)
+module Validator exposing (ErrorResponse, Valid, ValidUser, Error(..), username, password, email, toString, isValid, validLoginInputs, validLoginUser, validSignUpInputs, validSignUpUser)
 
 import Regex exposing (Regex)
-import User.Model exposing (UserForm)
+import Model exposing (UserForm)
 
 
 type Valid
@@ -128,5 +128,3 @@ isValid str =
     Result.toMaybe str |> (/=) Nothing
 
 
-
--- TODO: Allow registration with email

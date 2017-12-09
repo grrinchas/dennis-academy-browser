@@ -1,12 +1,12 @@
-module Common.Views.NavBar exposing (..)
+module Views.NavBar exposing (..)
 
-import Common.Model exposing (Brand, View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(UpdateRoute))
 import Routes exposing (Route(HomeRoute, LoginRoute, SignUpRoute, TopicsRoute), toPath)
-import Common.Views.Text as Text
+import Views.Text as Text
+import Model exposing (Brand, View)
 
 
 view : Brand -> View Msg

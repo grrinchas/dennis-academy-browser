@@ -1,9 +1,8 @@
-module User.Views.Home exposing (..)
+module Views.Home exposing (..)
 
-import Common.Model exposing (View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import User.Model exposing (User)
+import Model exposing (User, View)
 
 
 view : User -> View msg
@@ -14,8 +13,8 @@ view user =
 tablet : User -> Html msg
 tablet user =
     div []
-        [ p [] [ text user.id ]
-        , p [] [ text user.username ]
+        [ p [] [ text user.username ]
+        , p [] [ text user.picture ]
         , p [] [ text user.email ]
         , p [] []
         ]

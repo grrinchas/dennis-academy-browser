@@ -1,13 +1,12 @@
-module Topic.Views.Topics exposing (..)
+module Views.Topics exposing (..)
 
-import Common.Model exposing (Responsive(Mobile, Tablet), View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(UpdateRoute))
 import Routes exposing (Route(TopicRoute), toPath)
-import Common.Views.Text as Text
-import Topic.Model exposing (Topic)
+import Model exposing (Topic, View)
+import Views.Text as Text
 
 
 mobile : List Topic -> Html Msg

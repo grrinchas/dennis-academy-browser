@@ -1,29 +1,21 @@
-module Main exposing (..)
+module Main exposing (main)
 
-import Common.Api exposing (fetchBrand)
-import Common.Model exposing (Brand, Responsive(Mobile, Tablet), View)
-import Navigation exposing (Location, load)
+import Views.Pages as Pages exposing (..)
+import Html exposing (Html)
 import Messages exposing (..)
-import Html exposing (..)
-import Messages exposing (Msg(OnFetchTopics, OnLocationChange, UpdateRoute))
-import Navigation exposing (Location, newUrl)
+import Model exposing (..)
+import Navigation exposing (Location, back, modifyUrl, newUrl)
 import Platform.Cmd exposing (batch)
-import User.Api
-import User.Model exposing (..)
-import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
+import RemoteData exposing (WebData)
 import Routes exposing (..)
-import Slug exposing (Slug)
-import Task
-import Topic.Api exposing (fetchAllTopics)
-import Topic.Model exposing (Topic)
-import Window exposing (Size, resizes)
-import Common.Views.Pages as Pages
-import Question.Model exposing (Question)
+import Task exposing (perform)
+import Api exposing (..)
+import Window exposing (Size)
 
 
-main : Program Never Model Msg
+main : Program Never Model.Model Msg
 main =
-    Navigation.program Messages.OnLocationChange
+    Navigation.program OnLocationChange
         { init = init
         , view = view
         , update = update
@@ -31,39 +23,14 @@ main =
         }
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : Model.Model -> Sub Msg
 subscriptions model =
     Window.resizes (\size -> OnWindowChange size)
 
 
-type alias Model =
-    { topics : WebData (List Topic)
-    , brand : WebData Brand
-    , location : Location
-    , window : Window.Size
-    , responsive : Responsive
-    , userForm : UserForm
-    , user : WebData User
-    , token : WebData Token
-    }
-
-
-initialModel : Location -> Model
-initialModel location =
-    { topics = RemoteData.Loading
-    , brand = RemoteData.Loading
-    , location = location
-    , window = Size 0 0
-    , responsive = Mobile
-    , userForm = initialUserForm
-    , user = RemoteData.NotAsked
-    , token = RemoteData.NotAsked
-    }
-
-
 init : Location -> ( Model, Cmd Msg )
 init location =
-    ( initialModel location, batch [ fetchBrand, Topic.Api.fetchAllTopics, Task.perform OnWindowChange Window.size ] )
+    ( initialModel location, batch [ fetchBrand, fetchAllTopics, perform OnWindowChange Window.size ] )
 
 
 view : Model -> Html Msg
@@ -80,44 +47,28 @@ page : Model -> View Msg
 page model =
     case parseLocation model.location of
         HomeRoute ->
-            map Pages.landing model.brand
+            Pages.landing model
 
         TopicsRoute ->
-            map2 Pages.topics model.brand model.topics
+            Pages.topics model
 
         TopicRoute id ->
-            RemoteData.map (findTopic id) model.topics
-                |> map2 Pages.topic model.brand
+            Pages.topic model id
 
-        QuestionRoute topic question ->
-            RemoteData.map (findQuestion question) model.topics
-                |> RemoteData.append (RemoteData.map (findTopic topic) model.topics)
-                |> map2 Pages.question model.brand
+        QuestionRoute topicId questionId ->
+            Pages.question model topicId questionId
 
         SignUpRoute ->
-            Pages.signUp model.user model.userForm
+            Pages.signUp model
 
         LoginRoute ->
-            Pages.login model.token model.userForm
+            Pages.login model
 
-        VerifyEmailRoute ->
-            Pages.verifyEmail model.user
+        UserHomeRoute ->
+            Pages.userHome model
 
         NotFoundRoute ->
             Pages.notFound
-
-
-findTopic : Slug -> List Topic -> Maybe Topic
-findTopic id =
-    List.head << List.filter (\topic -> topic.slug == id)
-
-
-findQuestion : Slug -> List Topic -> Maybe Question
-findQuestion id topics =
-    List.map Topic.Model.questions topics
-        |> List.concat
-        |> List.filter (\question -> question.slug == id)
-        |> List.head
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -130,13 +81,16 @@ update msg model =
             ( { model | brand = response }, Cmd.none )
 
         OnLocationChange response ->
-            ( { model | location = response }, Cmd.none )
+            redirect response model
 
         OnUserSignUp response ->
-            ( { model | user = response }, Cmd.none )
+            ( { model | signUp = response }, Cmd.none )
 
         OnUserLogin response ->
-            ( { model | token = response }, Cmd.none )
+            ( { model | token = response }, RemoteData.withDefault Cmd.none <| RemoteData.map fetchUserInfo response )
+
+        OnFetchUserInfo response ->
+            onFetchUserInfo response model
 
         OnWindowChange size ->
             onWindowChange model size
@@ -151,6 +105,28 @@ update msg model =
             onLoginForm form model.userForm model
 
 
+onFetchUserInfo : WebData User -> Model -> ( Model, Cmd Msg )
+onFetchUserInfo user model =
+    if RemoteData.isSuccess user then
+        ( { model | user = user }, newUrl <| toPath UserHomeRoute )
+    else
+        ( { model | user = user }, Cmd.none )
+
+
+redirect : Location -> Model -> ( Model, Cmd Msg )
+redirect location model =
+    let
+        route =
+            parseLocation location
+    in
+        if (route == SignUpRoute || route == LoginRoute) && RemoteData.isSuccess model.user then
+            ( model, newUrl <| toPath UserHomeRoute )
+        else if (route == UserHomeRoute) && not (RemoteData.isSuccess model.user) then
+            ( model, newUrl <| toPath LoginRoute )
+        else
+            ( { model | location = location }, Cmd.none )
+
+
 onLoginForm : Form -> UserForm -> Model -> ( Model, Cmd Msg )
 onLoginForm msg oldForm model =
     case msg of
@@ -161,7 +137,7 @@ onLoginForm msg oldForm model =
             ( { model | userForm = { oldForm | password = Just text } }, Cmd.none )
 
         Submit user ->
-            ( { model | token = RemoteData.Loading, userForm = initialUserForm }, Maybe.withDefault Cmd.none <| Maybe.map User.Api.login user )
+            ( { model | token = RemoteData.Loading, userForm = initialUserForm }, Maybe.withDefault Cmd.none <| Maybe.map Api.login user )
 
         _ ->
             ( model, Cmd.none )
@@ -183,7 +159,7 @@ onSignUpForm msg oldForm model =
             ( { model | userForm = { oldForm | repeat = Just text } }, Cmd.none )
 
         Submit user ->
-            ( { model | user = RemoteData.Loading, userForm = initialUserForm }, Maybe.withDefault Cmd.none <| Maybe.map User.Api.signUp user )
+            ( { model | user = RemoteData.Loading, userForm = initialUserForm }, Maybe.withDefault Cmd.none <| Maybe.map Api.signUp user )
 
 
 onWindowChange : Model -> Size -> ( Model, Cmd Msg )
@@ -192,35 +168,3 @@ onWindowChange model size =
         ( { model | responsive = Mobile }, Cmd.none )
     else
         ( { model | responsive = Tablet }, Cmd.none )
-
-
-map : (a -> View m) -> WebData a -> View m
-map view response =
-    case response of
-        NotAsked ->
-            Pages.emptyPage
-
-        Loading ->
-            Pages.emptyPage
-
-        RemoteData.Success data ->
-            view data
-
-        RemoteData.Failure error ->
-            Pages.error error
-
-
-map2 : (a -> b -> View m) -> WebData a -> WebData b -> View m
-map2 f a b =
-    case a of
-        NotAsked ->
-            Pages.emptyPage
-
-        Loading ->
-            Pages.emptyPage
-
-        RemoteData.Success data ->
-            map (f data) b
-
-        RemoteData.Failure error ->
-            Pages.error error

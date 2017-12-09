@@ -1,4 +1,4 @@
-module Common.Views.Text exposing (..)
+module Views.Text exposing (..)
 
 import Html exposing (Html, text)
 

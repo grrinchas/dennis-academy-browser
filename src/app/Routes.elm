@@ -1,13 +1,9 @@
 module Routes exposing (..)
 
-import Common.Model exposing (Brand)
 import Navigation exposing (Location)
-import Question.Model exposing (Question)
 import RemoteData exposing (WebData)
 import Slug exposing (Slug)
-import Topic.Model as Topic exposing (Topic)
 import UrlParser exposing (..)
-
 
 type Route
     = HomeRoute
@@ -16,7 +12,7 @@ type Route
     | QuestionRoute Slug Slug
     | SignUpRoute
     | LoginRoute
-    | VerifyEmailRoute
+    | UserHomeRoute
     | NotFoundRoute
 
 
@@ -39,7 +35,7 @@ matchers =
         , map QuestionRoute (s "topics" </> slugMatcher </> slugMatcher)
         , map SignUpRoute (s "signup")
         , map LoginRoute (s "login")
-        , map VerifyEmailRoute (s "verify-email")
+        , map UserHomeRoute (s "user")
         ]
 
 
@@ -76,11 +72,8 @@ toPath route =
         LoginRoute ->
             "#login"
 
-        VerifyEmailRoute ->
-            "#verify-email"
+        UserHomeRoute ->
+            "#user"
 
         NotFoundRoute ->
             ""
-
-
--- TODO: Create route for error page

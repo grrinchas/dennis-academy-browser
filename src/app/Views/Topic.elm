@@ -1,15 +1,13 @@
-module Topic.Views.Topic exposing (..)
+module Views.Topic exposing (..)
 
-import Common.Model exposing (Responsive(Mobile, Tablet), View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(UpdateRoute))
+import Model exposing (Question, Topic, View)
 import Routes exposing (..)
 import Slug exposing (Slug)
-import Common.Views.Text as Text
-import Question.Model exposing (Question)
-import Topic.Model exposing (Topic)
+import Views.Text as Text
 
 
 topicHeader : Topic -> Html Msg

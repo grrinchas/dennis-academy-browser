@@ -1,10 +1,10 @@
-module Common.Views.ErrorPage exposing (..)
+module Views.ErrorPage exposing (..)
 
-import Common.Model exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http exposing (Response)
 import Messages exposing (Msg)
+import Model exposing (View)
 import Routes exposing (Route(HomeRoute), toPath)
 
 

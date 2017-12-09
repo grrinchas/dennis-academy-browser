@@ -1,7 +1,7 @@
-module Common.Views.LandingPage exposing (..)
+module Views.LandingPage exposing (..)
 
-import Common.Model exposing (Brand, View)
 import Html exposing (..)
+import Model exposing (Brand, View)
 
 
 landingPage : Brand -> View msg

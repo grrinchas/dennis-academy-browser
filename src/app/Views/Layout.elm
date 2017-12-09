@@ -1,9 +1,8 @@
-module Common.Views.Layout exposing (..)
+module Views.Layout exposing (..)
 
-import Common.Model exposing (Responsive(Tablet), View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Messages exposing (Msg)
+import Model exposing (View)
 
 
 mainMobile : View msg -> Html msg

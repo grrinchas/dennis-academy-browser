@@ -1,23 +1,30 @@
-module User.Views.Registration exposing (..)
+module Views.Registration exposing (..)
 
-import User.Validator exposing (..)
-import Common.Model exposing (View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http exposing (Response)
 import Json.Decode
 import Messages exposing (..)
+import Model exposing (..)
 import Routes exposing (Route(LoginRoute, SignUpRoute), toPath)
-import Common.Views.Text as Text
-import User.Decoders
-import User.Model exposing (..)
-import Common.Views.ErrorPage as ErrorPage
+import Validator exposing (..)
+import Views.Text as Text
 
 
-signUpView : UserForm -> Maybe String -> View Msg
-signUpView form response =
-    { mobile = signUpPage form response, tablet = signUpPage form response }
+signUpView : UserForm -> View Msg
+signUpView form =
+    { mobile = signUpPage form <| div [] [], tablet = signUpPage form <| div [] [] }
+
+
+signUpError : UserForm -> String -> View Msg
+signUpError form msg =
+    { mobile = signUpPage form <| errorResponse msg, tablet = signUpPage form <| errorResponse msg }
+
+
+signUpSuccess : UserForm -> SignUp -> View Msg
+signUpSuccess form signUp =
+    { mobile = signUpPage form <| successResponse signUp, tablet = signUpPage form <| successResponse signUp }
 
 
 loginView : UserForm -> Maybe String -> View Msg
@@ -28,6 +35,18 @@ loginView form response =
 errorResponse : String -> Html msg
 errorResponse response =
     div [ class "dg-response-error" ] [ i [ class "material-icons prefix " ] [ text "error_outline" ], div [] [ text response ] ]
+
+
+successResponse : SignUp -> Html msg
+successResponse signUp =
+    div [ class "dg-response-success" ]
+        [ i [ class "material-icons prefix " ] [ text "done" ]
+        , div []
+            [ text ("Account for " ++ signUp.email ++ " has been created. Please ")
+            , a [ href <| toPath LoginRoute ] [ text "login" ]
+            , text "."
+            ]
+        ]
 
 
 validMsg : String -> Html msg
@@ -100,6 +119,76 @@ inputIcon str =
     i [ class "material-icons prefix" ] [ text str ]
 
 
+emailInput : Maybe String -> Html Msg
+emailInput maybe =
+    div [ class "input-field col s8" ]
+        [ inputIcon "email"
+        , input
+            [ type_ "email"
+            , placeholder "Email"
+            , value <| Maybe.withDefault "" maybe
+            , maxlength 30
+            , onInput (\x -> OnLoginForm <| Email x)
+            , validStyle email maybe
+            , class "dg-input"
+            ]
+            []
+        , validMsg <| validateEmail maybe
+        ]
+
+
+passwordInput : Maybe String -> Html Msg
+passwordInput maybe =
+    div [ class "input-field" ]
+        [ inputIcon "lock"
+        , input
+            [ type_ "password"
+            , placeholder "Password"
+            , value <| Maybe.withDefault "" maybe
+            , onInput (\x -> OnSignUpForm <| Password x)
+            , validStyle password maybe
+            , class "dg-input"
+            ]
+            []
+        , validMsg <| validatePassword maybe
+        ]
+
+
+usernameInput : Maybe String -> Html Msg
+usernameInput maybe =
+    div [ class "input-field" ]
+        [ inputIcon "person"
+        , input
+            [ type_ "text"
+            , placeholder "Username"
+            , value <| Maybe.withDefault "" maybe
+            , maxlength 30
+            , onInput (\x -> OnSignUpForm <| Username x)
+            , validStyle username maybe
+            , class "dg-input"
+            ]
+            []
+        , validMsg <| validateUsername maybe
+        ]
+
+
+repeatInput : Maybe String -> Maybe String -> Html Msg
+repeatInput pass repeat =
+    div [ class "input-field" ]
+        [ inputIcon "lock"
+        , input
+            [ type_ "password"
+            , placeholder "Password Repeat"
+            , value <| Maybe.withDefault "" repeat
+            , onInput (\x -> OnSignUpForm <| Repeat x)
+            , validRepeatStyle pass repeat
+            , class "dg-input"
+            ]
+            []
+        , validMsg <| validateRepeat pass repeat
+        ]
+
+
 loginPage : UserForm -> Maybe String -> Html Msg
 loginPage form response =
     div [ class "dg-center dg-registration" ]
@@ -109,33 +198,8 @@ loginPage form response =
             , div [ class "card-content login" ]
                 [ thirdParty
                 , span [ class "card-title or" ] [ Text.or ]
-                , div [ class "input-field col s8" ]
-                    [ inputIcon "email"
-                    , input
-                        [ type_ "email"
-                        , placeholder "Email"
-                        , value <| Maybe.withDefault "" form.email
-                        , maxlength 30
-                        , onInput (\x -> OnLoginForm <| Email x)
-                        , validStyle email form.email
-                        , class "dg-input"
-                        ]
-                        []
-                    , validMsg <| validateEmail form.email
-                    ]
-                , div [ class "input-field" ]
-                    [ inputIcon "lock"
-                    , input
-                        [ type_ "password"
-                        , placeholder "Password"
-                        , value <| Maybe.withDefault "" form.password
-                        , onInput (\x -> OnLoginForm <| Password x)
-                        , validStyle password form.password
-                        , class "dg-input"
-                        ]
-                        []
-                    , validMsg <| validatePassword form.password
-                    ]
+                , emailInput form.email
+                , passwordInput form.password
                 , div [ class "valign-wrapper" ]
                     [ a
                         [ class "btn dg-right "
@@ -148,73 +212,22 @@ loginPage form response =
             , div [ class "card-action" ]
                 [ a [ href <| toPath SignUpRoute ]
                     [ Text.doNotHaveAccount ]
-                , a [ href "#", class "right right-align dg-no-margins" ]
-                    [ Text.forgotPassword ]
                 ]
             ]
         ]
 
 
-signUpPage : UserForm -> Maybe String -> Html Msg
+signUpPage : UserForm -> Html Msg -> Html Msg
 signUpPage form response =
     div [ class "dg-center dg-registration" ]
         [ Html.form []
             [ regHeader "Sign Up"
-            , Maybe.map errorResponse response |> Maybe.withDefault (div [] [])
+            , response
             , div [ class "card-content" ]
-                [ div [ class "input-field" ]
-                    [ inputIcon "person"
-                    , input
-                        [ type_ "text"
-                        , placeholder "Username"
-                        , value <| Maybe.withDefault "" form.username
-                        , maxlength 30
-                        , onInput (\x -> OnSignUpForm <| Username x)
-                        , validStyle username form.username
-                        , class "dg-input"
-                        ]
-                        []
-                    , validMsg <| validateUsername form.username
-                    ]
-                , div [ class "input-field" ]
-                    [ inputIcon "email"
-                    , input
-                        [ type_ "email"
-                        , placeholder "Email"
-                        , value <| Maybe.withDefault "" form.email
-                        , onInput (\x -> OnSignUpForm <| Email x)
-                        , validStyle email form.email
-                        , class "dg-input"
-                        ]
-                        []
-                    , validMsg <| validateEmail form.email
-                    ]
-                , div [ class "input-field" ]
-                    [ inputIcon "lock"
-                    , input
-                        [ type_ "password"
-                        , placeholder "Password"
-                        , value <| Maybe.withDefault "" form.password
-                        , onInput (\x -> OnSignUpForm <| Password x)
-                        , validStyle password form.password
-                        , class "dg-input"
-                        ]
-                        []
-                    , validMsg <| validatePassword form.password
-                    ]
-                , div [ class "input-field" ]
-                    [ inputIcon "lock"
-                    , input
-                        [ type_ "password"
-                        , placeholder "Password Repeat"
-                        , value <| Maybe.withDefault "" form.repeat
-                        , onInput (\x -> OnSignUpForm <| Repeat x)
-                        , validRepeatStyle form.password form.repeat
-                        , class "dg-input"
-                        ]
-                        []
-                    , validMsg <| validateRepeat form.password form.repeat
-                    ]
+                [ usernameInput form.username
+                , emailInput form.email
+                , passwordInput form.password
+                , repeatInput form.password form.repeat
                 , div [ class "valign-wrapper" ]
                     [ a
                         [ class "btn dg-right "

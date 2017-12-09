@@ -1,15 +1,13 @@
-module Question.Views.Question exposing (..)
+module Views.Question exposing (..)
 
-import Common.Model exposing (View)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Markdown
 import Messages exposing (Msg)
+import Model exposing (Question, Topic, View)
 import Routes exposing (Route(QuestionRoute, TopicRoute, TopicsRoute), toPath)
 import Slug exposing (Slug)
-import Common.Views.Text as Text
-import Question.Model exposing (Question)
-import Topic.Model exposing (Topic)
+import Views.Text as Text
 
 
 view : Topic -> Question -> View Msg
