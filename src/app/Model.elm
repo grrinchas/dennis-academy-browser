@@ -3,6 +3,7 @@ module Model exposing (..)
 import Html exposing (Html)
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
+import Routes exposing (Route(HomeRoute))
 import Slug exposing (Slug)
 import Window exposing (Size)
 
@@ -124,7 +125,7 @@ type alias Question =
 type alias Model =
     { topics : WebData (List Topic)
     , brand : WebData Brand
-    , location : Location
+    , route : Route
     , window : Window.Size
     , responsive : Responsive
     , userForm : UserForm
@@ -134,15 +135,16 @@ type alias Model =
     }
 
 
-initialModel : Location -> Model
-initialModel location =
+initialModel : Model
+initialModel =
     { topics = RemoteData.Loading
     , brand = RemoteData.Loading
-    , location = location
+    , route = HomeRoute
     , window = Size 0 0
     , responsive = Mobile
     , userForm = initialUserForm
     , signUp = RemoteData.NotAsked
     , token = RemoteData.NotAsked
-    , user = RemoteData.NotAsked
+    , user = RemoteData.Loading
     }
+

@@ -1,23 +1,21 @@
 import Elm from './app/Main.elm';
 import './main.scss';
 
+
+
+var token = JSON.parse(localStorage.getItem("access_token"));
+
 const mountNode = document.getElementById('app');
-const app = Elm.Main.embed(mountNode);
+const app = Elm.Main.embed(mountNode, token);
 
-var token = {
-    accessToken: "access_token",
-    idToken: "id_token",
-    tokenType: "token_type",
-    expiresIn: 32090
 
-};
-
-const Storage = Window.sessionStorage;
-
-app.ports.put.subscribe(item => Storage.setItem("access_token", item));
-app.ports.get.send(Storage.getItem("access_token"));
+app.ports.put.subscribe(item => {
+    localStorage.setItem("access_token", JSON.stringify(item));
+});
 
 
 if (module.hot) {
     module.hot.accept();
 }
+
+

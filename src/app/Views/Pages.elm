@@ -4,7 +4,6 @@ import Decoders
 import Html exposing (div)
 import Http exposing (Error(..))
 import Json.Decode
-import List
 import Messages exposing (Msg)
 import Model exposing (View)
 import Views.ErrorPage as ErrorPage
@@ -123,7 +122,7 @@ userHome model =
         view =
             \user -> Layout.onlyMain <| UserHome.view user
     in
-        mapAuthorised model view model.user
+        map view model.user
 
 
 login : Model -> View Msg
@@ -170,22 +169,6 @@ map view response =
             emptyPage
 
         Loading ->
-            loading
-
-        RemoteData.Success data ->
-            view data
-
-        RemoteData.Failure err ->
-            error err
-
-
-mapAuthorised : Model -> (a -> View Msg) -> WebData a -> View Msg
-mapAuthorised model view response =
-    case response of
-        RemoteData.NotAsked ->
-            notFound
-
-        RemoteData.Loading ->
             loading
 
         RemoteData.Success data ->

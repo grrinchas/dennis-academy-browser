@@ -5,6 +5,7 @@ import RemoteData exposing (WebData)
 import Slug exposing (Slug)
 import UrlParser exposing (..)
 
+
 type Route
     = HomeRoute
     | TopicsRoute

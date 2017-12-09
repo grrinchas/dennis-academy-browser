@@ -14,9 +14,9 @@ import Api exposing (..)
 import Window exposing (Size)
 
 
-main : Program Never Model.Model Msg
+main : Program (Maybe Token) Model Msg
 main =
-    Navigation.program OnLocationChange
+    Navigation.programWithFlags OnLocationChange
         { init = init
         , view = view
         , update = update
@@ -26,12 +26,24 @@ main =
 
 subscriptions : Model.Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ Persistence.get OnTokenLoad, Window.resizes (\size -> OnWindowChange size) ]
+    Sub.batch [ Window.resizes (\size -> OnWindowChange size) ]
 
 
-init : Location -> ( Model, Cmd Msg )
-init location =
-    ( initialModel location, batch [ fetchBrand, fetchAllTopics, perform OnWindowChange Window.size ] )
+init : Maybe Token -> Location -> ( Model, Cmd Msg )
+init token location =
+    let
+        model =
+            { initialModel | route = parseLocation location, token = Maybe.map RemoteData.succeed token |> Maybe.withDefault RemoteData.NotAsked }
+    in
+        ( model
+        , batch
+            [ fetchBrand
+            , fetchAllTopics
+            , RemoteData.map fetchUserInfo model.token |> RemoteData.withDefault Cmd.none
+            , perform OnWindowChange Window.size
+            , newUrl <| toPath model.route
+            ]
+        )
 
 
 view : Model -> Html Msg
@@ -46,7 +58,7 @@ view model =
 
 page : Model -> View Msg
 page model =
-    case parseLocation model.location of
+    case model.route of
         HomeRoute ->
             Pages.landing model
 
@@ -82,7 +94,14 @@ update msg model =
             ( { model | brand = response }, Cmd.none )
 
         OnLocationChange response ->
-            redirect response model
+            let
+                route =
+                    parseLocation response
+            in
+                if (route == SignUpRoute || route == LoginRoute) && RemoteData.isSuccess model.token then
+                    ( model, newUrl <| toPath UserHomeRoute )
+                else
+                    ( model, Cmd.none )
 
         OnUserSignUp response ->
             ( { model | signUp = response }, Cmd.none )
@@ -96,7 +115,7 @@ update msg model =
             )
 
         OnFetchUserInfo response ->
-            onFetchUserInfo response model
+            ( { model | user = response }, newUrl <| toPath UserHomeRoute )
 
         OnWindowChange size ->
             onWindowChange model size
@@ -109,33 +128,6 @@ update msg model =
 
         OnLoginForm form ->
             onLoginForm form model.userForm model
-
-        OnTokenLoad token ->
-            let
-                _ =
-                    Debug.log "" (Basics.toString token)
-            in
-                ( { model | token = Maybe.withDefault model.token <| Maybe.map RemoteData.succeed token }, Cmd.none )
-
-
-onFetchUserInfo : WebData User -> Model -> ( Model, Cmd Msg )
-onFetchUserInfo user model =
-    if RemoteData.isSuccess user then
-        ( { model | user = user }, newUrl <| toPath UserHomeRoute )
-    else
-        ( { model | user = user }, Cmd.none )
-
-
-redirect : Location -> Model -> ( Model, Cmd Msg )
-redirect location model =
-    let
-        route =
-            parseLocation location
-    in
-        if (route == SignUpRoute || route == LoginRoute) && RemoteData.isSuccess model.user then
-            ( model, newUrl <| toPath UserHomeRoute )
-        else
-            ( { model | location = location }, Cmd.none )
 
 
 onLoginForm : Form -> UserForm -> Model -> ( Model, Cmd Msg )
