@@ -101,7 +101,7 @@ update msg model =
                 if (route == SignUpRoute || route == LoginRoute) && RemoteData.isSuccess model.token then
                     ( model, newUrl <| toPath UserHomeRoute )
                 else
-                    ( model, Cmd.none )
+                    ( { model | route = route }, Cmd.none )
 
         OnUserSignUp response ->
             ( { model | signUp = response }, Cmd.none )
