@@ -9,10 +9,11 @@ const mountNode = document.getElementById('app');
 const app = Elm.Main.embed(mountNode, token);
 
 
-app.ports.put.subscribe(function (item) {
-
+app.ports.put.subscribe(item => {
     localStorage.setItem("access_token", JSON.stringify(item));
+    app.ports.get.send(token);
 });
+
 
 
 if (module.hot) {
