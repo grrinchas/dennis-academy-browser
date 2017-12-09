@@ -41,7 +41,7 @@ init token location =
             , fetchAllTopics
             , RemoteData.map fetchUserInfo model.token |> RemoteData.withDefault Cmd.none
             , perform OnWindowChange Window.size
-            , newUrl <| toPath model.route
+            , modifyUrl <| toPath model.route
             ]
         )
 
@@ -58,30 +58,34 @@ view model =
 
 page : Model -> View Msg
 page model =
-    case model.route of
-        HomeRoute ->
-            Pages.landing model
+    let
+        _ =
+            Debug.log "" model.route
+    in
+        case model.route of
+            HomeRoute ->
+                Pages.landing model
 
-        TopicsRoute ->
-            Pages.topics model
+            TopicsRoute ->
+                Pages.topics model
 
-        TopicRoute id ->
-            Pages.topic model id
+            TopicRoute id ->
+                Pages.topic model id
 
-        QuestionRoute topicId questionId ->
-            Pages.question model topicId questionId
+            QuestionRoute topicId questionId ->
+                Pages.question model topicId questionId
 
-        SignUpRoute ->
-            Pages.signUp model
+            SignUpRoute ->
+                Pages.signUp model
 
-        LoginRoute ->
-            Pages.login model
+            LoginRoute ->
+                Pages.login model
 
-        UserHomeRoute ->
-            Pages.userHome model
+            UserHomeRoute ->
+                Pages.userHome model
 
-        NotFoundRoute ->
-            Pages.notFound
+            NotFoundRoute ->
+                Pages.notFound
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -99,7 +103,7 @@ update msg model =
                     parseLocation response
             in
                 if (route == SignUpRoute || route == LoginRoute) && RemoteData.isSuccess model.token then
-                    ( model, newUrl <| toPath UserHomeRoute )
+                    ( model, modifyUrl <| toPath UserHomeRoute )
                 else
                     ( { model | route = route }, Cmd.none )
 
@@ -115,13 +119,13 @@ update msg model =
             )
 
         OnFetchUserInfo response ->
-            ( { model | user = response }, newUrl <| toPath UserHomeRoute )
+            ( { model | user = response }, Cmd.none )
 
         OnWindowChange size ->
             onWindowChange model size
 
         UpdateRoute route ->
-            ( model, newUrl <| toPath route )
+            ( model, modifyUrl <| toPath route )
 
         OnSignUpForm form ->
             onSignUpForm form model.userForm model
