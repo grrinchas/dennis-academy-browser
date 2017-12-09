@@ -41,59 +41,45 @@ loading =
 
 landing : Model -> View Msg
 landing model =
-    Layout.headerMain (map NavBar.view model.brand) (emptyPage)
+    let
+        view =
+            \brand -> Layout.headerMain (NavBar.view brand) emptyPage
+    in
+        map view model.brand
 
 
 topics : Model -> View Msg
 topics model =
-    map2 (\brand topics -> Layout.headerMain (NavBar.view brand) (Topics.view topics)) model.brand model.topics
+    let
+        view =
+            \( brand, topics ) -> Layout.headerMain (NavBar.view brand) (Topics.view topics)
+    in
+        map view <| RemoteData.append model.brand model.topics
 
 
 topic : Model -> Slug -> View Msg
 topic model id =
-    case model.topics of
-        NotAsked ->
-            emptyPage
-
-        Loading ->
-            loading
-
-        RemoteData.Success topics ->
-            case findTopic id topics of
-                Just topic ->
-                    Layout.noContainer (map NavBar.view model.brand) (Topic.view topic)
-
-                Nothing ->
-                    notFound
-
-        RemoteData.Failure err ->
-            error err
+    let
+        view =
+            \( brand, topics ) ->
+                findTopic id topics
+                    |> Maybe.map (\topic -> Layout.noContainer (NavBar.view brand) (Topic.view topic))
+                    |> Maybe.withDefault notFound
+    in
+        map view <| RemoteData.append model.brand model.topics
 
 
 question : Model -> Slug -> Slug -> View Msg
 question model topicId questionId =
-    case model.topics of
-        NotAsked ->
-            emptyPage
-
-        Loading ->
-            loading
-
-        RemoteData.Success topics ->
-            case findTopic topicId topics of
-                Just topic ->
-                    case findQuestion questionId topic of
-                        Just question ->
-                            Layout.noContainer (map NavBar.view model.brand) (Question.view topic question)
-
-                        Nothing ->
-                            notFound
-
-                Nothing ->
-                    notFound
-
-        RemoteData.Failure err ->
-            error err
+    let
+        view =
+            \( brand, topics ) ->
+                findTopic topicId topics
+                    |> Maybe.andThen (findQuestion questionId)
+                    |> Maybe.map2 (\top ques -> Layout.noContainer (NavBar.view brand) (Question.view top ques)) (findTopic topicId topics)
+                    |> Maybe.withDefault notFound
+    in
+        map view <| RemoteData.append model.brand model.topics
 
 
 signUp : Model -> View Msg
@@ -103,7 +89,7 @@ signUp model =
             Layout.onlyMain <| Registration.signUpView model.userForm
 
         RemoteData.Loading ->
-            Layout.withLoader (Layout.onlyMain <| Registration.signUpView model.userForm)
+            Layout.withLoader <| Layout.onlyMain <| Registration.signUpView model.userForm
 
         RemoteData.Success response ->
             Layout.onlyMain <| Registration.signUpSuccess model.userForm response
@@ -132,26 +118,11 @@ signUp model =
 
 userHome : Model -> View Msg
 userHome model =
-    case model.user of
-        RemoteData.NotAsked ->
-            login model
-
-        RemoteData.Loading ->
-            loading
-
-        RemoteData.Success u ->
-            Layout.onlyMain <| UserHome.view u
-
-        RemoteData.Failure err ->
-            case err of
-                BadStatus response ->
-                    if response.status.code == 401 then
-                        login model
-                    else
-                        error err
-
-                _ ->
-                    error err
+    let
+        view =
+            \user -> Layout.onlyMain <| UserHome.view user
+    in
+        mapAuthorised model view model.user
 
 
 login : Model -> View Msg
@@ -181,20 +152,14 @@ login model =
 error : Http.Error -> View msg
 error error =
     case error of
-        BadUrl _ ->
-            ErrorPage.networkError
-
-        Timeout ->
-            ErrorPage.networkError
-
-        NetworkError ->
-            ErrorPage.networkError
-
         BadStatus response ->
             ErrorPage.userError response
 
         BadPayload _ response ->
             ErrorPage.userError response
+
+        _ ->
+            ErrorPage.networkError
 
 
 map : (a -> View m) -> WebData a -> View m
@@ -213,20 +178,28 @@ map view response =
             error err
 
 
-map2 : (a -> b -> View m) -> WebData a -> WebData b -> View m
-map2 f a b =
-    case a of
-        NotAsked ->
-            emptyPage
+mapAuthorised : Model -> (a -> View Msg) -> WebData a -> View Msg
+mapAuthorised model view response =
+    case response of
+        RemoteData.NotAsked ->
+            login model
 
-        Loading ->
+        RemoteData.Loading ->
             loading
 
         RemoteData.Success data ->
-            map (f data) b
+            view data
 
         RemoteData.Failure err ->
-            error err
+            case err of
+                BadStatus response ->
+                    if response.status.code == 401 then
+                        login model
+                    else
+                        error err
+
+                _ ->
+                    error err
 
 
 findTopic : Slug -> List Topic -> Maybe Topic
