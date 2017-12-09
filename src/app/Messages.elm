@@ -27,3 +27,4 @@ type Msg
     | OnUserLogin (WebData Token)
     | OnSignUpForm Form
     | OnLoginForm Form
+    | OnTokenLoad (Maybe Token)

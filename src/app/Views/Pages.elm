@@ -4,6 +4,7 @@ import Decoders
 import Html exposing (div)
 import Http exposing (Error(..))
 import Json.Decode
+import List
 import Messages exposing (Msg)
 import Model exposing (View)
 import Views.ErrorPage as ErrorPage
@@ -182,7 +183,7 @@ mapAuthorised : Model -> (a -> View Msg) -> WebData a -> View Msg
 mapAuthorised model view response =
     case response of
         RemoteData.NotAsked ->
-            login model
+            notFound
 
         RemoteData.Loading ->
             loading
@@ -191,15 +192,7 @@ mapAuthorised model view response =
             view data
 
         RemoteData.Failure err ->
-            case err of
-                BadStatus response ->
-                    if response.status.code == 401 then
-                        login model
-                    else
-                        error err
-
-                _ ->
-                    error err
+            error err
 
 
 findTopic : Slug -> List Topic -> Maybe Topic

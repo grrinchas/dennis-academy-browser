@@ -193,12 +193,10 @@ loginPage : UserForm -> Maybe String -> Html Msg
 loginPage form response =
     div [ class "dg-center dg-registration" ]
         [ Html.form []
-            [ regHeader "Login with"
+            [ regHeader "Login"
             , Maybe.map errorResponse response |> Maybe.withDefault (div [] [])
             , div [ class "card-content login" ]
-                [ thirdParty
-                , span [ class "card-title or" ] [ Text.or ]
-                , emailInput form.email
+                [ emailInput form.email
                 , passwordInput form.password
                 , div [ class "valign-wrapper" ]
                     [ a

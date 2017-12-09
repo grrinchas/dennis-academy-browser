@@ -1,10 +1,11 @@
 module Main exposing (main)
 
+import Persistence
 import Views.Pages as Pages exposing (..)
 import Html exposing (Html)
 import Messages exposing (..)
 import Model exposing (..)
-import Navigation exposing (Location, back, modifyUrl, newUrl)
+import Navigation exposing (Location, back, load, modifyUrl, newUrl)
 import Platform.Cmd exposing (batch)
 import RemoteData exposing (WebData)
 import Routes exposing (..)
@@ -25,7 +26,7 @@ main =
 
 subscriptions : Model.Model -> Sub Msg
 subscriptions model =
-    Window.resizes (\size -> OnWindowChange size)
+    Sub.batch [ Persistence.get OnTokenLoad, Window.resizes (\size -> OnWindowChange size) ]
 
 
 init : Location -> ( Model, Cmd Msg )
@@ -87,7 +88,12 @@ update msg model =
             ( { model | signUp = response }, Cmd.none )
 
         OnUserLogin response ->
-            ( { model | token = response }, RemoteData.withDefault Cmd.none <| RemoteData.map fetchUserInfo response )
+            ( { model | token = response }
+            , batch
+                [ RemoteData.withDefault Cmd.none <| RemoteData.map fetchUserInfo response
+                , Persistence.put <| RemoteData.toMaybe response
+                ]
+            )
 
         OnFetchUserInfo response ->
             onFetchUserInfo response model
@@ -103,6 +109,13 @@ update msg model =
 
         OnLoginForm form ->
             onLoginForm form model.userForm model
+
+        OnTokenLoad token ->
+            let
+                _ =
+                    Debug.log "" (Basics.toString token)
+            in
+                ( { model | token = Maybe.withDefault model.token <| Maybe.map RemoteData.succeed token }, Cmd.none )
 
 
 onFetchUserInfo : WebData User -> Model -> ( Model, Cmd Msg )
@@ -121,8 +134,6 @@ redirect location model =
     in
         if (route == SignUpRoute || route == LoginRoute) && RemoteData.isSuccess model.user then
             ( model, newUrl <| toPath UserHomeRoute )
-        else if (route == UserHomeRoute) && not (RemoteData.isSuccess model.user) then
-            ( model, newUrl <| toPath LoginRoute )
         else
             ( { model | location = location }, Cmd.none )
 
