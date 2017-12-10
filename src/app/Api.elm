@@ -4,7 +4,7 @@ import Decoders exposing (..)
 import GraphQl exposing (..)
 import Http exposing (Header, jsonBody)
 import Messages exposing (Msg)
-import Encoders as Encoders
+import Encoders as Encoders exposing (clientId)
 import Model exposing (..)
 import RemoteData exposing (RemoteData)
 import Validator exposing (ValidUser)

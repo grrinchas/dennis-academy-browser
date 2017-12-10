@@ -3,51 +3,14 @@ module Model exposing (..)
 import Html exposing (Html)
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
-import Routes exposing (Route(HomeRoute))
+import Routes exposing (Route(HomeRoute, UserHomeRoute), UserRoute)
 import Slug exposing (Slug)
 import Window exposing (Size)
 
 
-type alias Id =
-    String
-
-
-type alias Title =
-    String
-
-
-type alias Description =
-    String
-
-
-type alias Icon =
-    String
-
-
-type alias Colour =
-    String
-
-
-type alias SlugTitle =
-    Slug
-
-
-type Responsive
-    = Mobile
-    | Tablet
-
-
-type alias Mobile msg =
-    Html msg
-
-
-type alias Tablet msg =
-    Html msg
-
-
 type alias View msg =
-    { mobile : Mobile msg
-    , tablet : Tablet msg
+    { mobile : Html msg
+    , tablet : Html msg
     }
 
 
@@ -59,13 +22,13 @@ type alias Brand =
 
 
 type alias Topic =
-    { id : Id
-    , title : Title
+    { id : String
+    , title : String
     , slug : Slug
     , description : String
     , questions : List Question
-    , icon : Icon
-    , colour : Colour
+    , icon : String
+    , colour : String
     , next : Maybe Slug
     , previous : Maybe Slug
     }
@@ -88,7 +51,7 @@ type alias UserForm =
 
 
 type alias SignUp =
-    { id : Id
+    { id : String
     , username : String
     , email : String
     , emailVerified : Bool
@@ -100,12 +63,13 @@ type alias User =
     , email : String
     , picture : String
     , emailVerified : Bool
+    , menu: Bool
     }
 
 
 initialUserForm : UserForm
 initialUserForm =
-    UserForm Nothing Nothing Nothing Nothing
+    UserForm Nothing (Just "nezinau1") Nothing (Just "dg4675dg@gmail.com")
 
 
 type alias Answer =
@@ -113,8 +77,8 @@ type alias Answer =
 
 
 type alias Question =
-    { id : Id
-    , title : Title
+    { id : String
+    , title : String
     , slug : Slug
     , answer : Answer
     , next : Maybe Slug
@@ -127,7 +91,6 @@ type alias Model =
     , brand : WebData Brand
     , route : Route
     , window : Window.Size
-    , responsive : Responsive
     , userForm : UserForm
     , signUp : WebData SignUp
     , token : WebData Token
@@ -141,10 +104,18 @@ initialModel =
     , brand = RemoteData.Loading
     , route = HomeRoute
     , window = Size 0 0
-    , responsive = Mobile
     , userForm = initialUserForm
     , signUp = RemoteData.NotAsked
     , token = RemoteData.NotAsked
     , user = RemoteData.Loading
     }
 
+
+isLoggedIn : Model -> Bool
+isLoggedIn model =
+    RemoteData.isSuccess model.user
+
+
+isLoggedOut : Model -> Bool
+isLoggedOut model =
+    not <| isLoggedIn model

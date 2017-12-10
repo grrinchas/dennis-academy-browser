@@ -26,14 +26,17 @@ main =
 
 subscriptions : Model.Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ Window.resizes (\size -> OnWindowChange size) ]
+    Sub.batch [ Window.resizes (\size -> OnWindowChange size), Persistence.get OnTokenLoad ]
 
 
 init : Maybe Token -> Location -> ( Model, Cmd Msg )
 init token location =
     let
         model =
-            { initialModel | route = parseLocation location, token = Maybe.map RemoteData.succeed token |> Maybe.withDefault RemoteData.NotAsked }
+            { initialModel
+                | token = Maybe.map RemoteData.succeed token |> Maybe.withDefault RemoteData.NotAsked
+                , route = parseLocation location
+            }
     in
         ( model
         , batch
@@ -41,51 +44,60 @@ init token location =
             , fetchAllTopics
             , RemoteData.map fetchUserInfo model.token |> RemoteData.withDefault Cmd.none
             , perform OnWindowChange Window.size
-            , modifyUrl <| toPath model.route
             ]
         )
 
 
 view : Model -> Html Msg
 view model =
-    case model.responsive of
-        Mobile ->
-            (page model).mobile
-
-        Tablet ->
-            (page model).tablet
+    if model.window.width <= 600 then
+        (page model).mobile
+    else
+        (page model).tablet
 
 
 page : Model -> View Msg
 page model =
-    let
-        _ =
-            Debug.log "" model.route
-    in
-        case model.route of
-            HomeRoute ->
-                Pages.landing model
+    case model.route of
+        HomeRoute ->
+            Pages.landing model
 
-            TopicsRoute ->
-                Pages.topics model
+        TopicsRoute ->
+            Pages.topics model
 
-            TopicRoute id ->
-                Pages.topic model id
+        TopicRoute id ->
+            Pages.topic model id
 
-            QuestionRoute topicId questionId ->
-                Pages.question model topicId questionId
+        QuestionRoute topicId questionId ->
+            Pages.question model topicId questionId
 
-            SignUpRoute ->
-                Pages.signUp model
+        SignUpRoute ->
+            Pages.signUp model
 
-            LoginRoute ->
-                Pages.login model
+        LoginRoute ->
+            Pages.login model
 
-            UserHomeRoute ->
-                Pages.userHome model
+        UserHomeRoute ->
+            Pages.userHome model
 
-            NotFoundRoute ->
-                Pages.notFound
+        NotFoundRoute ->
+            Pages.notFound
+
+
+resolveRoute : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+resolveRoute ( model, cmd ) =
+    case ( model.route, isLoggedIn model ) of
+        ( SignUpRoute, True ) ->
+            ( model, Cmd.batch [ cmd, modifyUrl <| toPath UserHomeRoute ] )
+
+        ( LoginRoute, True ) ->
+            ( model, Cmd.batch [ cmd, modifyUrl <| toPath UserHomeRoute ] )
+
+        ( UserHomeRoute, False ) ->
+            ( model, Cmd.batch [ cmd, modifyUrl <| toPath HomeRoute ] )
+
+        _ ->
+            ( model, cmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -97,15 +109,8 @@ update msg model =
         OnFetchBrand response ->
             ( { model | brand = response }, Cmd.none )
 
-        OnLocationChange response ->
-            let
-                route =
-                    parseLocation response
-            in
-                if (route == SignUpRoute || route == LoginRoute) && RemoteData.isSuccess model.token then
-                    ( model, modifyUrl <| toPath UserHomeRoute )
-                else
-                    ( { model | route = route }, Cmd.none )
+        OnLocationChange location ->
+            resolveRoute ( { model | route = parseLocation location }, Cmd.none )
 
         OnUserSignUp response ->
             ( { model | signUp = response }, Cmd.none )
@@ -119,10 +124,10 @@ update msg model =
             )
 
         OnFetchUserInfo response ->
-            ( { model | user = response }, Cmd.none )
+            resolveRoute ( { model | user = response }, Cmd.none )
 
         OnWindowChange size ->
-            onWindowChange model size
+            ( { model | window = size }, Cmd.none )
 
         UpdateRoute route ->
             ( model, modifyUrl <| toPath route )
@@ -132,6 +137,15 @@ update msg model =
 
         OnLoginForm form ->
             onLoginForm form model.userForm model
+
+        Logout ->
+            resolveRoute ( { model | user = RemoteData.NotAsked }, Persistence.put Nothing )
+
+        OnTokenLoad token ->
+            ( { model | token = Maybe.map RemoteData.succeed token |> Maybe.withDefault RemoteData.NotAsked }, Cmd.none )
+
+        UserMenu bool ->
+            ( { model | user = RemoteData.map (\x -> { x | menu = bool }) model.user }, Cmd.none )
 
 
 onLoginForm : Form -> UserForm -> Model -> ( Model, Cmd Msg )
@@ -167,11 +181,3 @@ onSignUpForm msg oldForm model =
 
         Submit user ->
             ( { model | user = RemoteData.Loading, userForm = initialUserForm }, Maybe.withDefault Cmd.none <| Maybe.map Api.signUp user )
-
-
-onWindowChange : Model -> Size -> ( Model, Cmd Msg )
-onWindowChange model size =
-    if (size.width <= 600) then
-        ( { model | responsive = Mobile }, Cmd.none )
-    else
-        ( { model | responsive = Tablet }, Cmd.none )

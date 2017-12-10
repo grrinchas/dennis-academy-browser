@@ -17,6 +17,10 @@ type Route
     | NotFoundRoute
 
 
+type alias UserRoute =
+    { logged : Route, loggedOut : Route }
+
+
 parseLocation : Location -> Route
 parseLocation location =
     case parseHash matchers location of

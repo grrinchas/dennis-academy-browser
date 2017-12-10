@@ -20,10 +20,13 @@ type Msg
     = OnFetchTopics (WebData (List Topic))
     | OnFetchBrand (WebData Brand)
     | OnFetchUserInfo (WebData User)
+    | OnUserSignUp (WebData SignUp)
+    | OnUserLogin (WebData Token)
     | OnWindowChange Size
     | UpdateRoute Route
     | OnLocationChange Location
-    | OnUserSignUp (WebData SignUp)
-    | OnUserLogin (WebData Token)
     | OnSignUpForm Form
     | OnLoginForm Form
+    | OnTokenLoad (Maybe Token)
+    | UserMenu Bool
+    | Logout

@@ -43,7 +43,14 @@ landing : Model -> View Msg
 landing model =
     let
         view =
-            \brand -> Layout.headerMain (NavBar.view brand) emptyPage
+            \brand ->
+                Layout.headerMain
+                    (if RemoteData.isSuccess model.token then
+                        NavBar.withDashboard brand
+                     else
+                        NavBar.withSignUp brand
+                    )
+                    emptyPage
     in
         map view model.brand
 
@@ -52,7 +59,14 @@ topics : Model -> View Msg
 topics model =
     let
         view =
-            \( brand, topics ) -> Layout.headerMain (NavBar.view brand) (Topics.view topics)
+            \( brand, topics ) ->
+                Layout.headerMain
+                    (if RemoteData.isSuccess model.token then
+                        NavBar.withDashboard brand
+                     else
+                        NavBar.withSignUp brand
+                    )
+                    (Topics.view topics)
     in
         map view <| RemoteData.append model.brand model.topics
 
@@ -63,7 +77,16 @@ topic model id =
         view =
             \( brand, topics ) ->
                 findTopic id topics
-                    |> Maybe.map (\topic -> Layout.noContainer (NavBar.view brand) (Topic.view topic))
+                    |> Maybe.map
+                        (\topic ->
+                            Layout.noContainer
+                                (if RemoteData.isSuccess model.token then
+                                    NavBar.withDashboard brand
+                                 else
+                                    NavBar.withSignUp brand
+                                )
+                                (Topic.view topic)
+                        )
                     |> Maybe.withDefault notFound
     in
         map view <| RemoteData.append model.brand model.topics
@@ -76,7 +99,17 @@ question model topicId questionId =
             \( brand, topics ) ->
                 findTopic topicId topics
                     |> Maybe.andThen (findQuestion questionId)
-                    |> Maybe.map2 (\top ques -> Layout.noContainer (NavBar.view brand) (Question.view top ques)) (findTopic topicId topics)
+                    |> Maybe.map2
+                        (\top ques ->
+                            Layout.noContainer
+                                (if RemoteData.isSuccess model.token then
+                                    NavBar.withDashboard brand
+                                 else
+                                    NavBar.withSignUp brand
+                                )
+                                (Question.view top ques)
+                        )
+                        (findTopic topicId topics)
                     |> Maybe.withDefault notFound
     in
         map view <| RemoteData.append model.brand model.topics
@@ -120,9 +153,9 @@ userHome : Model -> View Msg
 userHome model =
     let
         view =
-            \user -> Layout.onlyMain <| UserHome.view user
+            \( brand, user ) -> Layout.headerMain (NavBar.withUser brand user) <| UserHome.view user
     in
-        map view model.user
+        map view <| RemoteData.append model.brand model.user
 
 
 login : Model -> View Msg

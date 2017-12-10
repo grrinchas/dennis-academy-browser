@@ -7,7 +7,6 @@ import Slug exposing (Slug)
 import Validator exposing (..)
 
 
-
 decodeTopics : Decoder.Decoder (List Topic)
 decodeTopics =
     Decoder.field "allTopics" (Decoder.list decodeTopic)
@@ -27,7 +26,7 @@ decodeTopic =
         |> Pipeline.resolve
 
 
-finalTopicDecoder : Id -> Title -> Description -> List Question -> Icon -> Colour -> Maybe Slug -> Maybe Slug -> Decoder.Decoder Topic
+finalTopicDecoder : String -> String -> String -> List Question -> String -> String -> Maybe Slug -> Maybe Slug -> Decoder.Decoder Topic
 finalTopicDecoder id title desc questions icon colour next prev =
     case Slug.generate title of
         Just slug ->
@@ -37,16 +36,15 @@ finalTopicDecoder id title desc questions icon colour next prev =
             Decoder.fail "Can't slugify title"
 
 
-
 decodeQuestion : Decoder.Decoder Question
 decodeQuestion =
     Pipeline.decode finalQuestionDecoder
-        |>Pipeline.required "id" Decoder.string
-        |>Pipeline.required "title" Decoder.string
-        |>Pipeline.required "answer" Decoder.string
-        |>Pipeline.required "nextQuestion" (Decoder.nullable (Decoder.field "title" Decoder.string |> Decoder.andThen decodeSlug))
-        |>Pipeline.required "previousQuestion" (Decoder.nullable (Decoder.field "title" Decoder.string |> Decoder.andThen decodeSlug))
-        |>Pipeline.resolve
+        |> Pipeline.required "id" Decoder.string
+        |> Pipeline.required "title" Decoder.string
+        |> Pipeline.required "answer" Decoder.string
+        |> Pipeline.required "nextQuestion" (Decoder.nullable (Decoder.field "title" Decoder.string |> Decoder.andThen decodeSlug))
+        |> Pipeline.required "previousQuestion" (Decoder.nullable (Decoder.field "title" Decoder.string |> Decoder.andThen decodeSlug))
+        |> Pipeline.resolve
 
 
 finalQuestionDecoder : String -> String -> String -> Maybe Slug -> Maybe Slug -> Decoder.Decoder Question
@@ -77,7 +75,6 @@ decodeBrand =
             |> Pipeline.required "primaryColour" Decoder.string
             |> Pipeline.required "secondaryColour" Decoder.string
         )
-
 
 
 decodeSignUp : Decoder.Decoder SignUp
@@ -114,6 +111,7 @@ decodeUser =
         |> Pipeline.required "email" Decoder.string
         |> Pipeline.required "picture" Decoder.string
         |> Pipeline.required "email_verified" Decoder.bool
+        |> Pipeline.hardcoded False
 
 
 toError : String -> Error
