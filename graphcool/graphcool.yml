@@ -1,0 +1,21 @@
+
+# In the types.graphql you define your data schema
+types: ./types.graphql
+
+functions:
+    authenticate:
+        type: resolver
+        schema: ./authentication.graphql
+        handler:
+           code:
+               src: ./resolvers/authenticate.js
+               environment:
+                   AUTH0_DOMAIN: nookit.eu.auth0.com
+                   AUTH0_API_IDENTIFIER: dg-academy
+
+# https://www.graph.cool/docs/reference/auth/authorization/overview-iegoo0heez
+permissions:
+  - operation: Brand.read
+
+
+

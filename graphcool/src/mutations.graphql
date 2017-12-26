@@ -1,0 +1,9 @@
+mutation {
+    createBrand(
+        primaryColour: "#ff5722"
+        secondaryColour: "#03a9f4"
+    ) {
+        id
+    }
+}
+

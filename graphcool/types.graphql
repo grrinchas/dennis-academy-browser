@@ -1,0 +1,36 @@
+
+type Brand @model {
+    id: ID! @isUnique
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    primaryColour: String!
+    secondaryColour: String!
+    logo: File @relation (name: "FileOnBrand")
+}
+
+
+type User @model {
+    id: ID! @isUnique
+
+    createdAt: DateTime!
+    updatedAt: DateTime!
+
+    auth0UserId: String! @isUnique
+    username: String! @isUnique
+    email: String! @isUnique
+    picture: String! @isUnique
+
+}
+
+
+type File @model {
+    id: ID! @isUnique
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    contentType: String
+    name: String
+    secret: String @isUnique
+    size: Int
+    url: String
+    logo: Brand @relation (name: "FileOnBrand")
+}
