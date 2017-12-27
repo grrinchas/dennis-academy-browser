@@ -16,15 +16,18 @@ import Window exposing (Size)
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ Window.resizes (\size -> OnWindowChange size) ]
+    Sub.batch [ Window.resizes (\size -> OnWindowChange size), Ports.getToken OnLoadToken ]
 
 
-main : Program Never Model Msg
+main : Program (Maybe Token) Model Msg
 main =
-    Navigation.program OnLocationChange
+    Navigation.programWithFlags OnLocationChange
         { init =
-            \location ->
-                ( { initialModel | route = parseLocation location }
+            \token location ->
+                ( { initialModel
+                    | route = parseLocation location
+                    , token = Maybe.map RemoteData.succeed token |> Maybe.withDefault NotAsked
+                  }
                 , Cmd.batch
                     [ Navigation.modifyUrl location.hash
                     , perform OnWindowChange Window.size
@@ -118,8 +121,8 @@ reroute model =
             ( model, [] )
 
 
-saveToken : Model -> ( Model, List (Cmd Msg) )
-saveToken model =
+setToken : Model -> ( Model, List (Cmd Msg) )
+setToken model =
     case model.route of
         Just route ->
             case route of
@@ -138,11 +141,17 @@ saveToken model =
             ( model, [] )
 
 
+saveToken : Model -> ( Model, List (Cmd Msg) )
+saveToken model =
+    ( model, [ Ports.saveToken <| RemoteData.toMaybe model.token ] )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         OnLocationChange location ->
             ( { model | route = parseLocation location }, [] )
+                |> andThen setToken
                 |> andThen saveToken
                 |> andThen reroute
                 |> Tuple.mapSecond Cmd.batch
@@ -170,5 +179,9 @@ update msg model =
         OnFetchToken token ->
             ( { model | token = token }, [] )
                 |> andThen resetForm
+                |> andThen setToken
                 |> andThen reroute
                 |> Tuple.mapSecond Cmd.batch
+
+        OnLoadToken token ->
+            ( { model | token = Maybe.map RemoteData.succeed token |> Maybe.withDefault RemoteData.NotAsked }, Cmd.none )

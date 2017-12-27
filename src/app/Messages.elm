@@ -14,6 +14,7 @@ type IdProvider
     | Github
     | Database (Maybe ValidUser)
 
+
 type Msg
     = OnLocationChange Location
     | OnWindowChange Size
@@ -22,3 +23,4 @@ type Msg
     | Login IdProvider
     | OnFetchAccount (WebData Account)
     | OnFetchToken (WebData Token)
+    | OnLoadToken (Maybe Token)
