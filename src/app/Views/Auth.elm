@@ -1,28 +1,23 @@
 module Views.Auth exposing (..)
 
-import Components exposing (icon)
+import Components exposing (icon, loader)
 import Err exposing (InputError(DoNotMatch, Empty, WrongSize))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Messages exposing (..)
 import Models exposing (Account, Form)
+import Routes exposing (Route(LoginRoute, SignUpRoute), path)
 import Validator exposing (Valid, isValid)
 
 
 thirdParty : Html Msg
 thirdParty =
-    div [ class "section" ]
+    div [ class "section dg-third-party" ]
         [ div [ class "col s12 center-align" ]
-            [ a [ class "btn-floating btn-large red " ]
-                [ text "G"
-                ]
-            , a [ class "btn-floating btn-large blue", style [ ( "margin", "0 20px" ) ] ]
-                [ text "F"
-                ]
-            , a [ class "btn-floating btn-large cyan" ]
-                [ text "T"
-                ]
+            [ a [ class "fa fa-google-plus", onClick <| Login Google ] []
+            , a [ class "fa fa-facebook", onClick <| Login Facebook, style [ ( "margin", "0 20px" ) ] ] []
+            , a [ class "fa fa-github-alt", onClick <| Login Github ] []
             ]
         ]
 
@@ -119,33 +114,6 @@ repeatInput form =
         ]
 
 
-signUpPage : Form -> Html Msg -> Html Msg
-signUpPage form response =
-    div [ class "dg-center dg-registration" ]
-        [ Html.form []
-            [ regHeader "Sign Up"
-            , response
-            , div [ class "card-content" ]
-                [ usernameInput form
-                , emailInput form
-                , passwordInput form
-                , repeatInput form
-                , div [ class "valign-wrapper" ]
-                    [ a
-                        [ class "btn dg-right "
-                        , classList [ ( "disabled", not <| Validator.validSignUpInputs form ) ]
-                        , onClick <| CreateAccount <| Validator.validSignUpUser form
-                        ]
-                        [ text "Sign Up" ]
-                    ]
-                ]
-            , div [ class "card-action" ]
-                [ a [ href "" ] [ text "Already have an account" ]
-                ]
-            ]
-        ]
-
-
 validMsg : String -> Html msg
 validMsg msg =
     div
@@ -232,35 +200,75 @@ validateRepeat pass repeat =
             validatePassword repeat
 
 
-signUpError : String -> Html msg
-signUpError response =
+failureResponse : String -> Html msg
+failureResponse response =
     div [ class "dg-response-error" ] [ i [ class "material-icons prefix " ] [ text "error_outline" ], div [] [ text response ] ]
 
 
-signUpWithError : Form -> String -> Html Msg
-signUpWithError form error =
-    signUpPage form <| signUpError error
-
-
-signUpWithSuccess : Form -> Account -> Html Msg
-signUpWithSuccess form account =
-    signUpPage form <| signUpSuccess account
-
-
-signUpWithEmpty : Form -> Html Msg
-signUpWithEmpty form =
-    signUpPage form <| div [] []
-
-
-signUpSuccess : Account -> Html msg
-signUpSuccess account =
+successResponse : Account -> Html msg
+successResponse account =
     div [ class "dg-response-success" ]
         [ i [ class "material-icons prefix " ] [ text "done" ]
         , div []
             [ text ("Account for " ++ account.email ++ " has been created. Please ")
-
-            -- , a [ href <| toPath LoginRoute ] [ text "login" ]
-            , a [] [ text "login" ]
+            , a [ href <| path LoginRoute ] [ text "login" ]
             , text "."
+            ]
+        ]
+
+
+wrapper : Html Msg -> Html Msg
+wrapper view =
+    div [ class "dg-center dg-registration" ]
+        [ view ]
+
+
+signUpForm : Form -> Html Msg -> Html Msg
+signUpForm form response =
+    Html.form []
+        [ regHeader "Sign Up"
+        , response
+        , div [ class "card-content" ]
+            [ usernameInput form
+            , emailInput form
+            , passwordInput form
+            , repeatInput form
+            , div [ class "valign-wrapper" ]
+                [ a
+                    [ class "btn dg-right "
+                    , classList [ ( "disabled", not <| Validator.validSignUpInputs form ) ]
+                    , onClick <| CreateAccount <| Validator.validSignUpUser form
+                    ]
+                    [ text "Sign Up" ]
+                ]
+            ]
+        , div [ class "card-action" ]
+            [ a [ href <| path LoginRoute ] [ text "Already have an account" ]
+            ]
+        ]
+
+
+loginForm : Form -> Html Msg -> Html Msg
+loginForm form response =
+    Html.form []
+        [ regHeader "Login With"
+        , response
+        , div [ class "card-content login" ]
+            [ thirdParty
+            , span [ class "or card-title" ] [ text "or" ]
+            , emailInput form
+            , passwordInput form
+            , div [ class "valign-wrapper" ]
+                [ a
+                    [ class "btn dg-right "
+                    , classList [ ( "disabled", not <| Validator.validLoginInputs form ) ]
+                    , onClick <| Login <| Database <| Validator.validLoginUser form
+                    ]
+                    [ text "Login" ]
+                ]
+            ]
+        , div [ class "card-action" ]
+            [ a [ href <| path SignUpRoute ]
+                [ text "Do not have an account" ]
             ]
         ]

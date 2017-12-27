@@ -8,20 +8,19 @@ import Slug exposing (Slug)
 import UrlParser exposing (..)
 
 
+type alias Token =
+    { accessToken : String
+    , idToken : String
+    , tokenType : String
+    , expiresIn : Int
+    }
+
+
 type Route
-    = HomeRoute
+    = HomeRoute (Maybe Token)
     | SignUpRoute
-
-
-
-{-
-   |
-   | TopicsRoute
-   | TopicRoute Slug
-   | QuestionRoute Slug Slug
-   | LoginRoute
-   | UserHomeRoute
--}
+    | LoginRoute
+    | DashboardRoute
 
 
 parseLocation : Location -> Maybe Route
@@ -32,16 +31,29 @@ parseLocation location =
 matchers : Parser (Route -> a) a
 matchers =
     oneOf
-        [ map HomeRoute top
-
-        --      , map TopicsRoute (s "topics")
-        --     , map TopicRoute (s "topics" </> slugMatcher)
-        --    , map QuestionRoute (s "topics" </> slugMatcher </> slugMatcher)
+        [ map (HomeRoute Nothing) top
+        , map HomeRoute parseToken
         , map SignUpRoute (s "signup")
-
-        --     , map LoginRoute (s "login")
-        --     , map UserHomeRoute (s "user")
+        , map LoginRoute (s "login")
+        , map DashboardRoute (s "dashboard")
         ]
+
+
+parseToken : Parser (Maybe Token -> a) a
+parseToken =
+    custom "ACCESS_TOKEN" <|
+        \segment ->
+            case String.split "&" segment |> List.map (String.split "=") of
+                [ [ "access_token", accessToken ], [ "expires_in", expires ], [ "token_type", type_ ], [ "state", state ], [ "id_token", idToken ] ] ->
+                    case String.toInt expires of
+                        Ok int ->
+                            Ok <| Just <| Token accessToken idToken type_ int
+
+                        Err e ->
+                            Err "Missing expires_in"
+
+                _ ->
+                    Err "Not an access token"
 
 
 slugMatcher : Parser (Slug -> a) a
@@ -59,16 +71,14 @@ slugMatcher =
 path : Route -> String
 path route =
     case route of
-        HomeRoute ->
+        HomeRoute _ ->
             "#"
 
-        --    TopicsRoute -> "#topics"
-        --    TopicRoute topic -> "#topics/" ++ Slug.toString topic
-        --    QuestionRoute topic question -> "#topics/" ++ Slug.toString topic ++ "/" ++ Slug.toString question
         SignUpRoute ->
             "#signup"
 
+        LoginRoute ->
+            "#login"
 
-
---    LoginRoute -> "#login"
---    UserHomeRoute -> "#user"
+        DashboardRoute ->
+            "#dashboard"

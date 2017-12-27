@@ -1,4 +1,4 @@
-module Validator exposing (ErrorResponse, Valid, ValidUser, username, password, email, toString, isValid, validSignUpInputs, validSignUpUser)
+module Validator exposing (ErrorResponse, Valid, ValidUser, username, password, email, toString, isValid, validSignUpInputs, validSignUpUser, validLoginUser, validLoginInputs)
 
 import Err exposing (InputError(..))
 import Regex exposing (Regex)
@@ -94,6 +94,19 @@ validSignUpInputs form =
     [ username form.username, email form.email, password form.password, password form.repeatPass ]
         |> List.map isValid
         |> List.append [ form.repeatPass == form.password ]
+        |> List.all ((==) True)
+
+
+validLoginUser : Form -> Maybe ValidUser
+validLoginUser form =
+    Result.map3 ValidUser (username <| Just "dummy") (email form.email) (password form.password)
+        |> Result.toMaybe
+
+
+validLoginInputs : Form -> Bool
+validLoginInputs form =
+    [ email form.email, password form.password ]
+        |> List.map isValid
         |> List.all ((==) True)
 
 

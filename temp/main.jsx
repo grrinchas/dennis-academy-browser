@@ -1,7 +1,6 @@
 import Elm from './app/Main.elm';
+import {auth0} form 'auth0-js'
 import './main.scss';
-
-
 
 
 const mountNode = document.getElementById('app');
@@ -15,8 +14,14 @@ app.ports.put.subscribe(function (item) {
 
 
 
+
+
+
 if (module.hot) {
     module.hot.accept();
 }
+
+
+
 
 

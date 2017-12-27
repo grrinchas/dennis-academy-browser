@@ -5,6 +5,7 @@ $roboto-font-path: "~materialize-css/dist/fonts/roboto/";
 @import "./_scss/registration";
 @import "./_scss/loading";
 @import "./_scss/error";
+@import "_scss/idp";
 
 html, body, #app {
     height: 100%;
@@ -32,8 +33,8 @@ body {
 .dg-user-img,
 .dg-logo:hover {
     cursor: pointer;
-
 }
+
 
 
 .dg-user-menu {

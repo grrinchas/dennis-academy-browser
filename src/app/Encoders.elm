@@ -26,7 +26,8 @@ login user =
         [ ( "client_id", Encoder.string clientId )
         , ( "password", Encoder.string <| Validator.toString user.password )
         , ( "username", Encoder.string <| Validator.toString user.email )
-        , ( "grant_type", Encoder.string "password" )
+        , ( "grant_type", Encoder.string "http://auth0.com/oauth/grant-type/password-realm" )
         , ( "audience", Encoder.string "dg-academy" )
+        , ( "realm", Encoder.string "academy-db-connection" )
         , ( "scope", Encoder.string "openid" )
         ]

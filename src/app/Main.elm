@@ -1,12 +1,13 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Api
+import Ports
 import Html exposing (Html)
 import Messages exposing (..)
 import Models exposing (..)
 import Navigation exposing (Location)
 import Pages
-import RemoteData exposing (RemoteData(NotAsked))
+import RemoteData exposing (RemoteData(Loading, NotAsked))
 import Routes exposing (..)
 import Task exposing (perform)
 import Validator exposing (ValidUser)
@@ -61,7 +62,77 @@ createAccount : Maybe ValidUser -> Model -> ( Model, List (Cmd Msg) )
 createAccount mUser model =
     case mUser of
         Just user ->
-            ( model, [ Api.createAccount user ] )
+            ( { model | account = Loading }, [ Api.createAccount user ] )
+
+        Nothing ->
+            ( model, [] )
+
+
+login : IdProvider -> Model -> ( Model, List (Cmd Msg) )
+login idProvider model =
+    case idProvider of
+        Database mUser ->
+            case mUser of
+                Just user ->
+                    ( { model | token = Loading }, [ Api.login user ] )
+
+                Nothing ->
+                    ( model, [] )
+
+        Google ->
+            ( { model | token = Loading }, [ Ports.loginGoogle () ] )
+
+        Facebook ->
+            ( { model | token = Loading }, [ Ports.loginFacebook () ] )
+
+        Github ->
+            ( { model | token = Loading }, [ Ports.loginGithub () ] )
+
+
+reroute : Model -> ( Model, List (Cmd Msg) )
+reroute model =
+    case model.route of
+        Just route ->
+            case ( route, RemoteData.isSuccess model.token ) of
+                ( HomeRoute mToken, True ) ->
+                    case mToken of
+                        Just _ ->
+                            ( model, [ Navigation.modifyUrl <| path DashboardRoute ] )
+
+                        Nothing ->
+                            ( model, [] )
+
+                ( LoginRoute, True ) ->
+                    ( model, [ Navigation.modifyUrl <| path DashboardRoute ] )
+
+                ( SignUpRoute, True ) ->
+                    ( model, [ Navigation.modifyUrl <| path DashboardRoute ] )
+
+                ( DashboardRoute, False ) ->
+                    ( { model | route = Nothing }, [] )
+
+                _ ->
+                    ( model, [] )
+
+        Nothing ->
+            ( model, [] )
+
+
+saveToken : Model -> ( Model, List (Cmd Msg) )
+saveToken model =
+    case model.route of
+        Just route ->
+            case route of
+                HomeRoute mToken ->
+                    case mToken of
+                        Just token ->
+                            ( { model | token = RemoteData.succeed token }, [] )
+
+                        Nothing ->
+                            ( model, [] )
+
+                _ ->
+                    ( model, [] )
 
         Nothing ->
             ( model, [] )
@@ -72,6 +143,8 @@ update msg model =
     case msg of
         OnLocationChange location ->
             ( { model | route = parseLocation location }, [] )
+                |> andThen saveToken
+                |> andThen reroute
                 |> Tuple.mapSecond Cmd.batch
 
         OnWindowChange size ->
@@ -85,7 +158,17 @@ update msg model =
             createAccount user model
                 |> Tuple.mapSecond Cmd.batch
 
+        Login idp ->
+            login idp model
+                |> Tuple.mapSecond Cmd.batch
+
         OnFetchAccount account ->
             ( { model | account = account }, [] )
                 |> andThen resetForm
+                |> Tuple.mapSecond Cmd.batch
+
+        OnFetchToken token ->
+            ( { model | token = token }, [] )
+                |> andThen resetForm
+                |> andThen reroute
                 |> Tuple.mapSecond Cmd.batch

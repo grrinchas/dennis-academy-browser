@@ -3,7 +3,7 @@ module Models exposing (..)
 import Html exposing (Html)
 import Navigation exposing (Location)
 import RemoteData exposing (RemoteData(NotAsked), WebData)
-import Routes exposing (Route(HomeRoute))
+import Routes exposing (Route(HomeRoute), Token)
 import Slug exposing (Slug)
 import Window exposing (Size)
 
@@ -25,14 +25,6 @@ type alias Topic =
     }
 
 
-type alias Token =
-    { accessToken : String
-    , idToken : String
-    , tokenType : String
-    , expiresIn : Int
-    }
-
-
 type alias Question =
     { id : String
     , title : String
@@ -49,10 +41,9 @@ type alias Model =
     , window : Window.Size
     , form : Form
     , account : WebData Account
+    , token : WebData Token
 
     --    , userForm : UserForm
-    --    , signUp : WebData SignUp
-    --    , token : WebData Token
     --    , user : WebData User
     }
 
@@ -61,13 +52,12 @@ initialModel : Model
 initialModel =
     { -- topics = RemoteData.Loading
       --  , brand = RemoteData.Loading
-      route = Just HomeRoute
+      route = Just <| HomeRoute Nothing
     , window = Size 0 0
     , form = initialForm
     , account = NotAsked
+    , token = RemoteData.NotAsked
 
-    --  , signUp = RemoteData.NotAsked
-    --  , token = RemoteData.NotAsked
     --   , user = RemoteData.Loading
     }
 

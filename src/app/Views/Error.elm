@@ -47,7 +47,7 @@ ue response =
         , p []
             [ text "Looks like there was an error on this page. Click the link below and try again."
             ]
-        , a [ href <| path HomeRoute ] [ text "Go back to home page" ]
+        , a [ href <| path <| HomeRoute Nothing ] [ text "Go back to home page" ]
         ]
     , section [ class "card" ]
         [ div [ class "card-content" ]
@@ -65,7 +65,7 @@ ne =
         , p []
             [ text "Looks like there was an error on this page. Click the link below and try again."
             ]
-        , a [ href <| path HomeRoute ] [ text "Go back to home page" ]
+        , a [ href <| path <| HomeRoute Nothing ] [ text "Go back to home page" ]
         ]
     ]
 
@@ -89,6 +89,6 @@ nf =
         , span [] [ text "Page Not Found" ]
         , p []
             [ text "The page you are looking for is not available. Please check the URL and try again." ]
-        , a [ href <| path HomeRoute ] [ text "Go back to home page" ]
+        , a [ href <| path <| HomeRoute Nothing ] [ text "Go back to home page" ]
         ]
     ]

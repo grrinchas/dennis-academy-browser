@@ -13,6 +13,7 @@
         "format": "elm-format --yes"
     },
     "devDependencies": {
+        "auth0-js": "^9.0.1",
         "babel-cli": "^6.26.0",
         "babel-preset-env": "^1.6.1",
         "chalk": "^2.1.0",
