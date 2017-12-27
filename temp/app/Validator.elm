@@ -1,8 +1,7 @@
-module Validator exposing (ErrorResponse, Valid, ValidUser, username, password, email, toString, isValid, validSignUpInputs, validSignUpUser)
+module Validator exposing (ErrorResponse, Valid, ValidUser, Error(..), username, password, email, toString, isValid, validLoginInputs, validLoginUser, validSignUpInputs, validSignUpUser)
 
-import Err exposing (InputError(..))
 import Regex exposing (Regex)
-import Models exposing (Form)
+import Model exposing (UserForm)
 
 
 type Valid
@@ -19,12 +18,52 @@ type alias ValidUser =
 type alias ErrorResponse =
     { name : String
     , descriptor : String
-    , code : InputError
+    , code : Error
     , statusCode : Int
     }
 
 
-password : Maybe String -> Result InputError Valid
+type Error
+    = Empty
+    | WrongSize
+    | NotEntered
+    | DoNotMatch
+    | UsernameTaken
+    | EmailTaken
+    | CatchAll
+    | FailedLogin
+
+
+validLoginUser : UserForm -> Maybe ValidUser
+validLoginUser form =
+    Result.map3 ValidUser (username <| Just "dummy") (email form.email) (password form.password)
+        |> Result.toMaybe
+
+
+validLoginInputs : UserForm -> Bool
+validLoginInputs form =
+    [ email form.email, password form.password ]
+        |> List.map isValid
+        |> List.all ((==) True)
+
+
+validSignUpUser : UserForm -> Maybe ValidUser
+validSignUpUser form =
+    if form.repeat == form.password then
+        Result.map3 ValidUser (username form.username) (email form.email) (password form.password)
+            |> Result.toMaybe
+    else
+        Nothing
+
+
+validSignUpInputs : UserForm -> Bool
+validSignUpInputs form =
+    [ username form.username, email form.email, password form.password, password form.repeat ]
+        |> List.map isValid
+        |> List.all ((==) True)
+
+
+password : Maybe String -> Result Error Valid
 password maybe =
     case maybe of
         Nothing ->
@@ -41,7 +80,7 @@ password maybe =
                 Ok (Valid pass)
 
 
-username : Maybe String -> Result InputError Valid
+username : Maybe String -> Result Error Valid
 username maybe =
     case maybe of
         Nothing ->
@@ -58,7 +97,7 @@ username maybe =
                 Ok (Valid name)
 
 
-email : Maybe String -> Result InputError Valid
+email : Maybe String -> Result Error Valid
 email maybe =
     case maybe of
         Nothing ->
@@ -80,27 +119,12 @@ emailRegex =
 
 
 toString : Valid -> String
-toString (Valid valid) =
-    valid
+toString (Valid s) =
+    s
 
 
-isValid : Result InputError Valid -> Bool
+isValid : Result Error Valid -> Bool
 isValid str =
     Result.toMaybe str |> (/=) Nothing
 
 
-validSignUpInputs : Form -> Bool
-validSignUpInputs form =
-    [ username form.username, email form.email, password form.password, password form.repeatPass ]
-        |> List.map isValid
-        |> List.append [ form.repeatPass == form.password ]
-        |> List.all ((==) True)
-
-
-validSignUpUser : Form -> Maybe ValidUser
-validSignUpUser form =
-    if form.repeatPass == form.password then
-        Result.map3 ValidUser (username form.username) (email form.email) (password form.password)
-            |> Result.toMaybe
-    else
-        Nothing

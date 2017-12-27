@@ -1,0 +1,22 @@
+.dg-error-page {
+    height: 100%;
+    @extend .dg-primary-colour;
+    @extend .dg-text-grey;
+
+    span {
+        font-weight: bold;
+        font-size: 28px;
+    }
+
+    h1 {
+        font-size: 100px;
+    }
+
+    .card {
+        background-color: lighten($error-color, 30);
+        @extend .z-depth-0;
+
+        color: $error-color;
+    }
+
+}

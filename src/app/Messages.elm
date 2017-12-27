@@ -1,32 +1,15 @@
 module Messages exposing (..)
 
+import Models exposing (Account, Form)
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
-import Routes exposing (Route)
-import Window exposing (Size)
-import Model exposing (..)
 import Validator exposing (ValidUser)
-
-
-type Form
-    = Username String
-    | Email String
-    | Password String
-    | Repeat String
-    | Submit (Maybe ValidUser)
+import Window exposing (Size)
 
 
 type Msg
-    = OnFetchTopics (WebData (List Topic))
-    | OnFetchBrand (WebData Brand)
-    | OnFetchUserInfo (WebData User)
-    | OnUserSignUp (WebData SignUp)
-    | OnUserLogin (WebData Token)
+    = OnLocationChange Location
     | OnWindowChange Size
-    | UpdateRoute Route
-    | OnLocationChange Location
-    | OnSignUpForm Form
-    | OnLoginForm Form
-    | OnTokenLoad (Maybe Token)
-    | UserMenu Bool
-    | Logout
+    | OnFormChange Form
+    | CreateAccount (Maybe ValidUser)
+    | OnFetchAccount (WebData Account)

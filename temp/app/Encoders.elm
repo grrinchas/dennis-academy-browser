@@ -9,14 +9,14 @@ clientId =
     "enJKDQwKtcKbhrcGg8IlEIeyNJb5noXJ"
 
 
-createAccount : ValidUser -> Encoder.Value
-createAccount user =
+signUp : ValidUser -> Encoder.Value
+signUp user =
     Encoder.object
         [ ( "client_id", Encoder.string clientId )
         , ( "email", Encoder.string <| Validator.toString user.email )
         , ( "password", Encoder.string <| Validator.toString user.password )
         , ( "username", Encoder.string <| Validator.toString user.username )
-        , ( "connection", Encoder.string "academy-db-connection" )
+        , ( "connection", Encoder.string "db-connection" )
         ]
 
 
@@ -30,3 +30,5 @@ login user =
         , ( "audience", Encoder.string "dg-academy" )
         , ( "scope", Encoder.string "openid" )
         ]
+
+

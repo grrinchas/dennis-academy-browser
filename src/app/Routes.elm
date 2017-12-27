@@ -1,5 +1,7 @@
 module Routes exposing (..)
 
+import Err exposing (..)
+import Http
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 import Slug exposing (Slug)
@@ -8,39 +10,37 @@ import UrlParser exposing (..)
 
 type Route
     = HomeRoute
-    | TopicsRoute
-    | TopicRoute Slug
-    | QuestionRoute Slug Slug
     | SignUpRoute
-    | LoginRoute
-    | UserHomeRoute
-    | NotFoundRoute
 
 
-type alias UserRoute =
-    { logged : Route, loggedOut : Route }
+
+{-
+   |
+   | TopicsRoute
+   | TopicRoute Slug
+   | QuestionRoute Slug Slug
+   | LoginRoute
+   | UserHomeRoute
+-}
 
 
-parseLocation : Location -> Route
+parseLocation : Location -> Maybe Route
 parseLocation location =
-    case parseHash matchers location of
-        Just route ->
-            route
-
-        Nothing ->
-            NotFoundRoute
+    parseHash matchers location
 
 
 matchers : Parser (Route -> a) a
 matchers =
     oneOf
         [ map HomeRoute top
-        , map TopicsRoute (s "topics")
-        , map TopicRoute (s "topics" </> slugMatcher)
-        , map QuestionRoute (s "topics" </> slugMatcher </> slugMatcher)
+
+        --      , map TopicsRoute (s "topics")
+        --     , map TopicRoute (s "topics" </> slugMatcher)
+        --    , map QuestionRoute (s "topics" </> slugMatcher </> slugMatcher)
         , map SignUpRoute (s "signup")
-        , map LoginRoute (s "login")
-        , map UserHomeRoute (s "user")
+
+        --     , map LoginRoute (s "login")
+        --     , map UserHomeRoute (s "user")
         ]
 
 
@@ -56,29 +56,19 @@ slugMatcher =
                     Err "Malformed Path"
 
 
-toPath : Route -> String
-toPath route =
+path : Route -> String
+path route =
     case route of
         HomeRoute ->
             "#"
 
-        TopicsRoute ->
-            "#topics"
-
-        TopicRoute topic ->
-            "#topics/" ++ Slug.toString topic
-
-        QuestionRoute topic question ->
-            "#topics/" ++ Slug.toString topic ++ "/" ++ Slug.toString question
-
+        --    TopicsRoute -> "#topics"
+        --    TopicRoute topic -> "#topics/" ++ Slug.toString topic
+        --    QuestionRoute topic question -> "#topics/" ++ Slug.toString topic ++ "/" ++ Slug.toString question
         SignUpRoute ->
             "#signup"
 
-        LoginRoute ->
-            "#login"
 
-        UserHomeRoute ->
-            "#user"
 
-        NotFoundRoute ->
-            ""
+--    LoginRoute -> "#login"
+--    UserHomeRoute -> "#user"
