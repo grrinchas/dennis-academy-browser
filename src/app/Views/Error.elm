@@ -1,12 +1,12 @@
 module Views.Error exposing (..)
 
-import Err exposing (InputError, Oops(Input, NotFound))
+import Err exposing (InputError, Oops(Input, Routing))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http exposing (Error(BadPayload), Response)
 import Messages exposing (Msg)
 import Models exposing (..)
-import Routes exposing (Route(HomeRoute), path)
+import Routes exposing (Route(HomeRoute), RouteError(NotAllowed, NotFound), path)
 
 
 view : Err.Oops -> Html Msg
@@ -23,11 +23,34 @@ view err =
                 _ ->
                     common ne
 
-        NotFound ->
+        Routing NotFound ->
             common nf
+
+        Routing (NotAllowed old new) ->
+            common <| internal (path old) <| "Navigation is not allowed: " ++ (path old) ++ " -> " ++ (path new)
 
         Input e ->
             common ne
+
+
+internal : String -> String -> List (Html msg)
+internal route msg =
+    [ section [ class "section" ]
+        [ h1 []
+            [ text "500" ]
+        , span [] [ text "Something went wrong" ]
+        , h5 [] [ text route ]
+        , p []
+            [ text "Looks like there was an error on this page. Click the link below and try again."
+            ]
+        , a [ href <| path <| HomeRoute Nothing ] [ text "Go back to home page" ]
+        ]
+    , section [ class "card" ]
+        [ div [ class "card-content" ]
+            [ text msg
+            ]
+        ]
+    ]
 
 
 ue : Response a -> List (Html msg)

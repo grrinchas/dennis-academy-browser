@@ -1,6 +1,7 @@
 module Encoders exposing (..)
 
 import Json.Encode as Encoder
+import Routes exposing (Auth0Token)
 import Validator exposing (ValidUser)
 
 
@@ -31,3 +32,16 @@ login user =
         , ( "realm", Encoder.string "academy-db-connection" )
         , ( "scope", Encoder.string "openid" )
         ]
+
+
+authGraphCool : Auth0Token -> Encoder.Value
+authGraphCool token =
+    let
+        query =
+            "mutation {authenticate (accessToken: \"" ++ token.accessToken ++ "\"){token}}"
+    in
+        Encoder.object
+            [ ( "query", Encoder.string query ) ]
+
+
+

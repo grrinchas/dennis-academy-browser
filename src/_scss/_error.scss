@@ -12,6 +12,10 @@
         font-size: 100px;
     }
 
+    h5 {
+        word-wrap: break-word;
+    }
+
     .card {
         background-color: lighten($error-color, 30);
         @extend .z-depth-0;

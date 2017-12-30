@@ -1,14 +1,4 @@
 
-type Brand @model {
-    id: ID! @isUnique
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    primaryColour: String!
-    secondaryColour: String!
-    logo: File @relation (name: "FileOnBrand")
-}
-
-
 type User @model {
     id: ID! @isUnique
 
@@ -22,15 +12,3 @@ type User @model {
 
 }
 
-
-type File @model {
-    id: ID! @isUnique
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    contentType: String
-    name: String
-    secret: String @isUnique
-    size: Int
-    url: String
-    logo: Brand @relation (name: "FileOnBrand")
-}

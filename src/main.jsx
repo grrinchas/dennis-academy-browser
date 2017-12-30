@@ -3,14 +3,13 @@ import './main.scss';
 import {WebAuth} from 'auth0-js'
 
 const mountNode = document.getElementById('app');
-const app = Elm.Main.embed(mountNode, JSON.parse(localStorage.getItem("access_token")));
+const app = Elm.Main.embed(mountNode,JSON.parse(localStorage.getItem("tokens")));
 
 
-app.ports.saveToken.subscribe(function (item) {
-    localStorage.setItem("access_token", JSON.stringify(item));
-    app.ports.getToken.send(JSON.parse(localStorage.getItem("access_token")));
+app.ports.saveTokens.subscribe(function (item) {
+    localStorage.setItem("tokens", JSON.stringify(item));
+    app.ports.getTokens.send(JSON.parse(localStorage.getItem("tokens")));
 });
-
 
 
 const webAuth = new WebAuth({
@@ -43,7 +42,6 @@ app.ports.loginGithub.subscribe( function () {
         responseType: 'token id_token'
     })
 });
-
 
 
 

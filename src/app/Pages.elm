@@ -9,6 +9,7 @@ import Json.Decode
 import Views.Landing as Landing
 import Views.Error as Error
 import Views.Auth as Auth
+import Views.NavBar as NavBar
 import Models exposing (..)
 import Routes exposing (..)
 import Messages exposing (..)
@@ -60,7 +61,7 @@ signUpPage model =
 
 loginPage : Model -> Html Msg
 loginPage model =
-    case model.token of
+    case RemoteData.append model.tokens.auth0 model.tokens.graphCool of
         NotAsked ->
             Auth.loginForm model.form empty
                 |> Auth.wrapper
@@ -71,7 +72,9 @@ loginPage model =
                 |> Auth.wrapper
 
         Success token ->
-            Error.view NotFound
+            Auth.loginForm model.form empty
+                |> withLoader
+                |> Auth.wrapper
 
         Failure err ->
             case err of
@@ -87,13 +90,36 @@ loginPage model =
                     Error.view <| Http err
 
 
+landing : Model -> Html Msg
+landing model =
+    case ( model.route, model.tokens.graphCool ) of
+        ( _, Success _ ) ->
+            NavBar.withDashboard |> NavBar.wrapper
+
+        ( Ok (HomeRoute (Just _)), Failure err ) ->
+            Error.view <| Http err
+
+        _ ->
+            NavBar.withSignUp |> NavBar.wrapper
+
+
+dashboard : Model -> Html Msg
+dashboard model =
+    case model.tokens.graphCool of
+        Success _ ->
+            NavBar.withUserMenu |> NavBar.wrapper
+
+        _ ->
+            Error.view <| Routing NotFound
+
+
 tablet : Model -> Html Msg
 tablet model =
     case model.route of
-        Just route ->
+        Ok route ->
             case route of
                 HomeRoute _ ->
-                    Landing.view
+                    landing model
 
                 SignUpRoute ->
                     signUpPage model
@@ -102,10 +128,10 @@ tablet model =
                     loginPage model
 
                 DashboardRoute ->
-                    text "dashboard"
+                    dashboard model
 
-        Nothing ->
-            Error.view NotFound
+        Err oops ->
+            Error.view <| Routing oops
 
 
 mobile : Model -> Html Msg

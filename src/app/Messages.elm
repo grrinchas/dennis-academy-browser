@@ -3,7 +3,7 @@ module Messages exposing (..)
 import Models exposing (Account, Form)
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
-import Routes exposing (Token)
+import Routes exposing (Auth0Token, GraphCoolToken)
 import Validator exposing (ValidUser)
 import Window exposing (Size)
 
@@ -22,5 +22,7 @@ type Msg
     | CreateAccount (Maybe ValidUser)
     | Login IdProvider
     | OnFetchAccount (WebData Account)
-    | OnFetchToken (WebData Token)
-    | OnLoadToken (Maybe Token)
+    | OnFetchAuth0Token (WebData Auth0Token)
+    | OnFetchGraphCoolToken (WebData GraphCoolToken)
+    | OnLoadTokens (Maybe { auth0 : Auth0Token, graphCool : GraphCoolToken })
+    | Logout

@@ -1,6 +1,5 @@
 module Routes exposing (..)
 
-import Err exposing (..)
 import Http
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
@@ -8,7 +7,7 @@ import Slug exposing (Slug)
 import UrlParser exposing (..)
 
 
-type alias Token =
+type alias Auth0Token =
     { accessToken : String
     , idToken : String
     , tokenType : String
@@ -16,16 +15,30 @@ type alias Token =
     }
 
 
+type alias GraphCoolToken =
+    String
+
+
 type Route
-    = HomeRoute (Maybe Token)
+    = HomeRoute (Maybe Auth0Token)
     | SignUpRoute
     | LoginRoute
     | DashboardRoute
 
 
-parseLocation : Location -> Maybe Route
+type RouteError
+    = NotFound
+    | NotAllowed Route Route
+
+
+parseLocation : Location -> Result RouteError Route
 parseLocation location =
-    parseHash matchers location
+    case parseHash matchers location of
+        Just route ->
+            Ok route
+
+        Nothing ->
+            Err NotFound
 
 
 matchers : Parser (Route -> a) a
@@ -39,7 +52,7 @@ matchers =
         ]
 
 
-parseToken : Parser (Maybe Token -> a) a
+parseToken : Parser (Maybe Auth0Token -> a) a
 parseToken =
     custom "ACCESS_TOKEN" <|
         \segment ->
@@ -47,7 +60,7 @@ parseToken =
                 [ [ "access_token", accessToken ], [ "expires_in", expires ], [ "token_type", type_ ], [ "state", state ], [ "id_token", idToken ] ] ->
                     case String.toInt expires of
                         Ok int ->
-                            Ok <| Just <| Token accessToken idToken type_ int
+                            Ok <| Just <| Auth0Token accessToken idToken type_ int
 
                         Err e ->
                             Err "Missing expires_in"
@@ -71,8 +84,9 @@ slugMatcher =
 path : Route -> String
 path route =
     case route of
-        HomeRoute _ ->
-            "#"
+        HomeRoute token ->
+            Maybe.map (\_ -> "#token") token
+                |> Maybe.withDefault "#"
 
         SignUpRoute ->
             "#signup"

@@ -1,15 +1,19 @@
 module Models exposing (..)
 
+import Err exposing (Oops)
 import Html exposing (Html)
 import Navigation exposing (Location)
 import RemoteData exposing (RemoteData(NotAsked), WebData)
-import Routes exposing (Route(HomeRoute), Token)
+import Routes exposing (Auth0Token, GraphCoolToken, Route(HomeRoute), RouteError)
 import Slug exposing (Slug)
 import Window exposing (Size)
 
 
 type alias User =
-    {}
+    { username : String
+    , email : String
+    , picture : String
+    }
 
 
 type alias Topic =
@@ -37,13 +41,15 @@ type alias Question =
 
 type alias Model =
     { -- topics : WebData (List Topic)
-      route : Maybe Route
+      route : Result RouteError Route
     , window : Window.Size
     , form : Form
     , account : WebData Account
-    , token : WebData Token
+    , tokens :
+        { auth0 : WebData Auth0Token
+        , graphCool : WebData GraphCoolToken
+        }
 
-    --    , userForm : UserForm
     --    , user : WebData User
     }
 
@@ -52,11 +58,14 @@ initialModel : Model
 initialModel =
     { -- topics = RemoteData.Loading
       --  , brand = RemoteData.Loading
-      route = Just <| HomeRoute Nothing
+      route = Ok <| HomeRoute Nothing
     , window = Size 0 0
     , form = initialForm
     , account = NotAsked
-    , token = RemoteData.NotAsked
+    , tokens =
+        { auth0 = RemoteData.NotAsked
+        , graphCool = RemoteData.NotAsked
+        }
 
     --   , user = RemoteData.Loading
     }
@@ -75,6 +84,11 @@ type alias Account =
     , email : String
     , emailVerified : Bool
     }
+
+
+loggedIn : Model -> Bool
+loggedIn model =
+    RemoteData.isSuccess <| RemoteData.append model.tokens.auth0 model.tokens.graphCool
 
 
 initialForm : Form

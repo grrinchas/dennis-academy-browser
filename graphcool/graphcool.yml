@@ -3,19 +3,21 @@
 types: ./types.graphql
 
 functions:
-#    authenticate:
-#        type: resolver
-#        schema: ./src/authentication.graphql
-#        handler:
-#           code:
-#               src: ./src/resolvers/authenticate.js
-#               environment:
-#                   AUTH0_DOMAIN: nookit.eu.auth0.com
-#                   AUTH0_API_IDENTIFIER: dg-academy
+    authenticate:
+        type: resolver
+        schema: ./src/authentication.graphql
+        handler:
+           code:
+               src: ./src/resolvers/authenticate.js
+               environment:
+                   AUTH0_DOMAIN: nookit.eu.auth0.com
+                   AUTH0_API_IDENTIFIER: dg-academy
 
-# https://www.graph.cool/docs/reference/auth/authorization/overview-iegoo0heez
 permissions:
-  - operation: Brand.read
+  - operation: User.read
+    authenticated: true
+    query: ./src/readUserInfo.graphql
+
 
 
 
