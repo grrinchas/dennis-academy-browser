@@ -60,20 +60,17 @@ reroute : Model -> ( Model, List (Cmd Msg) )
 reroute model =
     case model.route of
         Ok route ->
-            case ( route, RemoteData.isSuccess model.tokens.auth0, RemoteData.isSuccess model.tokens.graphCool ) of
-                ( LoginRoute, True, True ) ->
+            case ( route, RemoteData.isSuccess model.user.data ) of
+                ( LoginRoute, True ) ->
                     updateRoute DashboardRoute model
 
-                ( SignUpRoute, True, True ) ->
+                ( SignUpRoute, True ) ->
                     updateRoute DashboardRoute model
 
-                ( HomeRoute (Just _), True, True ) ->
+                ( HomeRoute (Just _), True ) ->
                     updateRoute DashboardRoute model
 
-                ( DashboardRoute, False, _ ) ->
-                    ( { model | route = Err NotFound }, [] )
-
-                ( DashboardRoute, _, False ) ->
+                ( DashboardRoute, False ) ->
                     ( { model | route = Err NotFound }, [] )
 
                 _ ->
@@ -140,10 +137,10 @@ initTokens : Maybe { auth0 : Auth0Token, graphCool : GraphCoolToken } -> Model -
 initTokens tokens model =
     case tokens of
         Just { auth0, graphCool } ->
-            ( { model | tokens = { auth0 = RemoteData.succeed auth0, graphCool = RemoteData.succeed graphCool } }, [] )
+            ( { model | user = { tokens = { auth0 = RemoteData.succeed auth0, graphCool = RemoteData.succeed graphCool }, data = model.user.data } }, [] )
 
         Nothing ->
-            ( { model | tokens = { auth0 = NotAsked, graphCool = NotAsked } }, [] )
+            ( { model | user = { tokens = { auth0 = NotAsked, graphCool = NotAsked }, data = model.user.data } }, [] )
 
 
 updateForm : Form -> Model -> ( Model, List (Cmd Msg) )
@@ -188,22 +185,19 @@ updateWindow model =
 
 updateAuth0Token : WebData Auth0Token -> Model -> ( Model, List (Cmd Msg) )
 updateAuth0Token token model =
-    ( { model | tokens = { auth0 = token, graphCool = model.tokens.graphCool } }, [] )
+    ( { model | user = { tokens = { auth0 = token, graphCool = model.user.tokens.graphCool }, data = model.user.data } }, [] )
 
 
 updateGraphCoolToken : WebData GraphCoolToken -> Model -> ( Model, List (Cmd Msg) )
 updateGraphCoolToken token model =
-    ( { model | tokens = { auth0 = model.tokens.auth0, graphCool = token } }, [] )
+    ( { model | user = { tokens = { auth0 = model.user.tokens.auth0, graphCool = token }, data = model.user.data } }, [] )
 
 
 fetchGraphCoolToken : Model -> ( Model, List (Cmd Msg) )
 fetchGraphCoolToken model =
-    case model.tokens.auth0 of
+    case model.user.tokens.auth0 of
         RemoteData.Success token ->
             ( model, [ Api.authGraphCool token ] )
-
-        RemoteData.Failure err ->
-            ( { model | tokens = { auth0 = model.tokens.auth0, graphCool = RemoteData.Failure err } }, [] )
 
         _ ->
             ( model, [] )
@@ -216,7 +210,7 @@ resetForm model =
 
 saveToken : Model -> ( Model, List (Cmd Msg) )
 saveToken model =
-    case ( model.tokens.auth0, model.tokens.graphCool ) of
+    case ( model.user.tokens.auth0, model.user.tokens.graphCool ) of
         ( RemoteData.Success auth0, RemoteData.Success graphCool ) ->
             ( model, [ Ports.saveTokens <| Just { auth0 = auth0, graphCool = graphCool } ] )
 

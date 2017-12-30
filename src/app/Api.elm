@@ -2,10 +2,12 @@ module Api exposing (..)
 
 import Decoders exposing (decodeGraphCoolToken)
 import Http exposing (Header, jsonBody)
+import Json.Decode
+import Json.Encode
 import Messages exposing (Msg)
 import Encoders
 import RemoteData exposing (RemoteData)
-import Routes exposing (Auth0Token)
+import Routes exposing (Auth0Token, GraphCoolToken)
 import Validator exposing (ValidUser)
 
 
@@ -33,11 +35,8 @@ createAccount user =
         |> Cmd.map Messages.OnFetchAccount
 
 
-
-authGraphCool: Auth0Token -> Cmd Msg
+authGraphCool : Auth0Token -> Cmd Msg
 authGraphCool token =
     Http.post graphCool (jsonBody <| Encoders.authGraphCool token) decodeGraphCoolToken
         |> RemoteData.sendRequest
         |> Cmd.map Messages.OnFetchGraphCoolToken
-
-

@@ -38,10 +38,7 @@ authGraphCool : Auth0Token -> Encoder.Value
 authGraphCool token =
     let
         query =
-            "mutation {authenticate (accessToken: \"" ++ token.accessToken ++ "\"){token}}"
+            "mutation {authenticate (accessToken: \"" ++ token.accessToken ++ "\"){id token}}"
     in
         Encoder.object
             [ ( "query", Encoder.string query ) ]
-
-
-

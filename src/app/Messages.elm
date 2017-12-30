@@ -1,6 +1,6 @@
 module Messages exposing (..)
 
-import Models exposing (Account, Form)
+import Models exposing (Account, Form, User)
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 import Routes exposing (Auth0Token, GraphCoolToken)

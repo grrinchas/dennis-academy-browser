@@ -61,22 +61,27 @@ signUpPage model =
 
 loginPage : Model -> Html Msg
 loginPage model =
-    case RemoteData.append model.tokens.auth0 model.tokens.graphCool of
-        NotAsked ->
+    case ( model.user.tokens.auth0, model.user.tokens.graphCool, model.user.data ) of
+        ( NotAsked, _, _ ) ->
             Auth.loginForm model.form empty
                 |> Auth.wrapper
 
-        Loading ->
-            Auth.loginForm model.form empty
-                |> withLoader
-                |> Auth.wrapper
-
-        Success token ->
+        ( Loading, _, _ ) ->
             Auth.loginForm model.form empty
                 |> withLoader
                 |> Auth.wrapper
 
-        Failure err ->
+        ( _, Loading, _ ) ->
+            Auth.loginForm model.form empty
+                |> withLoader
+                |> Auth.wrapper
+
+        ( _, _, Loading ) ->
+            Auth.loginForm model.form empty
+                |> withLoader
+                |> Auth.wrapper
+
+        ( Failure err, _, _ ) ->
             case err of
                 BadStatus response ->
                     if response.status.code == 403 then
@@ -89,15 +94,45 @@ loginPage model =
                 _ ->
                     Error.view <| Http err
 
+        ( _, Failure err, _ ) ->
+            case err of
+                BadStatus response ->
+                    if response.status.code == 403 then
+                        Auth.failureResponse "Wrong email or password."
+                            |> Auth.loginForm model.form
+                            |> Auth.wrapper
+                    else
+                        Error.view <| Http err
+
+                _ ->
+                    Error.view <| Http err
+
+        ( _, _, Failure err ) ->
+            case err of
+                BadStatus response ->
+                    if response.status.code == 403 then
+                        Auth.failureResponse "Wrong email or password."
+                            |> Auth.loginForm model.form
+                            |> Auth.wrapper
+                    else
+                        Error.view <| Http err
+
+                _ ->
+                    Error.view <| Http err
+
+        _ ->
+            Auth.loginForm model.form empty
+                |> Auth.wrapper
+
 
 landing : Model -> Html Msg
 landing model =
-    case ( model.route, model.tokens.graphCool ) of
-        ( _, Success _ ) ->
-            NavBar.withDashboard |> NavBar.wrapper
-
-        ( Ok (HomeRoute (Just _)), Failure err ) ->
+    case ( model.route, model.user.tokens.graphCool, model.user.data ) of
+        ( Ok (HomeRoute (Just _)), Failure err, _ ) ->
             Error.view <| Http err
+
+        ( _, _, Success _ ) ->
+            NavBar.withDashboard |> NavBar.wrapper
 
         _ ->
             NavBar.withSignUp |> NavBar.wrapper
@@ -105,7 +140,7 @@ landing model =
 
 dashboard : Model -> Html Msg
 dashboard model =
-    case model.tokens.graphCool of
+    case model.user.data of
         Success _ ->
             NavBar.withUserMenu |> NavBar.wrapper
 

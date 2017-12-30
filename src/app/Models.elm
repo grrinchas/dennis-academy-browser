@@ -9,10 +9,22 @@ import Slug exposing (Slug)
 import Window exposing (Size)
 
 
-type alias User =
+type alias UserData =
     { username : String
     , email : String
     , picture : String
+    }
+
+
+type alias Tokens =
+    { auth0 : WebData Auth0Token
+    , graphCool : WebData GraphCoolToken
+    }
+
+
+type alias User =
+    { tokens : Tokens
+    , data : WebData UserData
     }
 
 
@@ -45,10 +57,7 @@ type alias Model =
     , window : Window.Size
     , form : Form
     , account : WebData Account
-    , tokens :
-        { auth0 : WebData Auth0Token
-        , graphCool : WebData GraphCoolToken
-        }
+    , user : User
 
     --    , user : WebData User
     }
@@ -62,9 +71,12 @@ initialModel =
     , window = Size 0 0
     , form = initialForm
     , account = NotAsked
-    , tokens =
-        { auth0 = RemoteData.NotAsked
-        , graphCool = RemoteData.NotAsked
+    , user =
+        { tokens =
+            { auth0 = RemoteData.NotAsked
+            , graphCool = RemoteData.NotAsked
+            }
+        , data = NotAsked
         }
 
     --   , user = RemoteData.Loading
@@ -84,11 +96,6 @@ type alias Account =
     , email : String
     , emailVerified : Bool
     }
-
-
-loggedIn : Model -> Bool
-loggedIn model =
-    RemoteData.isSuccess <| RemoteData.append model.tokens.auth0 model.tokens.graphCool
 
 
 initialForm : Form
