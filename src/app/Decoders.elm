@@ -4,7 +4,6 @@ import Err exposing (InputError(..))
 import Json.Decode as Decoder
 import Json.Decode.Pipeline as Pipeline
 import Models exposing (..)
-import Routes exposing (Auth0Token)
 import Validator exposing (..)
 
 
@@ -17,14 +16,14 @@ decodeAuth0Token =
         |> Pipeline.required "expires_in" Decoder.int
 
 
-
-decodeGraphCoolToken : Decoder.Decoder String
+decodeGraphCoolToken : Decoder.Decoder AuthGraphCool
 decodeGraphCoolToken =
-    Decoder.string
-        |> Decoder.field "token"
+    (Pipeline.decode AuthGraphCool
+        |> Pipeline.required "id" (Decoder.string)
+        |> Pipeline.required "token" (Decoder.string)
+    )
         |> Decoder.field "authenticate"
         |> Decoder.field "data"
-
 
 
 decodeSignUpError : Decoder.Decoder ErrorResponse
@@ -44,6 +43,18 @@ decodeAccount =
         |> Pipeline.required "email_verified" Decoder.bool
 
 
+decodeUser : Decoder.Decoder User
+decodeUser =
+    (Pipeline.decode User
+        |> Pipeline.required "id" Decoder.string
+        |> Pipeline.required "username" Decoder.string
+        |> Pipeline.required "email" Decoder.string
+        |> Pipeline.required "picture" Decoder.string
+    )
+        |> Decoder.field "User"
+        |> Decoder.field "data"
+
+
 toError : String -> InputError
 toError str =
     if str == "username_exists" then
@@ -52,4 +63,3 @@ toError str =
         EmailTaken
     else
         CatchAll
-

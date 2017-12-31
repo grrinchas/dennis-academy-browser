@@ -1,28 +1,22 @@
 module Messages exposing (..)
 
-import Models exposing (Account, Form, User)
+import Models exposing (Account, Auth0Token, AuthGraphCool, Form, Menu, Tokens, User)
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
-import Routes exposing (Auth0Token, GraphCoolToken)
 import Validator exposing (ValidUser)
 import Window exposing (Size)
-
-
-type IdProvider
-    = Google
-    | Facebook
-    | Github
-    | Database (Maybe ValidUser)
 
 
 type Msg
     = OnLocationChange Location
     | OnWindowChange Size
     | OnFormChange Form
+    | OnMenuChange Menu
     | CreateAccount (Maybe ValidUser)
-    | Login IdProvider
+    | Login (Maybe ValidUser)
     | OnFetchAccount (WebData Account)
     | OnFetchAuth0Token (WebData Auth0Token)
-    | OnFetchGraphCoolToken (WebData GraphCoolToken)
-    | OnLoadTokens (Maybe { auth0 : Auth0Token, graphCool : GraphCoolToken })
+    | OnFetchGraphCoolToken (WebData AuthGraphCool)
+    | OnFetchUser (WebData User)
+    | OnLoadTokens (Maybe Tokens)
     | Logout

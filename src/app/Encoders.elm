@@ -1,7 +1,7 @@
 module Encoders exposing (..)
 
 import Json.Encode as Encoder
-import Routes exposing (Auth0Token)
+import Models exposing (Auth0Token, AuthGraphCool)
 import Validator exposing (ValidUser)
 
 
@@ -39,6 +39,16 @@ authGraphCool token =
     let
         query =
             "mutation {authenticate (accessToken: \"" ++ token.accessToken ++ "\"){id token}}"
+    in
+        Encoder.object
+            [ ( "query", Encoder.string query ) ]
+
+
+userInfo : String -> Encoder.Value
+userInfo id =
+    let
+        query =
+            "query {User (id: \"" ++ id ++ "\"){id username picture email}}"
     in
         Encoder.object
             [ ( "query", Encoder.string query ) ]

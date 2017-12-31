@@ -46,14 +46,6 @@ body {
 
 }
 
-.dg-user-img {
-    img {
-        display: block;
-        height: 30px;
-        width: 30px;
-        margin-right: 5px;
-    }
-}
 
 .dg-input {
     margin-bottom: 3px !important;
@@ -169,6 +161,21 @@ body {
 
 .dg-nav-bar {
     margin-right: 18px;
+
+    div {
+        height: 30px;
+
+    }
+    .drop {
+        height: 30px !important;
+        line-height: 30px !important;
+    }
+    img {
+            display: block;
+            height: 30px;
+            width: 30px;
+            margin-left: 10px;
+        }
 }
 
 

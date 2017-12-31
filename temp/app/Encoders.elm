@@ -20,6 +20,8 @@ signUp user =
         ]
 
 
+
+
 login : ValidUser -> Encoder.Value
 login user =
     Encoder.object

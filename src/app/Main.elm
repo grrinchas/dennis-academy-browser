@@ -21,7 +21,7 @@ subscriptions model =
     Sub.batch [ Window.resizes (\size -> OnWindowChange size), Ports.getTokens OnLoadTokens ]
 
 
-main : Program (Maybe { auth0 : Auth0Token, graphCool : GraphCoolToken }) Model Msg
+main : Program (Maybe Tokens) Model Msg
 main =
     Navigation.programWithFlags OnLocationChange
         { init = init
@@ -31,10 +31,11 @@ main =
         }
 
 
-init : Maybe { auth0 : Auth0Token, graphCool : GraphCoolToken } -> Location -> ( Model, Cmd Msg )
+init : Maybe Tokens -> Location -> ( Model, Cmd Msg )
 init tokens location =
-    ( initialModel, [ Navigation.modifyUrl location.hash ] )
+    updateLocation location initialModel
         |> andThen (initTokens tokens)
+        |> andThen fetchUser
         |> andThen updateWindow
         |> Tuple.mapSecond Cmd.batch
 
@@ -60,14 +61,11 @@ reroute : Model -> ( Model, List (Cmd Msg) )
 reroute model =
     case model.route of
         Ok route ->
-            case ( route, RemoteData.isSuccess model.user.data ) of
+            case ( route, isLoggedIn model ) of
                 ( LoginRoute, True ) ->
                     updateRoute DashboardRoute model
 
                 ( SignUpRoute, True ) ->
-                    updateRoute DashboardRoute model
-
-                ( HomeRoute (Just _), True ) ->
                     updateRoute DashboardRoute model
 
                 ( DashboardRoute, False ) ->
@@ -85,7 +83,6 @@ update msg model =
     case msg of
         OnLocationChange location ->
             updateLocation location model
-                |> andThen parseHomeRoute
                 |> andThen reroute
                 |> Tuple.mapSecond Cmd.batch
 
@@ -96,33 +93,41 @@ update msg model =
             updateForm form model
                 |> Tuple.mapSecond Cmd.batch
 
-        CreateAccount user ->
-            updateAccount user Loading model
-                |> andThen (fetchAccount user)
+        OnMenuChange menu ->
+            updateMenu menu model
                 |> Tuple.mapSecond Cmd.batch
 
-        Login idp ->
-            login idp model
+        CreateAccount user ->
+            fetchAccount user model
+                |> Tuple.mapSecond Cmd.batch
+
+        Login mUser ->
+            fetchAuth0Token mUser model
                 |> Tuple.mapSecond Cmd.batch
 
         Logout ->
             removeToken model
-                |> andThen (updateRoute <| HomeRoute Nothing)
+                |> andThen (updateUser NotAsked)
+                |> andThen (updateRoute HomeRoute)
                 |> Tuple.mapSecond Cmd.batch
 
         OnFetchAccount account ->
-            ( { model | account = account }, [] )
+            updateAccount account model
                 |> andThen resetForm
                 |> Tuple.mapSecond Cmd.batch
 
         OnFetchAuth0Token token ->
             updateAuth0Token token model
-                |> andThen (updateGraphCoolToken Loading)
                 |> andThen fetchGraphCoolToken
                 |> Tuple.mapSecond Cmd.batch
 
         OnFetchGraphCoolToken token ->
             updateGraphCoolToken token model
+                |> andThen fetchUser
+                |> Tuple.mapSecond Cmd.batch
+
+        OnFetchUser user ->
+            updateUser user model
                 |> andThen resetForm
                 |> andThen saveToken
                 |> andThen reroute
@@ -133,14 +138,142 @@ update msg model =
                 |> Tuple.mapSecond Cmd.batch
 
 
-initTokens : Maybe { auth0 : Auth0Token, graphCool : GraphCoolToken } -> Model -> ( Model, List (Cmd Msg) )
+initTokens : Maybe Tokens -> Model -> ( Model, List (Cmd Msg) )
 initTokens tokens model =
-    case tokens of
-        Just { auth0, graphCool } ->
-            ( { model | user = { tokens = { auth0 = RemoteData.succeed auth0, graphCool = RemoteData.succeed graphCool }, data = model.user.data } }, [] )
+    let
+        remote =
+            model.remote
+    in
+        case tokens of
+            Just { auth0, graphCool } ->
+                ( { model | remote = { remote | auth0 = RemoteData.succeed auth0, graphCool = RemoteData.succeed graphCool } }, [] )
+
+            Nothing ->
+                ( { model | remote = { remote | auth0 = NotAsked, graphCool = NotAsked } }, [] )
+
+
+saveToken : Model -> ( Model, List (Cmd Msg) )
+saveToken model =
+    case ( model.remote.auth0, model.remote.graphCool ) of
+        ( RemoteData.Success auth0, RemoteData.Success graphCool ) ->
+            ( model, [ Ports.saveTokens <| Just { auth0 = auth0, graphCool = graphCool } ] )
+
+        _ ->
+            removeToken model
+
+
+removeToken : Model -> ( Model, List (Cmd Msg) )
+removeToken model =
+    ( model, [ Ports.saveTokens Nothing ] )
+
+
+
+-------------------------Fetch Remotes--------------------------------------
+
+
+fetchAccount : Maybe ValidUser -> Model -> ( Model, List (Cmd Msg) )
+fetchAccount mUser model =
+    case mUser of
+        Just user ->
+            updateAccount Loading model
+                |> andThen (\model -> ( model, [ Api.createAccount user ] ))
 
         Nothing ->
-            ( { model | user = { tokens = { auth0 = NotAsked, graphCool = NotAsked }, data = model.user.data } }, [] )
+            ( model, [] )
+
+
+fetchGraphCoolToken : Model -> ( Model, List (Cmd Msg) )
+fetchGraphCoolToken model =
+    case model.remote.auth0 of
+        RemoteData.Success token ->
+            ( model, [ Api.authGraphCool token ] )
+
+        RemoteData.Failure err ->
+            let
+                remote =
+                    model.remote
+            in
+                ( { model | remote = { remote | user = RemoteData.Failure err } }, [] )
+
+        _ ->
+            ( model, [] )
+
+
+fetchUser : Model -> ( Model, List (Cmd Msg) )
+fetchUser model =
+    let
+        remote =
+            model.remote
+    in
+        case model.remote.graphCool of
+            RemoteData.Success token ->
+                ( {model| remote = {remote | user = Loading }}, [ Api.fetchUser token ] )
+
+            RemoteData.Failure err ->
+                ( { model | remote = { remote | user = RemoteData.Failure err } }, [] )
+
+            _ ->
+                ( model, [] )
+
+
+fetchAuth0Token : Maybe ValidUser -> Model -> ( Model, List (Cmd Msg) )
+fetchAuth0Token mUser model =
+    case mUser of
+        Just user ->
+            updateUser Loading model
+                |> andThen (\model -> ( model, [ Api.login user ] ))
+
+        Nothing ->
+            ( model, [] )
+
+
+
+-------------------------Update Remote--------------------------------------
+
+
+updateAuth0Token : WebData Auth0Token -> Model -> ( Model, List (Cmd Msg) )
+updateAuth0Token token model =
+    let
+        remote =
+            model.remote
+    in
+        ( { model | remote = { remote | auth0 = token } }, [] )
+
+
+updateGraphCoolToken : WebData AuthGraphCool -> Model -> ( Model, List (Cmd Msg) )
+updateGraphCoolToken token model =
+    let
+        remote =
+            model.remote
+    in
+        ( { model | remote = { remote | graphCool = token } }, [] )
+
+
+updateUser : WebData User -> Model -> ( Model, List (Cmd Msg) )
+updateUser user model =
+    let
+        remote =
+            model.remote
+    in
+        ( { model | remote = { remote | user = user } }, [] )
+
+
+updateAccount : WebData Account -> Model -> ( Model, List (Cmd Msg) )
+updateAccount account model =
+    let
+        remote =
+            model.remote
+    in
+        ( { model | remote = { remote | account = account } }, [] )
+
+
+
+-------------------------Update Others--------------------------------------
+
+
+updateMenu : Menu -> Model -> ( Model, List (Cmd Msg) )
+updateMenu menu model =
+    ( { model | menu = menu }, [] )
 
 
 updateForm : Form -> Model -> ( Model, List (Cmd Msg) )
@@ -148,24 +281,9 @@ updateForm form model =
     ( { model | form = form }, [] )
 
 
-updateAccount : Maybe ValidUser -> WebData Account -> Model -> ( Model, List (Cmd Msg) )
-updateAccount user account model =
-    case user of
-        Just user ->
-            ( { model | account = Loading }, [] )
-
-        Nothing ->
-            ( model, [] )
-
-
-fetchAccount : Maybe ValidUser -> Model -> ( Model, List (Cmd Msg) )
-fetchAccount mUser model =
-    case mUser of
-        Just user ->
-            ( model, [ Api.createAccount user ] )
-
-        Nothing ->
-            ( model, [] )
+resetForm : Model -> ( Model, List (Cmd Msg) )
+resetForm model =
+    updateForm (Form Nothing Nothing Nothing Nothing) model
 
 
 updateLocation : Location -> Model -> ( Model, List (Cmd Msg) )
@@ -181,110 +299,3 @@ updateRoute route model =
 updateWindow : Model -> ( Model, List (Cmd Msg) )
 updateWindow model =
     ( model, [ perform OnWindowChange Window.size ] )
-
-
-updateAuth0Token : WebData Auth0Token -> Model -> ( Model, List (Cmd Msg) )
-updateAuth0Token token model =
-    ( { model | user = { tokens = { auth0 = token, graphCool = model.user.tokens.graphCool }, data = model.user.data } }, [] )
-
-
-updateGraphCoolToken : WebData GraphCoolToken -> Model -> ( Model, List (Cmd Msg) )
-updateGraphCoolToken token model =
-    ( { model | user = { tokens = { auth0 = model.user.tokens.auth0, graphCool = token }, data = model.user.data } }, [] )
-
-
-fetchGraphCoolToken : Model -> ( Model, List (Cmd Msg) )
-fetchGraphCoolToken model =
-    case model.user.tokens.auth0 of
-        RemoteData.Success token ->
-            ( model, [ Api.authGraphCool token ] )
-
-        _ ->
-            ( model, [] )
-
-
-resetForm : Model -> ( Model, List (Cmd Msg) )
-resetForm model =
-    updateForm (Form Nothing Nothing Nothing Nothing) model
-
-
-saveToken : Model -> ( Model, List (Cmd Msg) )
-saveToken model =
-    case ( model.user.tokens.auth0, model.user.tokens.graphCool ) of
-        ( RemoteData.Success auth0, RemoteData.Success graphCool ) ->
-            ( model, [ Ports.saveTokens <| Just { auth0 = auth0, graphCool = graphCool } ] )
-
-        _ ->
-            ( model, [] )
-
-
-removeToken : Model -> ( Model, List (Cmd Msg) )
-removeToken model =
-    ( model, [ Ports.saveTokens Nothing ] )
-
-
-login : IdProvider -> Model -> ( Model, List (Cmd Msg) )
-login idProvider model =
-    case idProvider of
-        Database mUser ->
-            case mUser of
-                Just user ->
-                    updateAuth0Token Loading model
-                        |> andThen (loginUser user)
-
-                Nothing ->
-                    ( model, [] )
-
-        Google ->
-            updateAuth0Token Loading model
-                |> andThen loginGoogle
-
-        Facebook ->
-            updateAuth0Token Loading model
-                |> andThen loginFacebook
-
-        Github ->
-            updateAuth0Token Loading model
-                |> andThen loginGithub
-
-
-loginGithub : Model -> ( Model, List (Cmd Msg) )
-loginGithub model =
-    ( model, [ Ports.loginGithub () ] )
-
-
-loginFacebook : Model -> ( Model, List (Cmd Msg) )
-loginFacebook model =
-    ( model, [ Ports.loginFacebook () ] )
-
-
-loginGoogle : Model -> ( Model, List (Cmd Msg) )
-loginGoogle model =
-    ( model, [ Ports.loginGoogle () ] )
-
-
-loginUser : ValidUser -> Model -> ( Model, List (Cmd Msg) )
-loginUser user model =
-    ( model, [ Api.login user ] )
-
-
-parseHomeRoute : Model -> ( Model, List (Cmd Msg) )
-parseHomeRoute model =
-    case model.route of
-        Ok route ->
-            case route of
-                HomeRoute mToken ->
-                    case mToken of
-                        Just token ->
-                            updateAuth0Token (RemoteData.succeed token) model
-                                |> andThen (updateGraphCoolToken Loading)
-                                |> andThen fetchGraphCoolToken
-
-                        Nothing ->
-                            ( model, [] )
-
-                _ ->
-                    ( model, [] )
-
-        Err oops ->
-            ( model, [] )

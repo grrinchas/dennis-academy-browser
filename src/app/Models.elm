@@ -4,27 +4,47 @@ import Err exposing (Oops)
 import Html exposing (Html)
 import Navigation exposing (Location)
 import RemoteData exposing (RemoteData(NotAsked), WebData)
-import Routes exposing (Auth0Token, GraphCoolToken, Route(HomeRoute), RouteError)
+import Routes exposing (Route(HomeRoute), RouteError)
 import Slug exposing (Slug)
 import Window exposing (Size)
 
+type alias Auth0Token =
+    { accessToken : String
+    , idToken : String
+    , tokenType : String
+    , expiresIn : Int
+    }
 
-type alias UserData =
-    { username : String
+type alias Menu =
+    { user: Bool
+    }
+
+
+type alias User =
+    { id : String
+    , username : String
     , email : String
     , picture : String
     }
 
 
 type alias Tokens =
-    { auth0 : WebData Auth0Token
-    , graphCool : WebData GraphCoolToken
+    { auth0 : Auth0Token
+    , graphCool : AuthGraphCool
     }
 
 
-type alias User =
-    { tokens : Tokens
-    , data : WebData UserData
+type alias AuthGraphCool =
+    { id : String
+    , token : String
+    }
+
+
+type alias Remote =
+    { auth0 : WebData Auth0Token
+    , graphCool : WebData AuthGraphCool
+    , account : WebData Account
+    , user : WebData User
     }
 
 
@@ -52,34 +72,28 @@ type alias Question =
 
 
 type alias Model =
-    { -- topics : WebData (List Topic)
-      route : Result RouteError Route
+    { route : Result RouteError Route
     , window : Window.Size
     , form : Form
-    , account : WebData Account
-    , user : User
-
-    --    , user : WebData User
+    , menu : Menu
+    , remote : Remote
     }
 
 
 initialModel : Model
 initialModel =
-    { -- topics = RemoteData.Loading
-      --  , brand = RemoteData.Loading
-      route = Ok <| HomeRoute Nothing
+    { route = Ok HomeRoute
     , window = Size 0 0
     , form = initialForm
-    , account = NotAsked
-    , user =
-        { tokens =
-            { auth0 = RemoteData.NotAsked
-            , graphCool = RemoteData.NotAsked
-            }
-        , data = NotAsked
+    , menu =
+        { user = False
         }
-
-    --   , user = RemoteData.Loading
+    , remote =
+        { auth0 = RemoteData.NotAsked
+        , graphCool = RemoteData.NotAsked
+        , account = RemoteData.NotAsked
+        , user = RemoteData.NotAsked
+        }
     }
 
 
@@ -105,3 +119,8 @@ initialForm =
     , password = Just "admin1"
     , repeatPass = Just "admin1"
     }
+
+
+isLoggedIn : Model -> Bool
+isLoggedIn model =
+    RemoteData.isSuccess model.remote.user

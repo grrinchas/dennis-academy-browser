@@ -7,20 +7,11 @@ import Slug exposing (Slug)
 import UrlParser exposing (..)
 
 
-type alias Auth0Token =
-    { accessToken : String
-    , idToken : String
-    , tokenType : String
-    , expiresIn : Int
-    }
 
-
-type alias GraphCoolToken =
-    String
 
 
 type Route
-    = HomeRoute (Maybe Auth0Token)
+    = HomeRoute
     | SignUpRoute
     | LoginRoute
     | DashboardRoute
@@ -44,29 +35,11 @@ parseLocation location =
 matchers : Parser (Route -> a) a
 matchers =
     oneOf
-        [ map (HomeRoute Nothing) top
-        , map HomeRoute parseToken
+        [ map HomeRoute top
         , map SignUpRoute (s "signup")
         , map LoginRoute (s "login")
         , map DashboardRoute (s "dashboard")
         ]
-
-
-parseToken : Parser (Maybe Auth0Token -> a) a
-parseToken =
-    custom "ACCESS_TOKEN" <|
-        \segment ->
-            case String.split "&" segment |> List.map (String.split "=") of
-                [ [ "access_token", accessToken ], [ "expires_in", expires ], [ "token_type", type_ ], [ "state", state ], [ "id_token", idToken ] ] ->
-                    case String.toInt expires of
-                        Ok int ->
-                            Ok <| Just <| Auth0Token accessToken idToken type_ int
-
-                        Err e ->
-                            Err "Missing expires_in"
-
-                _ ->
-                    Err "Not an access token"
 
 
 slugMatcher : Parser (Slug -> a) a
@@ -84,9 +57,8 @@ slugMatcher =
 path : Route -> String
 path route =
     case route of
-        HomeRoute token ->
-            Maybe.map (\_ -> "#token") token
-                |> Maybe.withDefault "#"
+        HomeRoute ->
+            "#"
 
         SignUpRoute ->
             "#signup"

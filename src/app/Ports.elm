@@ -1,18 +1,9 @@
 port module Ports exposing (..)
 
-import Routes exposing (Auth0Token, GraphCoolToken)
+import Models exposing (Tokens)
 
 
-port loginGoogle : () -> Cmd msg
+port saveTokens : Maybe Tokens -> Cmd msg
 
 
-port loginFacebook : () -> Cmd msg
-
-
-port loginGithub : () -> Cmd msg
-
-
-port saveTokens : Maybe {auth0 : Auth0Token, graphCool: GraphCoolToken} -> Cmd msg
-
-port getTokens : (Maybe {auth0 : Auth0Token, graphCool: GraphCoolToken} -> msg) -> Sub msg
-
+port getTokens : (Maybe Tokens -> msg) -> Sub msg

@@ -3,7 +3,7 @@ module Pages exposing (..)
 import Components exposing (empty, withLoader)
 import Decoders
 import Err exposing (..)
-import Html exposing (Html, text)
+import Html exposing (Html, div, text)
 import Http exposing (Error(BadStatus))
 import Json.Decode
 import Views.Landing as Landing
@@ -18,7 +18,7 @@ import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 
 signUpPage : Model -> Html Msg
 signUpPage model =
-    case model.account of
+    case model.remote.account of
         NotAsked ->
             Auth.signUpForm model.form empty
                 |> Auth.wrapper
@@ -61,27 +61,20 @@ signUpPage model =
 
 loginPage : Model -> Html Msg
 loginPage model =
-    case ( model.user.tokens.auth0, model.user.tokens.graphCool, model.user.data ) of
-        ( NotAsked, _, _ ) ->
+    case model.remote.user of
+        NotAsked ->
             Auth.loginForm model.form empty
                 |> Auth.wrapper
 
-        ( Loading, _, _ ) ->
-            Auth.loginForm model.form empty
-                |> withLoader
-                |> Auth.wrapper
-
-        ( _, Loading, _ ) ->
+        Loading ->
             Auth.loginForm model.form empty
                 |> withLoader
                 |> Auth.wrapper
 
-        ( _, _, Loading ) ->
-            Auth.loginForm model.form empty
-                |> withLoader
-                |> Auth.wrapper
+        Success _ ->
+            Error.view <| Routing NotFound
 
-        ( Failure err, _, _ ) ->
+        Failure err ->
             case err of
                 BadStatus response ->
                     if response.status.code == 403 then
@@ -93,59 +86,32 @@ loginPage model =
 
                 _ ->
                     Error.view <| Http err
-
-        ( _, Failure err, _ ) ->
-            case err of
-                BadStatus response ->
-                    if response.status.code == 403 then
-                        Auth.failureResponse "Wrong email or password."
-                            |> Auth.loginForm model.form
-                            |> Auth.wrapper
-                    else
-                        Error.view <| Http err
-
-                _ ->
-                    Error.view <| Http err
-
-        ( _, _, Failure err ) ->
-            case err of
-                BadStatus response ->
-                    if response.status.code == 403 then
-                        Auth.failureResponse "Wrong email or password."
-                            |> Auth.loginForm model.form
-                            |> Auth.wrapper
-                    else
-                        Error.view <| Http err
-
-                _ ->
-                    Error.view <| Http err
-
-        _ ->
-            Auth.loginForm model.form empty
-                |> Auth.wrapper
 
 
 landing : Model -> Html Msg
 landing model =
-    case ( model.route, model.user.tokens.graphCool, model.user.data ) of
-        ( Ok (HomeRoute (Just _)), Failure err, _ ) ->
-            Error.view <| Http err
-
-        ( _, _, Success _ ) ->
+    case isLoggedIn model of
+        True ->
             NavBar.withDashboard |> NavBar.wrapper
 
-        _ ->
+        False ->
             NavBar.withSignUp |> NavBar.wrapper
 
 
 dashboard : Model -> Html Msg
 dashboard model =
-    case model.user.data of
-        Success _ ->
-            NavBar.withUserMenu |> NavBar.wrapper
-
-        _ ->
+    case model.remote.user of
+        NotAsked ->
             Error.view <| Routing NotFound
+
+        Loading ->
+            div [] []
+
+        Success user ->
+            NavBar.withUserMenu user model.menu |> NavBar.wrapper
+
+        Failure err ->
+            Error.view <| Http err
 
 
 tablet : Model -> Html Msg
@@ -153,7 +119,7 @@ tablet model =
     case model.route of
         Ok route ->
             case route of
-                HomeRoute _ ->
+                HomeRoute ->
                     landing model
 
                 SignUpRoute ->

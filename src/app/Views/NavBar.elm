@@ -3,7 +3,8 @@ module Views.NavBar exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Messages exposing (Msg(Logout))
+import Messages exposing (Msg(Logout, OnMenuChange))
+import Models exposing (Menu, User)
 import Routes exposing (Route(DashboardRoute, HomeRoute, LoginRoute, SignUpRoute), path)
 
 
@@ -18,7 +19,7 @@ wrapper view =
         [ nav []
             [ div [ class "nav-wrapper valign-wrapper" ]
                 [ a [ class "button-collapse show-on-large" ] [ i [ class "material-icons" ] [ text "apps" ] ]
-                , a [ href <| path <| HomeRoute Nothing, class "valign-wrapper" ] [ img [ src logo, class "dg-logo" ] [] ]
+                , a [ href <| path HomeRoute, class "valign-wrapper" ] [ img [ src logo, class "dg-logo" ] [] ]
                 , view
                 ]
             ]
@@ -40,44 +41,25 @@ withDashboard =
         [ text "Dashboard" ]
 
 
-withUserMenu : Html Msg
-withUserMenu =
-    ul [ class "dropdown-content", classList [ ( "dg-user-menu", True ) ] ]
+withUserMenu : User -> Menu -> Html Msg
+withUserMenu user menu =
+    div
+        [ class "dg-left valign-wrapper  dg-nav-bar" ]
+        [ span [] [ text user.email ]
+        , div [ class "valign-wrapper dg-user-img", onClick <| OnMenuChange { menu | user = not menu.user } ]
+            [ img [ src user.picture ] []
+            , i [ class "material-icons drop" ] [ text "arrow_drop_down" ]
+            , userMenu menu
+            ]
+        ]
+
+
+userMenu : Menu -> Html Msg
+userMenu menu =
+    ul [ class "dropdown-content", classList [ ( "dg-user-menu", menu.user ) ] ]
         [ li [] [ a [] [ i [ class "material-icons" ] [ text "person" ], text "Profile" ] ]
         , li [ class "divider" ] []
         , li []
             [ a [ onClick Logout ] [ i [ class "material-icons" ] [ text "arrow_forward" ], text "Logout" ]
             ]
         ]
-
-
-
-{-
-
-   withSignUp : Brand -> View Msg
-   withSignUp brand =
-       { mobile = navBar brand <| signUp brand, tablet = navBar brand <| signUp brand }
-
-
-   withUser : Brand -> User -> View Msg
-   withUser brand u =
-       { mobile = navBar brand <| user u, tablet = navBar brand <| user u }
-
-
-   withDashboard : Brand -> View Msg
-   withDashboard brand =
-       { mobile = navBar brand <| dashboard brand, tablet = navBar brand <| dashboard brand }
-
-
-   user : User -> Html Msg
-   user user =
-       div
-           [ class "dg-left valign-wrapper dg-user-img dg-nav-bar"
-           , onClick <| UserMenu <| not user.menu
-           ]
-           [ img [ src user.picture, class "" ] []
-           , i [ class "material-icons" ] [ text "arrow_drop_down" ]
-           , userMenu user
-           ]
-
--}

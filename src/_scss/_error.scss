@@ -19,7 +19,7 @@
     .card {
         background-color: lighten($error-color, 30);
         @extend .z-depth-0;
-
+        word-wrap: break-word;
         color: $error-color;
     }
 

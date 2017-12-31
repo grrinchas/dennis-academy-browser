@@ -11,17 +11,6 @@ import Routes exposing (Route(LoginRoute, SignUpRoute), path)
 import Validator exposing (Valid, isValid)
 
 
-thirdParty : Html Msg
-thirdParty =
-    div [ class "section dg-third-party" ]
-        [ div [ class "col s12 center-align" ]
-            [ a [ class "fa fa-google-plus", onClick <| Login Google ] []
-            , a [ class "fa fa-facebook", onClick <| Login Facebook, style [ ( "margin", "0 20px" ) ] ] []
-            , a [ class "fa fa-github-alt", onClick <| Login Github ] []
-            ]
-        ]
-
-
 validClass : Bool -> Attribute msg
 validClass bool =
     classList [ ( "dg-valid", bool ), ( "dg-not-valid", not bool ) ]
@@ -251,18 +240,16 @@ signUpForm form response =
 loginForm : Form -> Html Msg -> Html Msg
 loginForm form response =
     Html.form []
-        [ regHeader "Login With"
+        [ regHeader "Login"
         , response
         , div [ class "card-content login" ]
-            [ thirdParty
-            , span [ class "or card-title" ] [ text "or" ]
-            , emailInput form
+            [ emailInput form
             , passwordInput form
             , div [ class "valign-wrapper" ]
                 [ a
                     [ class "btn dg-right "
                     , classList [ ( "disabled", not <| Validator.validLoginInputs form ) ]
-                    , onClick <| Login <| Database <| Validator.validLoginUser form
+                    , onClick <| Login <| Validator.validLoginUser form
                     ]
                     [ text "Login" ]
                 ]
