@@ -7,13 +7,11 @@ import Slug exposing (Slug)
 import UrlParser exposing (..)
 
 
-
-
-
 type Route
     = HomeRoute
     | SignUpRoute
     | LoginRoute
+    | EditorRoute String
     | DashboardRoute
 
 
@@ -38,6 +36,7 @@ matchers =
         [ map HomeRoute top
         , map SignUpRoute (s "signup")
         , map LoginRoute (s "login")
+        , map EditorRoute (s "editor" </> string)
         , map DashboardRoute (s "dashboard")
         ]
 
@@ -65,6 +64,9 @@ path route =
 
         LoginRoute ->
             "#login"
+
+        EditorRoute id ->
+            "#editor/" ++ id
 
         DashboardRoute ->
             "#dashboard"

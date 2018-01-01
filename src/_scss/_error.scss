@@ -1,6 +1,6 @@
 .dg-error-page {
     height: 100%;
-    @extend .dg-primary-colour;
+    background-color: $primary-color;
     @extend .dg-text-grey;
 
     span {

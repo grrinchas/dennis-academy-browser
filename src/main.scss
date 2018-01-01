@@ -5,16 +5,22 @@ $roboto-font-path: "~materialize-css/dist/fonts/roboto/";
 @import "./_scss/registration";
 @import "./_scss/loading";
 @import "./_scss/error";
-@import "_scss/idp";
+@import "./_scss/editor";
+@import "./_scss/navBar";
 
 html, body, #app {
-    height: 100%;
+    @extend .dg-full-height;
 }
 
 body {
     min-width: 600px;
     background-color: $body-bg-color;
 }
+
+.dg-full-height {
+    height: 100%;
+}
+
 
 .dg-visible, .dg-topic-img {
     display: block;
@@ -30,22 +36,6 @@ body {
     width: $topic-size;
 }
 
-.dg-user-img,
-.dg-logo:hover {
-    cursor: pointer;
-}
-
-
-
-.dg-user-menu {
-    top: 60px;
-    width: 160px;
-    right: 10px;
-    display: block;
-    opacity: 1;
-
-}
-
 
 .dg-input {
     margin-bottom: 3px !important;
@@ -59,7 +49,7 @@ body {
     @extend .success-style
 }
 
-.dg-response-error, .dg-response-success{
+.dg-response-error, .dg-response-success {
     @extend .section;
     @extend .valign-wrapper;
     padding-left: 24px;
@@ -78,10 +68,9 @@ body {
 
     background-color: $success-color !important;
     a {
-        color:  color("orange", "accent-2");
+        color: color("orange", "accent-2");
     }
-    a:hover
-    {
+    a:hover {
         color: lighten($card-link-color, 20%);
     }
 }
@@ -113,12 +102,6 @@ body {
 }
 
 
-.dg-logo {
-    width: 120px;
-    height: 30px;
-}
-
-
 .dg-center {
     @extend .valign-wrapper;
     justify-content: center;
@@ -126,11 +109,6 @@ body {
 
 .dg-left {
     margin-left: auto;
-}
-
-.dg-primary-colour {
-    @extend .grey ;
-    @extend .darken-3;
 }
 
 .dg-no-margins {
@@ -150,32 +128,5 @@ body {
     }
 }
 
-.dg-topic-nav-btn {
-    margin-right: 3px;
-    margin-left: 3px;
-}
-
-.dg-nav-height {
-    height: 64px;
-}
-
-.dg-nav-bar {
-    margin-right: 18px;
-
-    div {
-        height: 30px;
-
-    }
-    .drop {
-        height: 30px !important;
-        line-height: 30px !important;
-    }
-    img {
-            display: block;
-            height: 30px;
-            width: 30px;
-            margin-left: 10px;
-        }
-}
 
 

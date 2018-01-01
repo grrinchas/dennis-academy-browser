@@ -2,6 +2,7 @@ port module Main exposing (..)
 
 import Api
 import Err exposing (..)
+import Mouse
 import Platform.Cmd exposing (batch)
 import Ports
 import Html exposing (Html)
@@ -18,7 +19,7 @@ import Window exposing (Size)
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ Window.resizes (\size -> OnWindowChange size), Ports.getTokens OnLoadTokens ]
+    Sub.batch [ Window.resizes (\size -> OnWindowChange size), Ports.getTokens OnLoadTokens, Mouse.clicks MouseClicked ]
 
 
 main : Program (Maybe Tokens) Model Msg
@@ -69,6 +70,9 @@ reroute model =
                     updateRoute DashboardRoute model
 
                 ( DashboardRoute, False ) ->
+                    ( { model | route = Err NotFound }, [] )
+
+                ( EditorRoute _, False ) ->
                     ( { model | route = Err NotFound }, [] )
 
                 _ ->
@@ -136,6 +140,14 @@ update msg model =
         OnLoadTokens tokens ->
             initTokens tokens model
                 |> Tuple.mapSecond Cmd.batch
+
+        OnEditorChange content ->
+            ( { model | editor = content }, Cmd.none )
+
+        MouseClicked _ ->
+            resetMenu model
+                |> Tuple.mapSecond Cmd.batch
+
 
 
 initTokens : Maybe Tokens -> Model -> ( Model, List (Cmd Msg) )
@@ -207,7 +219,7 @@ fetchUser model =
     in
         case model.remote.graphCool of
             RemoteData.Success token ->
-                ( {model| remote = {remote | user = Loading }}, [ Api.fetchUser token ] )
+                ( { model | remote = { remote | user = Loading } }, [ Api.fetchUser token ] )
 
             RemoteData.Failure err ->
                 ( { model | remote = { remote | user = RemoteData.Failure err } }, [] )
@@ -299,3 +311,8 @@ updateRoute route model =
 updateWindow : Model -> ( Model, List (Cmd Msg) )
 updateWindow model =
     ( model, [ perform OnWindowChange Window.size ] )
+
+resetMenu: Model -> ( Model, List (Cmd Msg) )
+resetMenu model =
+   ( { model | menu = Menu False False }, [])
+

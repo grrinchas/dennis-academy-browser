@@ -1,6 +1,7 @@
 module Messages exposing (..)
 
 import Models exposing (Account, Auth0Token, AuthGraphCool, Form, Menu, Tokens, User)
+import Mouse
 import Navigation exposing (Location)
 import RemoteData exposing (WebData)
 import Validator exposing (ValidUser)
@@ -19,4 +20,6 @@ type Msg
     | OnFetchGraphCoolToken (WebData AuthGraphCool)
     | OnFetchUser (WebData User)
     | OnLoadTokens (Maybe Tokens)
+    | OnEditorChange String
+    | MouseClicked Mouse.Position
     | Logout

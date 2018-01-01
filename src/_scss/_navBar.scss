@@ -1,0 +1,145 @@
+
+.dg-topic-nav-btn {
+    margin-right: 3px;
+    margin-left: 3px;
+}
+
+.dg-nav-height {
+    height: 64px;
+}
+
+.dg-nav-bar {
+
+    @extend .dg-nav-height;
+    margin: 0;
+
+    .dg-start {
+        @extend .valign-wrapper;
+        img {
+            width: 120px;
+            display: block;
+        }
+
+    }
+
+    .drop {
+        height: 30px !important;
+        line-height: 30px !important;
+    }
+
+    .dg-end {
+        text-align: right;
+        .user-end {
+            justify-content: flex-end !important;
+            float: right;
+        }
+        img {
+            display: block;
+            height: 30px;
+            width: 30px;
+            margin-left: 10px;
+        }
+    }
+}
+
+.dg-user-img,
+.dg-logo:hover {
+    cursor: pointer;
+}
+
+.dg-notifications {
+    margin-right: 10px !important;
+}
+
+.dg-user-img {
+    margin-left: 0 !important;
+}
+
+.dg-user-menu {
+    top: 60px;
+    right: 10px;
+    display: block;
+    opacity: 1;
+    min-width: 200px;
+    a {
+        color: $primary-color !important;
+    }
+    .dg-profile {
+        color: $link-color !important;
+        margin-left: 6px !important;
+
+    }
+
+}
+
+.dg-disabled, .dg-disabled:hover, .dg-disabled:active {
+    background-color: lighten($primary-color, 7);
+    @extend .z-depth-0;
+    cursor: initial;
+    .dg-user-img {
+        cursor: initial;
+    }
+}
+
+.dg-publish {
+
+    .card {
+        background-color: $dropdown-bg-color;
+        margin: 0;
+        display: none;
+        max-height: 650px;
+        overflow-y: auto;
+        opacity: 0;
+        position: absolute;
+        z-index: 999;
+        color: $primary-color;
+        max-width: 350px;
+        min-width: 200px;
+    }
+}
+
+.dg-publish-menu {
+    line-height: initial;
+    top: 60px;
+    display: block !important;
+    opacity: 1 !important;
+
+    .card-content {
+        padding-top: 16px;
+        padding-bottom: 16px;
+        .card-title {
+            margin: 0
+        }
+    }
+
+    .tutorial-img-wrapper {
+        display: block;
+        width: inherit;
+        white-space: nowrap;
+        height: 100px;
+
+        overflow-x: scroll;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+
+        .tutorial-img {
+            width: 68px;
+            height: 68px;
+            display: inline-block;
+            background-color: blue;
+            margin-left: 6px;
+            margin-right: 6px;
+            zoom: 1;
+        }
+
+    }
+
+}
+
+
+
+
+
+
+
+

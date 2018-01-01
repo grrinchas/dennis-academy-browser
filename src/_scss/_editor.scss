@@ -1,0 +1,75 @@
+
+.dg-editor {
+    @extend .dg-full-height;
+    .editor-row{
+        @extend .dg-full-height;
+    }
+
+    .header-row {
+        border-top: 1px solid $table-border-color;
+        border-bottom: 1px solid $table-border-color;
+        margin-bottom: 0;
+        color: $input-disabled-solid-color;
+
+        .col {
+            padding-top: 15px;
+            padding-bottom: 15px;
+        }
+
+        i {
+            background-color: darken($body-bg-color, 10);
+            cursor: pointer;
+        }
+
+
+    }
+
+    .editor-row {
+        //   @extend .container;
+        //   font-size: 19px;
+
+    }
+
+    .header-md, .editor-ta {
+        border-right: 1px solid $table-border-color;
+    }
+
+    .editor-ta {
+        padding-right: 0;
+        font-family: 'Roboto Mono', monospace;
+    }
+
+    .dg-preview {
+        overflow: auto;
+        height: calc(100vh - 64px - 80px);
+
+        font-family: 'Arimo', sans-serif;
+        ul {
+            padding-left: 40px;
+            li {
+                list-style-type: disc !important;
+            }
+        }
+
+        blockquote {
+            border-left: 4px solid $secondary-color;
+            font-style: italic;
+        }
+    }
+
+
+
+    textarea {
+        padding-top: 15px;
+        resize: none;
+        border: none;
+        background-color: transparent;
+        outline: none;
+        height: calc(100vh - 64px - 80px);
+    }
+
+
+    .dg-preview {
+        word-wrap: break-word;
+    }
+}

@@ -14,6 +14,11 @@ empty =
     div [] []
 
 
+layout : Html msg -> Html msg -> Html msg
+layout head main =
+    div [ class "layout" ] [ header [] [ head ], main_ [] [ main ] ]
+
+
 withLoader : Html msg -> Html msg
 withLoader view =
     div [ class "loader" ] [ view, loader ]

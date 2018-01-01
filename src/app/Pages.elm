@@ -1,6 +1,6 @@
 module Pages exposing (..)
 
-import Components exposing (empty, withLoader)
+import Components exposing (empty, layout, withLoader)
 import Decoders
 import Err exposing (..)
 import Html exposing (Html, div, text)
@@ -10,6 +10,7 @@ import Views.Landing as Landing
 import Views.Error as Error
 import Views.Auth as Auth
 import Views.NavBar as NavBar
+import Views.Editor as Editor
 import Models exposing (..)
 import Routes exposing (..)
 import Messages exposing (..)
@@ -88,14 +89,20 @@ loginPage model =
                     Error.view <| Http err
 
 
-landing : Model -> Html Msg
-landing model =
-    case isLoggedIn model of
-        True ->
-            NavBar.withDashboard |> NavBar.wrapper
+editorPage : Model -> Html Msg
+editorPage model =
+    case model.remote.user of
+        NotAsked ->
+            Error.view <| Routing NotFound
 
-        False ->
-            NavBar.withSignUp |> NavBar.wrapper
+        Loading ->
+            div [] []
+
+        Success user ->
+            layout (NavBar.withUserMenu user model.menu |> NavBar.wrapper NavBar.logo (NavBar.withEditor model.menu)) <| Editor.view model.editor
+
+        Failure err ->
+            Error.view <| Http err
 
 
 dashboard : Model -> Html Msg
@@ -108,10 +115,20 @@ dashboard model =
             div [] []
 
         Success user ->
-            NavBar.withUserMenu user model.menu |> NavBar.wrapper
+            NavBar.withUserMenu user model.menu |> NavBar.wrapper NavBar.logo empty
 
         Failure err ->
             Error.view <| Http err
+
+
+landing : Model -> Html Msg
+landing model =
+    case isLoggedIn model of
+        True ->
+            NavBar.withDashboard |> NavBar.wrapper NavBar.logo empty
+
+        False ->
+            NavBar.withSignUp |> NavBar.wrapper NavBar.logo empty
 
 
 tablet : Model -> Html Msg
@@ -127,6 +144,9 @@ tablet model =
 
                 LoginRoute ->
                     loginPage model
+
+                EditorRoute id ->
+                    editorPage model
 
                 DashboardRoute ->
                     dashboard model
