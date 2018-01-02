@@ -9,6 +9,21 @@ type User @model {
     username: String! @isUnique
     email: String! @isUnique
     picture: String! @isUnique
+    drafts: [Draft!]! @relation(name: "UserOnDraft")
+}
 
+type Draft @model {
+    id: ID! @isUnique
+
+    createdAt: DateTime!
+    updatedAt: DateTime!
+
+    type: DraftType!
+    content: String
+    owner: User! @relation(name: "UserOnDraft")
+}
+
+enum DraftType {
+    TUTORIAL
 }
 

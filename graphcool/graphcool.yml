@@ -16,7 +16,15 @@ functions:
 permissions:
   - operation: User.read
     authenticated: true
-    query: ./src/readUserInfo.graphql
+    query: ./src/permissions/user/read.graphql
+
+  - operation: Draft.create
+    authenticated: true
+    query: ./src/permissions/draft/create.graphql
+
+  - operation: UserOnDraft.connect
+    authenticated: true
+    query: ./src/permissions/userOnDraft/connect.graphql
 
 
 
