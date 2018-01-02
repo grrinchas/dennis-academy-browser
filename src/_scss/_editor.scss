@@ -5,6 +5,10 @@
         @extend .dg-full-height;
     }
 
+    .dg-save-draft {
+        cursor: pointer;
+    }
+
     .header-row {
         border-top: 1px solid $table-border-color;
         border-bottom: 1px solid $table-border-color;

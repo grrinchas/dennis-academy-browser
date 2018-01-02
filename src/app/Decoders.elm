@@ -1,5 +1,6 @@
 module Decoders exposing (..)
 
+import Dict
 import Err exposing (InputError(..))
 import Json.Decode as Decoder
 import Json.Decode.Pipeline as Pipeline
@@ -18,12 +19,16 @@ decodeAuth0Token =
 
 decodeGraphCoolToken : Decoder.Decoder AuthGraphCool
 decodeGraphCoolToken =
-    (Pipeline.decode AuthGraphCool
+    graphCoolTokenObject
+        |> authenticateField
+        |> dataField
+
+
+graphCoolTokenObject : Decoder.Decoder AuthGraphCool
+graphCoolTokenObject =
+    Pipeline.decode AuthGraphCool
         |> Pipeline.required "id" (Decoder.string)
         |> Pipeline.required "token" (Decoder.string)
-    )
-        |> Decoder.field "authenticate"
-        |> Decoder.field "data"
 
 
 decodeSignUpError : Decoder.Decoder ErrorResponse
@@ -45,14 +50,9 @@ decodeAccount =
 
 decodeUser : Decoder.Decoder User
 decodeUser =
-    (Pipeline.decode User
-        |> Pipeline.required "id" Decoder.string
-        |> Pipeline.required "username" Decoder.string
-        |> Pipeline.required "email" Decoder.string
-        |> Pipeline.required "picture" Decoder.string
-    )
-        |> Decoder.field "User"
-        |> Decoder.field "data"
+    userObject
+        |> userField
+        |> dataField
 
 
 toError : String -> InputError
@@ -63,3 +63,49 @@ toError str =
         EmailTaken
     else
         CatchAll
+
+
+userObject : Decoder.Decoder User
+userObject =
+    Pipeline.decode User
+        |> Pipeline.required "id" Decoder.string
+        |> Pipeline.required "username" Decoder.string
+        |> Pipeline.required "email" Decoder.string
+        |> Pipeline.required "picture" Decoder.string
+        |> Pipeline.required "drafts"
+            (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
+
+
+draftObject : Decoder.Decoder Draft
+draftObject =
+    Pipeline.decode Draft
+        |> Pipeline.required "id" Decoder.string
+        |> Pipeline.required "content" Decoder.string
+        |> Pipeline.required "type" Decoder.string
+
+
+dataField : Decoder.Decoder a -> Decoder.Decoder a
+dataField decoder =
+    Decoder.field "data" decoder
+
+
+updateDraftField : Decoder.Decoder a -> Decoder.Decoder a
+updateDraftField decoder =
+    Decoder.field "updateDraft" decoder
+
+
+userField : Decoder.Decoder a -> Decoder.Decoder a
+userField decoder =
+    Decoder.field "User" decoder
+
+
+authenticateField : Decoder.Decoder a -> Decoder.Decoder a
+authenticateField decoder =
+    Decoder.field "authenticate" decoder
+
+
+decodeUpdateDraft : Decoder.Decoder Draft
+decodeUpdateDraft =
+    draftObject
+        |> updateDraftField
+        |> dataField

@@ -2,18 +2,20 @@ module Pages exposing (..)
 
 import Components exposing (empty, layout, withLoader)
 import Decoders
+import Dict
 import Err exposing (..)
 import Html exposing (Html, div, text)
 import Http exposing (Error(BadStatus))
 import Json.Decode
+import List
 import Views.Landing as Landing
 import Views.Error as Error
 import Views.Auth as Auth
 import Views.NavBar as NavBar
-import Views.Editor as Editor
+import Views.Draft as Draft
+import Views.Drafts as Drafts
 import Models exposing (..)
 import Routes exposing (..)
-import Messages exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 
 
@@ -89,8 +91,8 @@ loginPage model =
                     Error.view <| Http err
 
 
-editorPage : Model -> Html Msg
-editorPage model =
+draftPage : String -> Model -> Html Msg
+draftPage id model =
     case model.remote.user of
         NotAsked ->
             Error.view <| Routing NotFound
@@ -99,7 +101,12 @@ editorPage model =
             div [] []
 
         Success user ->
-            layout (NavBar.withUserMenu user model.menu |> NavBar.wrapper NavBar.logo (NavBar.withEditor model.menu)) <| Editor.view model.editor
+            case Dict.get id user.drafts of
+                Just draft ->
+                    layout (NavBar.wrapper NavBar.logo empty (NavBar.withEditor user model.menu)) <| Draft.view draft
+
+                Nothing ->
+                    Error.view <| Routing NotFound
 
         Failure err ->
             Error.view <| Http err
@@ -123,12 +130,34 @@ dashboard model =
 
 landing : Model -> Html Msg
 landing model =
-    case isLoggedIn model of
-        True ->
+    case model.remote.user of
+        NotAsked ->
+            NavBar.withSignUp |> NavBar.wrapper NavBar.logo empty
+
+        Loading ->
+            NavBar.withSignUp |> NavBar.wrapper NavBar.logo empty
+
+        Success user ->
             NavBar.withDashboard |> NavBar.wrapper NavBar.logo empty
 
-        False ->
-            NavBar.withSignUp |> NavBar.wrapper NavBar.logo empty
+        Failure err ->
+            Error.view <| Http err
+
+
+draftsPage : Model -> Html Msg
+draftsPage model =
+    case model.remote.user of
+        NotAsked ->
+            Error.view <| Routing NotFound
+
+        Loading ->
+            div [] []
+
+        Success user ->
+            layout (NavBar.withUserMenu user model.menu |> NavBar.wrapper NavBar.logo empty) <| Drafts.view <| Dict.values user.drafts
+
+        Failure err ->
+            Error.view <| Http err
 
 
 tablet : Model -> Html Msg
@@ -145,11 +174,14 @@ tablet model =
                 LoginRoute ->
                     loginPage model
 
-                EditorRoute id ->
-                    editorPage model
+                DraftRoute id ->
+                    draftPage id model
 
                 DashboardRoute ->
                     dashboard model
+
+                DraftsRoute ->
+                    draftsPage model
 
         Err oops ->
             Error.view <| Routing oops

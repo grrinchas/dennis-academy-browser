@@ -5,10 +5,9 @@ import Err exposing (InputError(DoNotMatch, Empty, WrongSize))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Messages exposing (..)
-import Models exposing (Account, Form)
+import Models exposing (..)
 import Routes exposing (Route(LoginRoute, SignUpRoute), path)
-import Validator exposing (Valid, isValid)
+import Validator exposing (isValid)
 
 
 validClass : Bool -> Attribute msg

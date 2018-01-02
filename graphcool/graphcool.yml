@@ -16,15 +16,24 @@ functions:
 permissions:
   - operation: User.read
     authenticated: true
-    query: ./src/permissions/user/read.graphql
+    query: ./src/permissions/User.graphql:isOwnerCreate
 
   - operation: Draft.create
     authenticated: true
-    query: ./src/permissions/draft/create.graphql
+    query: ./src/permissions/Draft.graphql:isOwnerCreate
+
+  - operation: Draft.read
+    authenticated: true
+    query: ./src/permissions/Draft.graphql:isOwner
+
+  - operation: Draft.update
+    authenticated: true
+    fields: [content]
+    query: ./src/permissions/Draft.graphql:isOwner
 
   - operation: UserOnDraft.connect
     authenticated: true
-    query: ./src/permissions/userOnDraft/connect.graphql
+    query: ./src/permissions/UserOnDraft.graphql:isOwner
 
 
 

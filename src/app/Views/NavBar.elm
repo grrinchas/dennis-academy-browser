@@ -4,9 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onWithOptions)
 import Json.Decode
-import Messages exposing (Msg(Logout, OnMenuChange))
-import Models exposing (Menu, User)
-import Routes exposing (Route(DashboardRoute, EditorRoute, HomeRoute, LoginRoute, SignUpRoute), path)
+import Models exposing (..)
+import Routes exposing (..)
 
 
 logoImg : String
@@ -23,15 +22,16 @@ wrapper start center end =
         ]
 
 
-withEditor : Menu -> Html Msg
-withEditor menu =
-    div [ class "dg-publish" ]
+withEditor : User -> Menu -> Html Msg
+withEditor user menu =
+    div [ class "dg-publish valign-wrapper" ]
         [ a
             [ class "btn valign-wrapper "
             , classList [ ( "dg-disabled", menu.publish ) ]
             , publishMenuEvent menu True
             ]
             [ text "publish" ]
+        , withUserMenu user menu
         , publishMenu menu
         ]
 
@@ -40,14 +40,14 @@ publishMenuEvent : Menu -> Bool -> Attribute Msg
 publishMenuEvent menu bool =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            OnMenuChange { menu | publish = bool }
+            OnMenuChange { menu | publish = bool, user = False }
 
 
 userMenuEvent : Menu -> Bool -> Attribute Msg
 userMenuEvent menu bool =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            OnMenuChange { menu | user = bool }
+            OnMenuChange { menu | user = bool, publish = False }
 
 
 logo : Html Msg
@@ -92,8 +92,8 @@ withUserMenu user menu =
 userMenu : User -> Menu -> Html Msg
 userMenu user menu =
     ul [ userMenuEvent menu True, class "dropdown-content", classList [ ( "dg-user-menu", menu.user ) ] ]
-        [ li [] [ a [ href <| path <| EditorRoute "1" ] [ i [ class "material-icons" ] [ text "add" ], text "Create Tutorial" ] ]
-        , li [] [ a [] [ i [ class "material-icons" ] [ text "apps" ], text "Tutorials" ] ]
+        [ li [] [ a [ href <| path <| DraftRoute "1" ] [ i [ class "material-icons" ] [ text "add" ], text "Create Tutorial" ] ]
+        , li [] [ a [ href <| path DraftsRoute ] [ i [ class "material-icons" ] [ text "apps" ], text "Tutorials" ] ]
         , li [ class "divider" ] []
         , li [ class "valign-wrapper" ]
             [ img [ class "circle", src user.picture ] []

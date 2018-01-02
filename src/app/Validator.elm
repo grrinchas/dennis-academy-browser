@@ -1,27 +1,10 @@
-module Validator exposing (ErrorResponse, Valid, ValidUser, username, password, email, toString, isValid, validSignUpInputs, validSignUpUser, validLoginUser, validLoginInputs)
+module Validator exposing (..)
 
 import Err exposing (InputError(..))
 import Regex exposing (Regex)
-import Models exposing (Form)
+import Models exposing (..)
 
 
-type Valid
-    = Valid String
-
-
-type alias ValidUser =
-    { username : Valid
-    , email : Valid
-    , password : Valid
-    }
-
-
-type alias ErrorResponse =
-    { name : String
-    , descriptor : String
-    , code : InputError
-    , statusCode : Int
-    }
 
 
 password : Maybe String -> Result InputError Valid

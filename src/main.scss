@@ -7,6 +7,7 @@ $roboto-font-path: "~materialize-css/dist/fonts/roboto/";
 @import "./_scss/error";
 @import "./_scss/editor";
 @import "./_scss/navBar";
+@import "./_scss/draft";
 
 html, body, #app {
     @extend .dg-full-height;

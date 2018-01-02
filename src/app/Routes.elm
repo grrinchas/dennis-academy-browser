@@ -11,7 +11,8 @@ type Route
     = HomeRoute
     | SignUpRoute
     | LoginRoute
-    | EditorRoute String
+    | DraftRoute String
+    | DraftsRoute
     | DashboardRoute
 
 
@@ -36,8 +37,9 @@ matchers =
         [ map HomeRoute top
         , map SignUpRoute (s "signup")
         , map LoginRoute (s "login")
-        , map EditorRoute (s "editor" </> string)
+        , map DraftRoute (s "editor" </> string)
         , map DashboardRoute (s "dashboard")
+        , map DraftsRoute (s "drafts")
         ]
 
 
@@ -65,8 +67,11 @@ path route =
         LoginRoute ->
             "#login"
 
-        EditorRoute id ->
+        DraftRoute id ->
             "#editor/" ++ id
 
         DashboardRoute ->
             "#dashboard"
+
+        DraftsRoute ->
+            "#drafts"

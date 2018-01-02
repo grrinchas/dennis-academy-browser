@@ -1,3 +1,12 @@
+query isOwner($node_id: ID!, $user_id: ID!) {
+    SomeDraftExists(filter: {
+        id: $node_id
+        owner: {
+            id: $user_id
+        }
+    })
+}
+
 query isOwnerCreate($user_id: ID!, $input_ownerId: ID!) {
     SomeUserExists(filter: {
         AND: [{

@@ -1,19 +1,18 @@
 port module Main exposing (..)
 
 import Api
+import Dict
 import Err exposing (..)
 import Mouse
 import Platform.Cmd exposing (batch)
 import Ports
 import Html exposing (Html)
-import Messages exposing (..)
 import Models exposing (..)
 import Navigation exposing (Location)
 import Pages
 import RemoteData exposing (RemoteData(Loading, NotAsked), WebData, succeed)
 import Routes exposing (..)
 import Task exposing (perform)
-import Validator exposing (ValidUser)
 import Window exposing (Size)
 
 
@@ -72,7 +71,10 @@ reroute model =
                 ( DashboardRoute, False ) ->
                     ( { model | route = Err NotFound }, [] )
 
-                ( EditorRoute _, False ) ->
+                ( DraftRoute _, False ) ->
+                    ( { model | route = Err NotFound }, [] )
+
+                ( DraftsRoute, False ) ->
                     ( { model | route = Err NotFound }, [] )
 
                 _ ->
@@ -90,6 +92,9 @@ update msg model =
                 |> andThen reroute
                 |> andThen resetMenu
                 |> Tuple.mapSecond Cmd.batch
+
+        UpdateRoute route ->
+            ( model, Navigation.newUrl <| path route )
 
         OnWindowChange size ->
             ( { model | window = size }, Cmd.none )
@@ -112,6 +117,8 @@ update msg model =
 
         Logout ->
             removeToken model
+                |> andThen (updateAuth0Token NotAsked)
+                |> andThen (updateGraphCoolToken NotAsked)
                 |> andThen (updateUser NotAsked)
                 |> andThen (updateRoute HomeRoute)
                 |> Tuple.mapSecond Cmd.batch
@@ -124,34 +131,64 @@ update msg model =
             initTokens tokens model
                 |> Tuple.mapSecond Cmd.batch
 
-        OnEditorChange content ->
-            ( { model | editor = content }, Cmd.none )
+        OnDraftChange draft ->
+            updateDraft draft model
+                |> Tuple.mapSecond Cmd.batch
 
         MouseClicked _ ->
             resetMenu model
                 |> Tuple.mapSecond Cmd.batch
 
+        SaveDraft draft ->
+            fetchSavedToken draft model
+                |> Tuple.mapSecond Cmd.batch
+
+
+updateDraft : Draft -> Model -> ( Model, List (Cmd Msg) )
+updateDraft draft model =
+    let
+        remote =
+            model.remote
+    in
+        case model.remote.user of
+            RemoteData.Success user ->
+                let
+                    drafts =
+                        user.drafts
+                in
+                    ( { model | remote = { remote | user = RemoteData.succeed { user | drafts = Dict.insert draft.id draft user.drafts } } }, [] )
+
+            _ ->
+                ( model, [] )
+
 
 onFetch : Web -> Model -> ( Model, List (Cmd Msg) )
 onFetch web model =
     case web of
-        Messages.Account account ->
+        WebAccount account ->
             updateAccount account model
                 |> andThen resetForm
 
-        Messages.Auth0Token token ->
+        WebAuth0Token token ->
             updateAuth0Token token model
                 |> andThen fetchGraphCoolToken
 
-        Messages.GraphCoolToken token ->
+        WebGraphCoolToken token ->
             updateGraphCoolToken token model
                 |> andThen fetchUser
 
-        Messages.User user ->
+        WebUser user ->
             updateUser user model
                 |> andThen resetForm
                 |> andThen saveToken
                 |> andThen reroute
+
+        WebSaveDraft draft ->
+            let
+                _ =
+                    Debug.log "" draft
+            in
+                updateSavedDraft draft model
 
 
 initTokens : Maybe Tokens -> Model -> ( Model, List (Cmd Msg) )
@@ -243,6 +280,23 @@ fetchAuth0Token mUser model =
             ( model, [] )
 
 
+fetchSavedToken : Draft -> Model -> ( Model, List (Cmd Msg) )
+fetchSavedToken draft model =
+    let
+        remote =
+            model.remote
+    in
+        case model.remote.graphCool of
+            RemoteData.Success token ->
+                ( { model | remote = { remote | savedDraft = Loading } }, [ Api.saveDraft draft token ] )
+
+            RemoteData.Failure err ->
+                ( { model | remote = { remote | user = RemoteData.Failure err } }, [] )
+
+            _ ->
+                ( model, [] )
+
+
 
 -------------------------Update Remote--------------------------------------
 
@@ -281,6 +335,15 @@ updateAccount account model =
             model.remote
     in
         ( { model | remote = { remote | account = account } }, [] )
+
+
+updateSavedDraft : WebData Draft -> Model -> ( Model, List (Cmd Msg) )
+updateSavedDraft draft model =
+    let
+        remote =
+            model.remote
+    in
+        ( { model | remote = { remote | savedDraft = draft } }, [] )
 
 
 

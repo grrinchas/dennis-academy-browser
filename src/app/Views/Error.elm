@@ -4,7 +4,7 @@ import Err exposing (InputError, Oops(Input, Routing))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http exposing (Error(BadPayload), Response)
-import Messages exposing (Msg)
+import Models exposing (Msg)
 import Routes exposing (Route(HomeRoute), RouteError(NotAllowed, NotFound), path)
 
 

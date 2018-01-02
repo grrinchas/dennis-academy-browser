@@ -1,4 +1,4 @@
-query permitConnect($user_id: ID!, $ownerUser_id: ID!) {
+query isOwner($user_id: ID!, $ownerUser_id: ID!) {
     SomeUserExists(filter: {
         AND: [{
             id: $user_id
