@@ -17,6 +17,12 @@ type alias Auth0Token =
     }
 
 
+type alias Draft =
+    { id : String
+    , content : Maybe String
+    }
+
+
 type alias Menu =
     { user : Bool
     , publish : Bool

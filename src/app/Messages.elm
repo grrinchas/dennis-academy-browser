@@ -8,6 +8,13 @@ import Validator exposing (ValidUser)
 import Window exposing (Size)
 
 
+type Web
+    = Account (WebData Account)
+    | Auth0Token (WebData Auth0Token)
+    | GraphCoolToken (WebData AuthGraphCool)
+    | User (WebData User)
+
+
 type Msg
     = OnLocationChange Location
     | OnWindowChange Size
@@ -15,11 +22,8 @@ type Msg
     | OnMenuChange Menu
     | CreateAccount (Maybe ValidUser)
     | Login (Maybe ValidUser)
-    | OnFetchAccount (WebData Account)
-    | OnFetchAuth0Token (WebData Auth0Token)
-    | OnFetchGraphCoolToken (WebData AuthGraphCool)
-    | OnFetchUser (WebData User)
     | OnLoadTokens (Maybe Tokens)
+    | OnFetch Web
     | OnEditorChange String
     | MouseClicked Mouse.Position
     | Logout

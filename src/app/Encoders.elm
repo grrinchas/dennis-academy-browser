@@ -1,7 +1,7 @@
 module Encoders exposing (..)
 
 import Json.Encode as Encoder
-import Models exposing (Auth0Token, AuthGraphCool)
+import Models exposing (Auth0Token, AuthGraphCool, User)
 import Validator exposing (ValidUser)
 
 
@@ -49,6 +49,16 @@ userInfo id =
     let
         query =
             "query {User (id: \"" ++ id ++ "\"){id username picture email}}"
+    in
+        Encoder.object
+            [ ( "query", Encoder.string query ) ]
+
+
+createDraft : User -> Encoder.Value
+createDraft user =
+    let
+        query =
+            "mutation {createDraft (type: Tutorial, ownerId: \"" ++ user.id ++ "\"){id}}"
     in
         Encoder.object
             [ ( "query", Encoder.string query ) ]

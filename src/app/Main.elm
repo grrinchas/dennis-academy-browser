@@ -88,6 +88,7 @@ update msg model =
         OnLocationChange location ->
             updateLocation location model
                 |> andThen reroute
+                |> andThen resetMenu
                 |> Tuple.mapSecond Cmd.batch
 
         OnWindowChange size ->
@@ -115,26 +116,8 @@ update msg model =
                 |> andThen (updateRoute HomeRoute)
                 |> Tuple.mapSecond Cmd.batch
 
-        OnFetchAccount account ->
-            updateAccount account model
-                |> andThen resetForm
-                |> Tuple.mapSecond Cmd.batch
-
-        OnFetchAuth0Token token ->
-            updateAuth0Token token model
-                |> andThen fetchGraphCoolToken
-                |> Tuple.mapSecond Cmd.batch
-
-        OnFetchGraphCoolToken token ->
-            updateGraphCoolToken token model
-                |> andThen fetchUser
-                |> Tuple.mapSecond Cmd.batch
-
-        OnFetchUser user ->
-            updateUser user model
-                |> andThen resetForm
-                |> andThen saveToken
-                |> andThen reroute
+        OnFetch web ->
+            onFetch web model
                 |> Tuple.mapSecond Cmd.batch
 
         OnLoadTokens tokens ->
@@ -148,6 +131,27 @@ update msg model =
             resetMenu model
                 |> Tuple.mapSecond Cmd.batch
 
+
+onFetch : Web -> Model -> ( Model, List (Cmd Msg) )
+onFetch web model =
+    case web of
+        Messages.Account account ->
+            updateAccount account model
+                |> andThen resetForm
+
+        Messages.Auth0Token token ->
+            updateAuth0Token token model
+                |> andThen fetchGraphCoolToken
+
+        Messages.GraphCoolToken token ->
+            updateGraphCoolToken token model
+                |> andThen fetchUser
+
+        Messages.User user ->
+            updateUser user model
+                |> andThen resetForm
+                |> andThen saveToken
+                |> andThen reroute
 
 
 initTokens : Maybe Tokens -> Model -> ( Model, List (Cmd Msg) )
@@ -312,7 +316,7 @@ updateWindow : Model -> ( Model, List (Cmd Msg) )
 updateWindow model =
     ( model, [ perform OnWindowChange Window.size ] )
 
-resetMenu: Model -> ( Model, List (Cmd Msg) )
-resetMenu model =
-   ( { model | menu = Menu False False }, [])
 
+resetMenu : Model -> ( Model, List (Cmd Msg) )
+resetMenu model =
+    ( { model | menu = Menu False False }, [] )

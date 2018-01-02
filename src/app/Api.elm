@@ -24,21 +24,21 @@ login : ValidUser -> Cmd Msg
 login user =
     Http.post (domain ++ "/oauth/token") (jsonBody <| Encoders.login user) Decoders.decodeAuth0Token
         |> RemoteData.sendRequest
-        |> Cmd.map Messages.OnFetchAuth0Token
+        |> Cmd.map (\web -> Messages.OnFetch <| Messages.Auth0Token web)
 
 
 createAccount : ValidUser -> Cmd Msg
 createAccount user =
     Http.post (domain ++ "/dbconnections/signup") (jsonBody <| Encoders.createAccount user) Decoders.decodeAccount
         |> RemoteData.sendRequest
-        |> Cmd.map Messages.OnFetchAccount
+        |> Cmd.map (\web -> Messages.OnFetch <| Messages.Account web)
 
 
 authGraphCool : Auth0Token -> Cmd Msg
 authGraphCool token =
     Http.post graphCool (jsonBody <| Encoders.authGraphCool token) decodeGraphCoolToken
         |> RemoteData.sendRequest
-        |> Cmd.map Messages.OnFetchGraphCoolToken
+        |> Cmd.map (\web -> Messages.OnFetch <| Messages.GraphCoolToken web)
 
 
 authorisedUser : AuthGraphCool -> Http.Request User
@@ -58,4 +58,4 @@ fetchUser : AuthGraphCool -> Cmd Msg
 fetchUser token =
     authorisedUser token
         |> RemoteData.sendRequest
-        |> Cmd.map Messages.OnFetchUser
+        |> Cmd.map (\web -> Messages.OnFetch <| Messages.User web)
