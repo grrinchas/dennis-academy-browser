@@ -23,7 +23,7 @@
         "elm-lang/window": "1.0.1 <= v < 2.0.0",
         "evancz/elm-markdown": "3.0.2 <= v < 4.0.0",
         "evancz/url-parser": "2.0.1 <= v < 3.0.0",
-        "ghivert/elm-graphql": "2.0.1 <= v < 3.0.0",
+        "ghivert/elm-graphql": "3.0.0 <= v < 4.0.0",
         "hecrj/elm-slug": "1.0.1 <= v < 2.0.0",
         "krisajenkins/remotedata": "4.3.1 <= v < 5.0.0",
         "simonh1000/elm-jwt": "5.2.2 <= v < 6.0.0",

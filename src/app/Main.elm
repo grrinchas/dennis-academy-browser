@@ -10,15 +10,46 @@ import Html exposing (Html)
 import Models exposing (..)
 import Navigation exposing (Location)
 import Pages
-import RemoteData exposing (RemoteData(Loading, NotAsked), WebData, succeed)
+import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData, succeed)
 import Routes exposing (..)
 import Task exposing (perform)
+import Time exposing (Time)
 import Window exposing (Size)
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch [ Window.resizes (\size -> OnWindowChange size), Ports.getTokens OnLoadTokens, Mouse.clicks MouseClicked ]
+    Sub.batch
+        [ Window.resizes (\size -> OnWindowChange size)
+        , Ports.getTokens OnLoadTokens
+        , Mouse.clicks MouseClicked
+        , Time.every (5 * Time.minute) <| autoSaveDraft model
+        ]
+
+
+autoSaveDraft : Model -> Time -> Msg
+autoSaveDraft model time =
+    case model.route of
+        Ok (DraftRoute id) ->
+            case RemoteData.map (\user -> Dict.get id user.drafts) model.remote.user |> RemoteData.withDefault Nothing of
+                Just draft ->
+                    case model.remote.savedDraft of
+                        NotAsked ->
+                            SaveDraft draft
+
+                        _ ->
+                            case RemoteData.map (\saved -> saved.content /= draft.content) model.remote.savedDraft |> RemoteData.withDefault False of
+                                True ->
+                                    SaveDraft draft
+
+                                False ->
+                                    NoOperation
+
+                Nothing ->
+                    NoOperation
+
+        _ ->
+            NoOperation
 
 
 main : Program (Maybe Tokens) Model Msg
@@ -87,6 +118,9 @@ reroute model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NoOperation ->
+            ( model, Cmd.none )
+
         OnLocationChange location ->
             updateLocation location model
                 |> andThen reroute
@@ -140,8 +174,10 @@ update msg model =
                 |> Tuple.mapSecond Cmd.batch
 
         SaveDraft draft ->
-            fetchSavedToken draft model
-                |> Tuple.mapSecond Cmd.batch
+            fetchSavedToken draft model |> Tuple.mapSecond Cmd.batch
+
+        CreateDraft draft ->
+            fetchCreatedToken draft model |> Tuple.mapSecond Cmd.batch
 
 
 updateDraft : Draft -> Model -> ( Model, List (Cmd Msg) )
@@ -184,11 +220,44 @@ onFetch web model =
                 |> andThen reroute
 
         WebSaveDraft draft ->
+            updateSavedDraft draft model
+
+        WebCreateDraft draft ->
             let
                 _ =
                     Debug.log "" draft
             in
-                updateSavedDraft draft model
+                case draft of
+                    NotAsked ->
+                        ( model, [] )
+
+                    Loading ->
+                        ( model, [] )
+
+                    Success draft ->
+                        case model.remote.user of
+                            NotAsked ->
+                                ( model, [] )
+
+                            Loading ->
+                                ( model, [] )
+
+                            Success user ->
+                                let
+                                    remote =
+                                        model.remote
+                                in
+                                    let
+                                        drafts =
+                                            user.drafts
+                                    in
+                                        ( { model | remote = { remote | user = RemoteData.succeed { user | drafts = Dict.insert draft.id draft drafts } } }, [] )
+
+                            Failure err ->
+                                ( model, [] )
+
+                    Failure err ->
+                        ( model, [] )
 
 
 initTokens : Maybe Tokens -> Model -> ( Model, List (Cmd Msg) )
@@ -297,6 +366,23 @@ fetchSavedToken draft model =
                 ( model, [] )
 
 
+fetchCreatedToken : Draft -> Model -> ( Model, List (Cmd Msg) )
+fetchCreatedToken draft model =
+    let
+        remote =
+            model.remote
+    in
+        case model.remote.graphCool of
+            RemoteData.Success token ->
+                ( model, [ Api.createDraft draft token ] )
+
+            RemoteData.Failure err ->
+                ( { model | remote = { remote | user = RemoteData.Failure err } }, [] )
+
+            _ ->
+                ( model, [] )
+
+
 
 -------------------------Update Remote--------------------------------------
 
@@ -382,4 +468,4 @@ updateWindow model =
 
 resetMenu : Model -> ( Model, List (Cmd Msg) )
 resetMenu model =
-    ( { model | menu = Menu False False }, [] )
+    ( { model | menu = Menu False False False }, [] )

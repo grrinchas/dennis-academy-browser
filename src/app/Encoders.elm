@@ -1,7 +1,9 @@
 module Encoders exposing (..)
 
+import GraphQl exposing (Mutation, Named, Operation, Query)
 import Json.Encode as Encoder
 import Models exposing (Auth0Token, AuthGraphCool, Draft, User, ValidUser)
+import Regex exposing (HowMany(All))
 import Validator
 
 
@@ -34,41 +36,73 @@ login user =
         ]
 
 
-authGraphCool : Auth0Token -> Encoder.Value
+authGraphCool : Auth0Token -> Operation Mutation Named
 authGraphCool token =
-    let
-        query =
-            "mutation {authenticate (accessToken: \"" ++ token.accessToken ++ "\"){id token}}"
-    in
-        Encoder.object
-            [ ( "query", Encoder.string query ) ]
+    GraphQl.named "authenticate"
+        [ GraphQl.field "authenticate"
+            |> GraphQl.withArgument "accessToken" (GraphQl.string token.accessToken)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "id"
+                , GraphQl.field "token"
+                ]
+        ]
 
 
-userInfo : String -> Encoder.Value
+userInfo : String -> Operation Query Named
 userInfo id =
-    let
-        query =
-            "query {User (id: \"" ++ id ++ "\"){id username picture email drafts{id content type} }}"
-    in
-        Encoder.object
-            [ ( "query", Encoder.string query ) ]
+    GraphQl.named "queryUser"
+        [ GraphQl.field "User"
+            |> GraphQl.withArgument "id" (GraphQl.string id)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "id"
+                , GraphQl.field "username"
+                , GraphQl.field "email"
+                , GraphQl.field "picture"
+                , GraphQl.field "drafts"
+                    |> GraphQl.withSelectors
+                        [ GraphQl.field "id"
+                        , GraphQl.field "content"
+                        , GraphQl.field "type"
+                        , GraphQl.field "title"
+                        ]
+                ]
+        ]
 
 
-createDraft : User -> Encoder.Value
-createDraft user =
-    let
-        query =
-            "mutation {createDraft (type: Tutorial, content: \"\", ownerId: \"" ++ user.id ++ "\"){id content}}"
-    in
-        Encoder.object
-            [ ( "query", Encoder.string query ) ]
-
-
-saveDraft : Draft -> Encoder.Value
+saveDraft : Draft -> Operation Mutation Named
 saveDraft draft =
-    let
-        query =
-            "mutation {updateDraft (id: \"" ++ draft.id ++ "\", content: \"" ++ draft.content ++ "\"){id content type}}"
-    in
-        Encoder.object
-            [ ( "query", Encoder.string query ) ]
+    GraphQl.named "updateDraft"
+        [ GraphQl.field "updateDraft"
+            |> GraphQl.withArgument "id" (GraphQl.string draft.id)
+            |> GraphQl.withArgument "content" (GraphQl.string <| sanitize draft.content)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "id"
+                , GraphQl.field "content"
+                , GraphQl.field "type"
+                , GraphQl.field "title"
+                ]
+        ]
+
+
+sanitize : String -> String
+sanitize string =
+    Regex.replace All (Regex.regex "\n") (\_ -> "\\n") string
+        |> Regex.replace All (Regex.regex "\t") (\_ -> "\\t")
+        |> Regex.replace All (Regex.regex "\"") (\_ -> "\\\"")
+
+
+createDraft : Draft -> AuthGraphCool -> Operation Mutation Named
+createDraft draft token =
+    GraphQl.named "createDraft"
+        [ GraphQl.field "createDraft"
+            |> GraphQl.withArgument "ownerId" (GraphQl.string token.id)
+            |> GraphQl.withArgument "type" (GraphQl.type_ draft.draftType)
+            |> GraphQl.withArgument "content" (GraphQl.string draft.content)
+            |> GraphQl.withArgument "title" (GraphQl.string draft.title)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "id"
+                , GraphQl.field "content"
+                , GraphQl.field "type"
+                , GraphQl.field "title"
+                ]
+        ]

@@ -18,6 +18,7 @@ type Draft @model {
     createdAt: DateTime!
     updatedAt: DateTime!
 
+    title: String!
     type: DraftType!
     content: String!
     owner: User! @relation(name: "UserOnDraft")

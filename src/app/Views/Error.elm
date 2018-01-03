@@ -14,10 +14,10 @@ view err =
         Err.Http response ->
             case response of
                 Http.BadStatus response ->
-                    common <| ue response
+                    common <| ue response.url (toString err)
 
                 BadPayload _ response ->
-                    common <| ue response
+                    common <| ue response.url (toString err)
 
                 _ ->
                     common ne
@@ -52,20 +52,13 @@ internal route msg =
     ]
 
 
-ue : Response a -> List (Html msg)
-ue response =
+ue : String -> String -> List (Html msg)
+ue url response =
     [ section [ class "section" ]
         [ h1 []
-            [ (if response.status.code == 200 then
-                400
-               else
-                response.status.code
-              )
-                |> toString
-                |> text
-            ]
+            [ text <| toString 400 ]
         , span [] [ text "Something went wrong" ]
-        , h5 [] [ text response.url ]
+        , h5 [] [ text url ]
         , p []
             [ text "Looks like there was an error on this page. Click the link below and try again."
             ]
@@ -73,7 +66,7 @@ ue response =
         ]
     , section [ class "card" ]
         [ div [ class "card-content" ]
-            [ text <| toString response.body
+            [ text response
             ]
         ]
     ]

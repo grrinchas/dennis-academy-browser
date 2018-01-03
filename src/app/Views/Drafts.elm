@@ -7,53 +7,27 @@ import Models exposing (Draft, Msg(UpdateRoute))
 import Routes exposing (Route(DraftRoute, HomeRoute))
 
 
-{-
-
-   mobile : List Draft -> Html Msg
-   mobile topics =
-       div [ class "dg-no-margins collection" ]
-           (List.map
-               listItem
-               topics
-           )
-
-
-   listItem : Draft -> Html msg
-   listItem draft =
-       --  a [ href <| Routes.toPath <| TopicRoute topic.slug, class "collection-item avatar" ]
-       a []
-           [ img [ src topic.icon, class "circle", style [ ( "background-color", topic.colour ) ] ] []
-           , span [ class "title dg-text-black" ] [ text topic.title ]
-           , p [ class "dg-text-black" ] [ text topic.description ]
-           ]
-
-
-   view : List Topic -> View Msg
-   view topics =
-       { mobile = mobile topics
-       , tablet = tablet topics
-       }
--}
-
-
 view : List Draft -> Html Msg
 view drafts =
     div [ class "dg-draft container" ]
-        [ div [ class "row" ]
+        [ div [ class "row section" ] []
+        , div [ class "row" ]
+            [ h1 [] [ text "Your drafts:" ] ]
+        , div [ class "row " ]
             (List.map listCard drafts)
         ]
 
 
 listCard : Draft -> Html Msg
 listCard draft =
-    div [ class "col s6 l4 " ]
-        [ div [ class "card small hoverable", onClick <| UpdateRoute <| DraftRoute draft.id ]
+    div [ class "col s12 xl6" ]
+        [ div [ class "card small", onClick <| UpdateRoute <| DraftRoute draft.id ]
             [ div [ class "card-content" ]
-                [ span [ class "card-title" ] [ text draft.id ]
+                [ span [ class "card-title" ] [ text draft.title ]
                 , p [ class "text-black" ] [ text draft.content ]
                 ]
             , div [ class "card-action" ]
-                [ a [] [ text draft.draftType ]
+                [ small [] [ text <| "ID: " ++ draft.id ]
                 ]
             ]
         ]

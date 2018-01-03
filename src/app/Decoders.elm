@@ -82,6 +82,7 @@ draftObject =
         |> Pipeline.required "id" Decoder.string
         |> Pipeline.required "content" Decoder.string
         |> Pipeline.required "type" Decoder.string
+        |> Pipeline.required "title" Decoder.string
 
 
 dataField : Decoder.Decoder a -> Decoder.Decoder a
@@ -93,6 +94,9 @@ updateDraftField : Decoder.Decoder a -> Decoder.Decoder a
 updateDraftField decoder =
     Decoder.field "updateDraft" decoder
 
+createDraftField : Decoder.Decoder a -> Decoder.Decoder a
+createDraftField decoder =
+    Decoder.field "createDraft" decoder
 
 userField : Decoder.Decoder a -> Decoder.Decoder a
 userField decoder =
@@ -108,4 +112,11 @@ decodeUpdateDraft : Decoder.Decoder Draft
 decodeUpdateDraft =
     draftObject
         |> updateDraftField
+        |> dataField
+
+
+decodeCreateDraft : Decoder.Decoder Draft
+decodeCreateDraft =
+    draftObject
+        |> createDraftField
         |> dataField

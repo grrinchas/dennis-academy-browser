@@ -1,9 +1,26 @@
 
 .dg-draft {
     word-wrap: break-word;
+
+    h1 {
+        font-weight: bold;
+        color: $input-disabled-solid-color;
+
+    }
     .card {
+
+        small {
+            color: $input-disabled-solid-color;
+        }
+
+        .card-title {
+            font-weight: bold;
+        }
     }
 
 
 
 }
+
+
+

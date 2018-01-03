@@ -15,6 +15,7 @@
         margin-bottom: 0;
         color: $input-disabled-solid-color;
 
+
         .col {
             padding-top: 15px;
             padding-bottom: 15px;
@@ -25,6 +26,28 @@
             cursor: pointer;
         }
 
+        .save {
+            display: inline-block;
+            float: right;
+        }
+
+        .error-save {
+            color: $error-color;
+        }
+
+
+        .draft-loader {
+            position: relative;
+            .preloader-wrapper {
+                width: 20px;
+                height: 20px;
+                top: 25px;
+                .circle {
+                    border-width: 2px;
+                }
+            }
+
+        }
 
     }
 

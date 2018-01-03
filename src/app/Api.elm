@@ -1,6 +1,7 @@
 module Api exposing (..)
 
 import Decoders exposing (decodeGraphCoolToken, decodeUser)
+import GraphQl
 import Http exposing (Header, jsonBody)
 import Json.Decode
 import Json.Encode
@@ -35,33 +36,42 @@ createAccount user =
 
 authGraphCool : Auth0Token -> Cmd Msg
 authGraphCool token =
-    Http.post graphCool (jsonBody <| Encoders.authGraphCool token) decodeGraphCoolToken
+    Http.post graphCool (GraphQl.operationToBody GraphQl.OperationMutation (Encoders.authGraphCool token) Nothing) decodeGraphCoolToken
         |> RemoteData.sendRequest
         |> Cmd.map (\web -> OnFetch <| WebGraphCoolToken web)
 
 
-authorisedUser : AuthGraphCool -> Json.Encode.Value -> Json.Decode.Decoder a -> Http.Request a
-authorisedUser token encoder decoder =
+fetchUser : AuthGraphCool -> Cmd Msg
+fetchUser token =
+    authorised token (GraphQl.operationToBody GraphQl.OperationQuery (Encoders.userInfo token.id) Nothing) decodeUser
+        |> RemoteData.sendRequest
+        |> Cmd.map (\web -> OnFetch <| WebUser web)
+
+
+authorised : AuthGraphCool -> Http.Body -> Json.Decode.Decoder a -> Http.Request a
+authorised token body decoder =
     Http.request
         { method = "POST"
         , headers = [ Http.header "Authorization" <| "Bearer " ++ token.token ]
         , url = graphCool
-        , body = jsonBody encoder
+        , body = body
         , expect = Http.expectJson decoder
         , timeout = Nothing
         , withCredentials = False
         }
 
 
-fetchUser : AuthGraphCool -> Cmd Msg
-fetchUser token =
-    authorisedUser token (Encoders.userInfo token.id) decodeUser
-        |> RemoteData.sendRequest
-        |> Cmd.map (\web -> OnFetch <| WebUser web)
-
-
 saveDraft : Draft -> AuthGraphCool -> Cmd Msg
 saveDraft draft token =
-    authorisedUser token (Encoders.saveDraft draft) Decoders.decodeUpdateDraft
+    authorised token (GraphQl.operationToBody GraphQl.OperationMutation (Encoders.saveDraft draft) Nothing) Decoders.decodeUpdateDraft
         |> RemoteData.sendRequest
         |> Cmd.map (\web -> OnFetch <| WebSaveDraft web)
+
+
+createDraft : Draft -> AuthGraphCool -> Cmd Msg
+createDraft draft token =
+    authorised token (GraphQl.operationToBody GraphQl.OperationMutation (Encoders.createDraft draft token) Nothing) Decoders.decodeCreateDraft
+        |> RemoteData.sendRequest
+        |> Cmd.map (\web -> OnFetch <| WebCreateDraft web)
+
+

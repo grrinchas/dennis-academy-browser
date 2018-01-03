@@ -103,7 +103,16 @@ draftPage id model =
         Success user ->
             case Dict.get id user.drafts of
                 Just draft ->
-                    layout (NavBar.wrapper NavBar.logo empty (NavBar.withEditor user model.menu)) <| Draft.view draft
+                    let
+                        header =
+                            NavBar.withButtons
+                                [ NavBar.publish model.menu
+                                , NavBar.notifications
+                                , NavBar.profile user model.menu
+                                ]
+                                |> NavBar.wrapper NavBar.logo
+                    in
+                        layout header <| Draft.view model.remote.savedDraft draft
 
                 Nothing ->
                     Error.view <| Routing NotFound
@@ -122,7 +131,9 @@ dashboard model =
             div [] []
 
         Success user ->
-            NavBar.withUserMenu user model.menu |> NavBar.wrapper NavBar.logo empty
+            NavBar.withButtons
+                [ NavBar.notifications, NavBar.profile user model.menu ]
+                |> NavBar.wrapper NavBar.logo
 
         Failure err ->
             Error.view <| Http err
@@ -132,13 +143,19 @@ landing : Model -> Html Msg
 landing model =
     case model.remote.user of
         NotAsked ->
-            NavBar.withSignUp |> NavBar.wrapper NavBar.logo empty
+            NavBar.withButtons
+                [ NavBar.login, NavBar.or, NavBar.signUp ]
+                |> NavBar.wrapper NavBar.logo
 
         Loading ->
-            NavBar.withSignUp |> NavBar.wrapper NavBar.logo empty
+            NavBar.withButtons
+                [ NavBar.login, NavBar.or, NavBar.signUp ]
+                |> NavBar.wrapper NavBar.logo
 
         Success user ->
-            NavBar.withDashboard |> NavBar.wrapper NavBar.logo empty
+            NavBar.withButtons
+                [ NavBar.dashboard ]
+                |> NavBar.wrapper NavBar.logo
 
         Failure err ->
             Error.view <| Http err
@@ -154,7 +171,16 @@ draftsPage model =
             div [] []
 
         Success user ->
-            layout (NavBar.withUserMenu user model.menu |> NavBar.wrapper NavBar.logo empty) <| Drafts.view <| Dict.values user.drafts
+            let
+                header =
+                    NavBar.withButtons
+                        [NavBar.newDraft model.menu
+                        ,NavBar.notifications
+                        , NavBar.profile user model.menu
+                        ]
+                        |> NavBar.wrapper NavBar.logo
+            in
+                layout header (Drafts.view <| Dict.values user.drafts)
 
         Failure err ->
             Error.view <| Http err

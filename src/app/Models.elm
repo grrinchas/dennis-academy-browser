@@ -23,12 +23,14 @@ type alias Draft =
     { id : String
     , content : String
     , draftType : String
+    , title : String
     }
 
 
 type alias Menu =
     { user : Bool
     , publish : Bool
+    , newDraft : Bool
     }
 
 
@@ -102,6 +104,7 @@ initialModel =
     , menu =
         { user = False
         , publish = False
+        , newDraft = False
         }
     , remote =
         { auth0 = RemoteData.NotAsked
@@ -153,10 +156,12 @@ type Web
     | WebGraphCoolToken (WebData AuthGraphCool)
     | WebUser (WebData User)
     | WebSaveDraft (WebData Draft)
+    | WebCreateDraft (WebData Draft)
 
 
 type Msg
-    = OnLocationChange Location
+    = NoOperation
+    | OnLocationChange Location
     | UpdateRoute Route
     | OnWindowChange Size
     | OnFormChange Form
@@ -166,6 +171,7 @@ type Msg
     | OnLoadTokens (Maybe Tokens)
     | OnFetch Web
     | SaveDraft Draft
+    | CreateDraft Draft
     | OnDraftChange Draft
     | MouseClicked Mouse.Position
     | Logout
