@@ -186,8 +186,8 @@ draftsPage model =
             Error.view <| Http err
 
 
-tablet : Model -> Html Msg
-tablet model =
+view : Model -> Html Msg
+view model =
     case model.route of
         Ok route ->
             case route of
@@ -212,7 +212,3 @@ tablet model =
         Err oops ->
             Error.view <| Routing oops
 
-
-mobile : Model -> Html Msg
-mobile model =
-    tablet model

@@ -20,8 +20,7 @@ import Window exposing (Size)
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Window.resizes (\size -> OnWindowChange size)
-        , Ports.getTokens OnLoadTokens
+        [ Ports.getTokens OnLoadTokens
         , Mouse.clicks MouseClicked
         , Time.every (5 * Time.minute) <| autoSaveDraft model
         ]
@@ -56,7 +55,7 @@ main : Program (Maybe Tokens) Model Msg
 main =
     Navigation.programWithFlags OnLocationChange
         { init = init
-        , view = view
+        , view = Pages.view
         , update = update
         , subscriptions = subscriptions
         }
@@ -67,16 +66,7 @@ init tokens location =
     updateLocation location initialModel
         |> andThen (initTokens tokens)
         |> andThen fetchUser
-        |> andThen updateWindow
         |> Tuple.mapSecond Cmd.batch
-
-
-view : Model -> Html Msg
-view model =
-    if model.window.width <= 600 then
-        Pages.mobile model
-    else
-        Pages.tablet model
 
 
 andThen : (a -> ( b, List c )) -> ( a, List c ) -> ( b, List c )
@@ -129,9 +119,6 @@ update msg model =
 
         UpdateRoute route ->
             ( model, Navigation.newUrl <| path route )
-
-        OnWindowChange size ->
-            ( { model | window = size }, Cmd.none )
 
         OnFormChange form ->
             updateForm form model
@@ -459,11 +446,6 @@ updateLocation location model =
 updateRoute : Route -> Model -> ( Model, List (Cmd Msg) )
 updateRoute route model =
     ( model, [ Navigation.modifyUrl <| path route ] )
-
-
-updateWindow : Model -> ( Model, List (Cmd Msg) )
-updateWindow model =
-    ( model, [ perform OnWindowChange Window.size ] )
 
 
 resetMenu : Model -> ( Model, List (Cmd Msg) )

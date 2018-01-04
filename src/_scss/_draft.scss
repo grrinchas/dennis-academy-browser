@@ -16,6 +16,19 @@
         .card-title {
             font-weight: bold;
         }
+        .card-action {
+            i {
+                cursor: pointer !important;
+
+            }
+            .delete-draft {
+                margin: 0 !important;
+            }
+
+
+
+
+        }
     }
 
 

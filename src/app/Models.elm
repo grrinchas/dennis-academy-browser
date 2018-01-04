@@ -3,10 +3,11 @@ module Models exposing (..)
 import Dict exposing (Dict)
 import Err exposing (InputError, Oops)
 import Html exposing (Html)
+import Http
 import Mouse
 import Navigation exposing (Location)
-import RemoteData exposing (RemoteData(NotAsked), WebData)
-import Routes exposing (Route(HomeRoute), RouteError)
+import RemoteData exposing (RemoteData(Failure, NotAsked), WebData)
+import Routes exposing (Route(HomeRoute), RouteError, parseLocation)
 import Slug exposing (Slug)
 import Window exposing (Size)
 
@@ -89,30 +90,9 @@ type alias Question =
 
 type alias Model =
     { route : Result RouteError Route
-    , window : Window.Size
     , form : Form
     , menu : Menu
     , remote : Remote
-    }
-
-
-initialModel : Model
-initialModel =
-    { route = Ok HomeRoute
-    , window = Size 0 0
-    , form = initialForm
-    , menu =
-        { user = False
-        , publish = False
-        , newDraft = False
-        }
-    , remote =
-        { auth0 = RemoteData.NotAsked
-        , graphCool = RemoteData.NotAsked
-        , account = RemoteData.NotAsked
-        , user = RemoteData.NotAsked
-        , savedDraft = RemoteData.NotAsked
-        }
     }
 
 
@@ -128,15 +108,6 @@ type alias Account =
     { id : String
     , email : String
     , emailVerified : Bool
-    }
-
-
-initialForm : Form
-initialForm =
-    { username = Just "admin"
-    , email = Just "admin@mail.com"
-    , password = Just "admin1"
-    , repeatPass = Just "admin1"
     }
 
 
@@ -163,7 +134,6 @@ type Msg
     = NoOperation
     | OnLocationChange Location
     | UpdateRoute Route
-    | OnWindowChange Size
     | OnFormChange Form
     | OnMenuChange Menu
     | CreateAccount (Maybe ValidUser)
@@ -194,3 +164,197 @@ type alias ErrorResponse =
     , code : InputError
     , statusCode : Int
     }
+
+
+location : Location -> Model -> Model
+location location model =
+    { model | route = parseLocation location }
+
+
+route : Result RouteError Route -> Model -> Model
+route route model =
+    { model | route = route }
+
+
+routeError : RouteError -> Model -> Model
+routeError routeError model =
+    route (Err routeError) model
+
+
+initialRoute : Result RouteError Route
+initialRoute =
+    Ok HomeRoute
+
+
+form : Form -> Model -> Model
+form form model =
+    { model | form = form }
+
+
+formUsername : Maybe String -> Model -> Model
+formUsername maybe model =
+    case model.form of
+        form ->
+            { model | form = { form | username = maybe } }
+
+
+formEmail : Maybe String -> Model -> Model
+formEmail maybe model =
+    case model.form of
+        form ->
+            { model | form = { form | email = maybe } }
+
+
+formPassword : Maybe String -> Model -> Model
+formPassword maybe model =
+    case model.form of
+        form ->
+            { model | form = { form | password = maybe } }
+
+
+formPasswordRepeat : Maybe String -> Model -> Model
+formPasswordRepeat maybe model =
+    case model.form of
+        form ->
+            { model | form = { form | repeatPass = maybe } }
+
+
+initialForm : Form
+initialForm =
+    { username = Just "admin"
+    , email = Just "admin@mail.com"
+    , password = Just "admin1"
+    , repeatPass = Just "admin1"
+    }
+
+
+resetForm : Model -> Model
+resetForm model =
+    form initialForm model
+
+
+menu : Menu -> Model -> Model
+menu menu model =
+    { model | menu = menu }
+
+
+menuUser : Bool -> Model -> Model
+menuUser bool model =
+    case model.menu of
+        menu ->
+            { model | menu = { menu | user = bool } }
+
+
+menuPublish : Bool -> Model -> Model
+menuPublish bool model =
+    case model.menu of
+        menu ->
+            { model | menu = { menu | publish = bool } }
+
+
+menuNewDraft : Bool -> Model -> Model
+menuNewDraft bool model =
+    case model.menu of
+        menu ->
+            { model | menu = { menu | newDraft = bool } }
+
+
+initialMenu : Menu
+initialMenu =
+    { user = False
+    , publish = False
+    , newDraft = False
+    }
+
+
+resetMenu : Model -> Model
+resetMenu model =
+    menu initialMenu model
+
+
+remote : Remote -> Model -> Model
+remote remote model =
+    { model | remote = remote }
+
+
+remoteAuth0 : WebData Auth0Token -> Model -> Model
+remoteAuth0 web model =
+    case model.remote of
+        remote ->
+            { model | remote = { remote | auth0 = web } }
+
+
+remoteGraphCool : WebData AuthGraphCool -> Model -> Model
+remoteGraphCool web model =
+    case model.remote of
+        remote ->
+            { model | remote = { remote | graphCool = web } }
+
+
+remoteAccount : WebData Account -> Model -> Model
+remoteAccount web model =
+    case model.remote of
+        remote ->
+            { model | remote = { remote | account = web } }
+
+
+remoteUser : WebData User -> Model -> Model
+remoteUser web model =
+    case model.remote of
+        remote ->
+            { model | remote = { remote | user = web } }
+
+
+remoteUpdatedDraft : WebData Draft -> Model -> Model
+remoteUpdatedDraft web model =
+    case model.remote of
+        remote ->
+            { model | remote = { remote | savedDraft = web } }
+
+
+failRemoteUser : Http.Error -> Model -> Model
+failRemoteUser err model =
+    remoteUser (Failure err) model
+
+
+initialRemote : Remote
+initialRemote =
+    { auth0 = RemoteData.NotAsked
+    , graphCool = RemoteData.NotAsked
+    , account = RemoteData.NotAsked
+    , user = RemoteData.NotAsked
+    , savedDraft = RemoteData.NotAsked
+    }
+
+
+resetRemote : Model -> Model
+resetRemote model =
+    remote initialRemote model
+
+
+initialModel : Model
+initialModel =
+    { route = initialRoute
+    , form = initialForm
+    , menu = initialMenu
+    , remote = initialRemote
+    }
+
+
+andThen : (a -> ( b, List c )) -> ( a, List c ) -> ( b, List c )
+andThen apply ( a, c ) =
+    let
+        ( b, d ) =
+            apply a
+    in
+        ( b, c ++ d )
+
+
+withCommands : List (Cmd msg) -> Model -> ( Model, Cmd msg )
+withCommands list model =
+    ( model, Cmd.batch list )
+
+
+withNoCommand : Model -> ( Model, Cmd msg )
+withNoCommand model =
+    withCommands [] model

@@ -28,7 +28,11 @@ permissions:
 
   - operation: Draft.update
     authenticated: true
-    fields: [content]
+    fields: [content, title]
+    query: ./src/permissions/Draft.graphql:isOwner
+
+  - operation: Draft.delete
+    authenticated: true
     query: ./src/permissions/Draft.graphql:isOwner
 
   - operation: UserOnDraft.connect

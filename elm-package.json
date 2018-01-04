@@ -5,12 +5,8 @@
     "license": "BSD3",
     "source-directories": [
         "src/app/",
-        "src/app/Main",
-        "src/app/Api",
-        "src/app/Pages",
-        "src/app/Routes",
-        "src/app/Topic",
-        "src/app/Views"
+        "src/app/Views",
+        "src/app/Updates"
     ],
     "exposed-modules": [],
     "dependencies": {
