@@ -33,12 +33,10 @@ permissions:
 
   - operation: Draft.delete
     authenticated: true
+    fields: [content]
     query: ./src/permissions/Draft.graphql:isOwner
 
   - operation: UserOnDraft.connect
     authenticated: true
     query: ./src/permissions/UserOnDraft.graphql:isOwner
-
-
-
 
