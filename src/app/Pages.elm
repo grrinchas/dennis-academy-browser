@@ -174,7 +174,7 @@ draftsPage model =
             let
                 header =
                     NavBar.withButtons
-                        [NavBar.newDraft model.menu
+                        [NavBar.newDraft model.form model.menu
                         ,NavBar.notifications
                         , NavBar.profile user model.menu
                         ]

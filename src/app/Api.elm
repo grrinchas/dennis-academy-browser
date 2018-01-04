@@ -75,3 +75,8 @@ createDraft draft token =
         |> Cmd.map (\web -> OnFetch <| WebCreateDraft web)
 
 
+deleteDraft : Draft -> AuthGraphCool -> Cmd Msg
+deleteDraft draft token =
+    authorised token (GraphQl.operationToBody GraphQl.OperationMutation (Encoders.deleteDraft draft token) Nothing) Decoders.decodeDeleteDraft
+        |> RemoteData.sendRequest
+        |> Cmd.map (\web -> OnFetch <| WebDeleteDraft web)

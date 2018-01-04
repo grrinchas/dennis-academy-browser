@@ -84,10 +84,10 @@ reroute model =
         Ok route ->
             case ( route, isLoggedIn model ) of
                 ( LoginRoute, True ) ->
-                    updateRoute DashboardRoute model
+                    ( model, [ Navigation.modifyUrl <| path DashboardRoute ] )
 
                 ( SignUpRoute, True ) ->
-                    updateRoute DashboardRoute model
+                    ( model, [ Navigation.modifyUrl <| path DashboardRoute ] )
 
                 ( DashboardRoute, False ) ->
                     ( { model | route = Err NotFound }, [] )
@@ -137,11 +137,11 @@ update msg model =
                 |> Tuple.mapSecond Cmd.batch
 
         Logout ->
-            removeToken model
-                |> andThen (updateAuth0Token NotAsked)
-                |> andThen (updateGraphCoolToken NotAsked)
-                |> andThen (updateUser NotAsked)
-                |> andThen (updateRoute HomeRoute)
+            resetRemote model
+                |> withCommands
+                    [ Ports.saveTokens Nothing
+                    , Navigation.modifyUrl <| path HomeRoute
+                    ]
                 |> Tuple.mapSecond Cmd.batch
 
         OnFetch web ->
@@ -161,36 +161,33 @@ update msg model =
                 |> Tuple.mapSecond Cmd.batch
 
         SaveDraft draft ->
-            fetchSavedToken draft model |> Tuple.mapSecond Cmd.batch
+            fetchSavedDraft draft model |> Tuple.mapSecond Cmd.batch
 
         CreateDraft draft ->
-            fetchCreatedToken draft model |> Tuple.mapSecond Cmd.batch
+            fetchCreatedDraft draft model |> Tuple.mapSecond Cmd.batch
+
+        DeleteDraft draft ->
+            fetchDeletedDraft draft model |> Tuple.mapSecond Cmd.batch
 
 
 updateDraft : Draft -> Model -> ( Model, List (Cmd Msg) )
 updateDraft draft model =
-    let
-        remote =
-            model.remote
-    in
-        case model.remote.user of
-            RemoteData.Success user ->
-                let
-                    drafts =
-                        user.drafts
-                in
-                    ( { model | remote = { remote | user = RemoteData.succeed { user | drafts = Dict.insert draft.id draft user.drafts } } }, [] )
+    case model.remote.user of
+        RemoteData.Success user ->
+            remoteUser (succeed { user | drafts = Dict.insert draft.id draft user.drafts }) model
+                |> withNoCommand
 
-            _ ->
-                ( model, [] )
+        _ ->
+            ( model, [] )
 
 
 onFetch : Web -> Model -> ( Model, List (Cmd Msg) )
 onFetch web model =
     case web of
         WebAccount account ->
-            updateAccount account model
-                |> andThen resetForm
+            remoteAccount account model
+                |> resetForm
+                |> withNoCommand
 
         WebAuth0Token token ->
             updateAuth0Token token model
@@ -201,8 +198,7 @@ onFetch web model =
                 |> andThen fetchUser
 
         WebUser user ->
-            updateUser user model
-                |> andThen resetForm
+            ( remoteUser user model |> resetForm, [] )
                 |> andThen saveToken
                 |> andThen reroute
 
@@ -210,41 +206,34 @@ onFetch web model =
             updateSavedDraft draft model
 
         WebCreateDraft draft ->
-            let
-                _ =
-                    Debug.log "" draft
-            in
-                case draft of
-                    NotAsked ->
-                        ( model, [] )
+            case draft of
+                Success draft ->
+                    case model.remote.user of
+                        Success user ->
+                            remoteUser (RemoteData.succeed { user | drafts = Dict.insert draft.id draft user.drafts }) model
+                                |> Models.resetForm
+                                |> Models.resetMenu
+                                |> withNoCommand
 
-                    Loading ->
-                        ( model, [] )
+                        _ ->
+                            ( model, [] )
 
-                    Success draft ->
-                        case model.remote.user of
-                            NotAsked ->
-                                ( model, [] )
+                _ ->
+                    ( model, [] )
 
-                            Loading ->
-                                ( model, [] )
+        WebDeleteDraft web ->
+            case web of
+                Success id ->
+                    case model.remote.user of
+                        Success user ->
+                            remoteUser (RemoteData.succeed { user | drafts = Dict.remove id user.drafts }) model
+                                |> withNoCommand
 
-                            Success user ->
-                                let
-                                    remote =
-                                        model.remote
-                                in
-                                    let
-                                        drafts =
-                                            user.drafts
-                                    in
-                                        ( { model | remote = { remote | user = RemoteData.succeed { user | drafts = Dict.insert draft.id draft drafts } } }, [] )
+                        _ ->
+                            ( model, [] )
 
-                            Failure err ->
-                                ( model, [] )
-
-                    Failure err ->
-                        ( model, [] )
+                _ ->
+                    ( model, [] )
 
 
 initTokens : Maybe Tokens -> Model -> ( Model, List (Cmd Msg) )
@@ -284,8 +273,8 @@ fetchAccount : Maybe ValidUser -> Model -> ( Model, List (Cmd Msg) )
 fetchAccount mUser model =
     case mUser of
         Just user ->
-            updateAccount Loading model
-                |> andThen (\model -> ( model, [ Api.createAccount user ] ))
+            remoteAccount Loading model
+                |> withCommands [ Api.createAccount user ]
 
         Nothing ->
             ( model, [] )
@@ -329,45 +318,43 @@ fetchAuth0Token : Maybe ValidUser -> Model -> ( Model, List (Cmd Msg) )
 fetchAuth0Token mUser model =
     case mUser of
         Just user ->
-            updateUser Loading model
-                |> andThen (\model -> ( model, [ Api.login user ] ))
+            remoteUser Loading model
+                |> withCommands
+                    [ Api.login user ]
 
         Nothing ->
             ( model, [] )
 
 
-fetchSavedToken : Draft -> Model -> ( Model, List (Cmd Msg) )
-fetchSavedToken draft model =
-    let
-        remote =
-            model.remote
-    in
-        case model.remote.graphCool of
-            RemoteData.Success token ->
-                ( { model | remote = { remote | savedDraft = Loading } }, [ Api.saveDraft draft token ] )
+fetchSavedDraft : Draft -> Model -> ( Model, List (Cmd Msg) )
+fetchSavedDraft draft model =
+    case model.remote.graphCool of
+        RemoteData.Success token ->
+            remoteUpdatedDraft Loading model
+                |> withCommands [ Api.saveDraft draft token ]
 
-            RemoteData.Failure err ->
-                ( { model | remote = { remote | user = RemoteData.Failure err } }, [] )
-
-            _ ->
-                ( model, [] )
+        _ ->
+            ( model, [] )
 
 
-fetchCreatedToken : Draft -> Model -> ( Model, List (Cmd Msg) )
-fetchCreatedToken draft model =
-    let
-        remote =
-            model.remote
-    in
-        case model.remote.graphCool of
-            RemoteData.Success token ->
-                ( model, [ Api.createDraft draft token ] )
+fetchCreatedDraft : Draft -> Model -> ( Model, List (Cmd Msg) )
+fetchCreatedDraft draft model =
+    case model.remote.graphCool of
+        RemoteData.Success token ->
+            withCommands [ Api.createDraft draft token ] model
 
-            RemoteData.Failure err ->
-                ( { model | remote = { remote | user = RemoteData.Failure err } }, [] )
+        _ ->
+            ( model, [] )
 
-            _ ->
-                ( model, [] )
+
+fetchDeletedDraft : Draft -> Model -> ( Model, List (Cmd Msg) )
+fetchDeletedDraft draft model =
+    case model.remote.graphCool of
+        RemoteData.Success token ->
+            withCommands [ Api.deleteDraft draft token ] model
+
+        _ ->
+            ( model, [] )
 
 
 
@@ -392,31 +379,21 @@ updateGraphCoolToken token model =
         ( { model | remote = { remote | graphCool = token } }, [] )
 
 
-updateUser : WebData User -> Model -> ( Model, List (Cmd Msg) )
-updateUser user model =
-    let
-        remote =
-            model.remote
-    in
-        ( { model | remote = { remote | user = user } }, [] )
-
-
-updateAccount : WebData Account -> Model -> ( Model, List (Cmd Msg) )
-updateAccount account model =
-    let
-        remote =
-            model.remote
-    in
-        ( { model | remote = { remote | account = account } }, [] )
-
-
 updateSavedDraft : WebData Draft -> Model -> ( Model, List (Cmd Msg) )
-updateSavedDraft draft model =
-    let
-        remote =
-            model.remote
-    in
-        ( { model | remote = { remote | savedDraft = draft } }, [] )
+updateSavedDraft web model =
+    case web of
+        Success draft ->
+            case model.remote.user of
+                Success user ->
+                    remoteUpdatedDraft web model
+                        |> remoteUser (RemoteData.succeed { user | drafts = Dict.insert draft.id draft user.drafts })
+                        |> withNoCommand
+
+                _ ->
+                    ( model, [] )
+
+        _ ->
+            ( model, [] )
 
 
 
@@ -433,19 +410,9 @@ updateForm form model =
     ( { model | form = form }, [] )
 
 
-resetForm : Model -> ( Model, List (Cmd Msg) )
-resetForm model =
-    updateForm (Form Nothing Nothing Nothing Nothing) model
-
-
 updateLocation : Location -> Model -> ( Model, List (Cmd Msg) )
 updateLocation location model =
     ( { model | route = parseLocation location }, [] )
-
-
-updateRoute : Route -> Model -> ( Model, List (Cmd Msg) )
-updateRoute route model =
-    ( model, [ Navigation.modifyUrl <| path route ] )
 
 
 resetMenu : Model -> ( Model, List (Cmd Msg) )

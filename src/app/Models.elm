@@ -22,6 +22,8 @@ type alias Auth0Token =
 
 type alias Draft =
     { id : String
+    , createdAt: String
+    , updatedAt: String
     , content : String
     , draftType : String
     , title : String
@@ -101,6 +103,7 @@ type alias Form =
     , email : Maybe String
     , password : Maybe String
     , repeatPass : Maybe String
+    , draftTitle : String
     }
 
 
@@ -128,6 +131,7 @@ type Web
     | WebUser (WebData User)
     | WebSaveDraft (WebData Draft)
     | WebCreateDraft (WebData Draft)
+    | WebDeleteDraft (WebData String)
 
 
 type Msg
@@ -142,6 +146,7 @@ type Msg
     | OnFetch Web
     | SaveDraft Draft
     | CreateDraft Draft
+    | DeleteDraft Draft
     | OnDraftChange Draft
     | MouseClicked Mouse.Position
     | Logout
@@ -225,6 +230,7 @@ initialForm =
     , email = Just "admin@mail.com"
     , password = Just "admin1"
     , repeatPass = Just "admin1"
+    , draftTitle = "Very descriptive draft title..."
     }
 
 
@@ -350,11 +356,11 @@ andThen apply ( a, c ) =
         ( b, c ++ d )
 
 
-withCommands : List (Cmd msg) -> Model -> ( Model, Cmd msg )
+withCommands : List (Cmd msg) -> Model -> ( Model, List (Cmd msg) )
 withCommands list model =
-    ( model, Cmd.batch list )
+    ( model, list )
 
 
-withNoCommand : Model -> ( Model, Cmd msg )
+withNoCommand : Model -> ( Model, List (Cmd msg) )
 withNoCommand model =
-    withCommands [] model
+    ( model, [] )

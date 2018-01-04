@@ -64,6 +64,8 @@ userInfo id =
                         , GraphQl.field "content"
                         , GraphQl.field "type"
                         , GraphQl.field "title"
+                        , GraphQl.field "createdAt"
+                        , GraphQl.field "updatedAt"
                         ]
                 ]
         ]
@@ -80,6 +82,8 @@ saveDraft draft =
                 , GraphQl.field "content"
                 , GraphQl.field "type"
                 , GraphQl.field "title"
+                , GraphQl.field "createdAt"
+                , GraphQl.field "updatedAt"
                 ]
         ]
 
@@ -104,5 +108,18 @@ createDraft draft token =
                 , GraphQl.field "content"
                 , GraphQl.field "type"
                 , GraphQl.field "title"
+                , GraphQl.field "createdAt"
+                , GraphQl.field "updatedAt"
+                ]
+        ]
+
+
+deleteDraft : Draft -> AuthGraphCool -> Operation Mutation Named
+deleteDraft draft token =
+    GraphQl.named "deleteDraft"
+        [ GraphQl.field "deleteDraft"
+            |> GraphQl.withArgument "id" (GraphQl.string draft.id)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "id"
                 ]
         ]

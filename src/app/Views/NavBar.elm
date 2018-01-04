@@ -2,7 +2,7 @@ module Views.NavBar exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (on, onClick, onWithOptions)
+import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Json.Decode
 import Models exposing (..)
 import Routes exposing (..)
@@ -72,11 +72,11 @@ profile user menu =
         ]
 
 
-newDraft : Menu -> Html Msg
-newDraft menu =
+newDraft : Form -> Menu -> Html Msg
+newDraft form menu =
     div []
         [ a [ class "new-draft btn z-depth-0", newDraftMenuEvent menu True ] [ text "New " ]
-        , newDraftMenu menu
+        , newDraftMenu form menu
         ]
 
 
@@ -161,14 +161,14 @@ publishMenu menu =
         ]
 
 
-newDraftMenu : Menu -> Html Msg
-newDraftMenu menu =
+newDraftMenu : Form -> Menu -> Html Msg
+newDraftMenu form menu =
     div [ newDraftMenuEvent menu True, class "card dg-new-draft", classList [ ( "dg-new-draft-show", menu.newDraft ) ] ]
         [ div [ class "card-content" ]
-            [ p [] [ text "What is your draft about? Please enter descriptive title." ]
-            , input [ placeholder "Enter here..." ] []
+            [ p [] [ text "What is your draft about?" ]
+            , input [ placeholder form.draftTitle, onInput (\title -> OnFormChange { form | draftTitle = title }) ] []
             ]
         , div [ class "card-action" ]
-            [ a [ onClick <| CreateDraft { draftType = "TUTORIAL", content = "", title = "Draft Created", id = "" } ] [ text "create" ]
+            [ a [ onClick <| CreateDraft { updatedAt = "", createdAt = "", draftType = "TUTORIAL", content = "", title = form.draftTitle, id = "" } ] [ text "create" ]
             ]
         ]
