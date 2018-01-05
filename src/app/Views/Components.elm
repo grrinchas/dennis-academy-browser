@@ -20,7 +20,7 @@ layout menu head main =
     div [ class "layout" ]
         [ header [] [ head ]
         , main_ [] [ main ]
-        , div [ class "overlay", classList [ ( "overlay-visible", isMenuVisible menu) ] ] []
+        , div [ class "overlay", classList [ ( "overlay-visible", isMenuVisible menu ) ] ] []
         ]
 
 

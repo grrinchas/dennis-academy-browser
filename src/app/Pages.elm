@@ -112,7 +112,7 @@ draftPage id model =
                                 ]
                                 |> NavBar.wrapper NavBar.logo
                     in
-                        layout model.menu header <| Draft.view model.remote.savedDraft draft
+                        layout model.menu header <| Draft.view model.now model.remote.savedDraft draft
 
                 Nothing ->
                     Error.view <| Routing NotFound

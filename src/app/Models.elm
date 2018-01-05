@@ -8,7 +8,7 @@ import Mouse
 import Navigation exposing (Location)
 import RemoteData exposing (RemoteData(Failure, NotAsked), WebData)
 import Routes exposing (Route(HomeRoute), RouteError, parseLocation)
-import Time
+import Time exposing (Time)
 
 
 type alias Auth0Token =
@@ -75,6 +75,7 @@ type alias Model =
     , form : Form
     , menu : Menu
     , remote : Remote
+    , now : Time
     }
 
 
@@ -130,6 +131,8 @@ type Msg
     | OnDraftChange Draft
     | MouseClicked Mouse.Position
     | Logout
+    | GetCurrentTime
+    | OnTime Time
 
 
 type Valid
@@ -340,6 +343,7 @@ initialModel =
     , form = initialForm
     , menu = initialMenu
     , remote = initialRemote
+    , now = Time.second
     }
 
 

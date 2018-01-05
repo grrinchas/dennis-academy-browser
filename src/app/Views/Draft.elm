@@ -8,17 +8,17 @@ import Html.Events exposing (onClick, onInput)
 import Markdown
 import Models exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
-import Time
+import Time exposing (Time)
 import Views.NavBar exposing (publishMenu)
 
 
-view : WebData Draft -> Draft -> Html Msg
-view webDraft draft =
+view : Time -> WebData Draft -> Draft -> Html Msg
+view now webDraft draft =
     div [ class "dg-editor " ]
         [ div [ class "row header-row " ]
             [ div [ class "col s6 header-md" ]
                 [ --small [] [ text <| "ID: " ++ draft.id ]
-                  small [] [ strong [] [ text "CREATED: " ], span [] [ text <| formatUpdated draft.createdAt draft.updatedAt ] ]
+                  small [] [ strong [] [ text "CREATED: " ], span [] [ text <| formatUpdated (Date.toTime draft.createdAt) now ] ]
                 , save webDraft draft
                 ]
             , div
@@ -66,11 +66,11 @@ formatCreated date =
         |> (++) (toString <| Date.month date)
 
 
-formatUpdated : Date -> Date -> String
+formatUpdated : Time -> Time -> String
 formatUpdated created updated =
     let
         diff =
-            Date.toTime updated - Date.toTime created
+            updated - created
     in
         if (diff < 60000) then
             (toString <| round (Time.inSeconds diff)) ++ " seconds ago"

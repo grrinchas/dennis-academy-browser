@@ -11,6 +11,7 @@ import Navigation exposing (Location)
 import Pages
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData, succeed)
 import Routes exposing (..)
+import Task
 import Time exposing (Time)
 
 
@@ -62,7 +63,7 @@ init : Maybe Tokens -> Location -> ( Model, Cmd Msg )
 init tokens loc =
     location loc initialModel
         |> initTokens tokens
-        |> (\model -> mapLoggedInUser (\token -> withCommands [ Api.fetchUser token ] model) model)
+        |> (\model -> mapLoggedInUser (\token -> withCommands [ Api.fetchUser token, Task.perform OnTime Time.now ] model) model)
 
 
 reroute : Model -> ( Model, Cmd Msg )
@@ -82,6 +83,9 @@ reroute model =
                 ( DraftRoute _, False ) ->
                     ( { model | route = Err NotFound }, Cmd.none )
 
+                ( DraftRoute _, True ) ->
+                    ( model, Task.perform OnTime Time.now )
+
                 ( DraftsRoute, False ) ->
                     ( { model | route = Err NotFound }, Cmd.none )
 
@@ -97,6 +101,12 @@ update msg model =
     case msg of
         NoOperation ->
             ( model, Cmd.none )
+
+        GetCurrentTime ->
+            ( model, Task.perform OnTime Time.now )
+
+        OnTime time ->
+            ( { model | now = time }, Cmd.none )
 
         OnLocationChange loc ->
             location loc model
@@ -185,7 +195,7 @@ onFetch web model =
         WebSaveDraft web ->
             case RemoteData.append model.remote.user web of
                 Success ( user, draft ) ->
-                    remoteUpdatedDraft web model |> remoteUser (succeed { user | drafts = Dict.insert draft.id draft user.drafts }) |> withNoCommand
+                    remoteUpdatedDraft web model |> remoteUser (succeed { user | drafts = Dict.insert draft.id draft user.drafts }) |> withCommands [ Task.perform OnTime Time.now ]
 
                 Failure err ->
                     failRemoteUser err model
