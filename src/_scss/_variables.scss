@@ -1,11 +1,17 @@
 
 
 
-$body-bg-color: #fafafa;
+$body-bg-color: #f4f4f4;
 $text-color: rgba(0, 0, 0, 0.87);
 $success-color: color("green", "base") !default;
 $error-color: color("red", "base") !default;
 $topic-size: 200px;
+
+
+@mixin  profile-size {
+    width: 30px;
+    height: 30px;
+}
 
 
 .success-style {

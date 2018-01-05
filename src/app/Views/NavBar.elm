@@ -1,5 +1,6 @@
 module Views.NavBar exposing (..)
 
+import Date
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
@@ -60,12 +61,12 @@ or =
 
 notifications : Html Msg
 notifications =
-    div [] [ a [ class "dg-notifications" ] [ i [ class "material-icons" ] [ text "notifications" ] ] ]
+    div [] [ a [ class "dg-notifications not-implemented" ] [ i [ class "material-icons" ] [ text "notifications" ] ] ]
 
 
 profile : User -> Menu -> Html Msg
 profile user menu =
-    div [ class "valign-wrapper profile-menu-btn", userMenuEvent menu True ]
+    div [ class "valign-wrapper profile-menu-btn", userMenuEvent ]
         [ img [ src user.picture, class "  circle" ] []
         , i [ class "material-icons drop" ] [ text "arrow_drop_down" ]
         , userMenu user menu
@@ -75,7 +76,7 @@ profile user menu =
 newDraft : Form -> Menu -> Html Msg
 newDraft form menu =
     div []
-        [ a [ class "new-draft btn z-depth-0", newDraftMenuEvent menu True ] [ text "New " ]
+        [ a [ class "new-draft btn z-depth-0", newDraftMenuEvent ] [ text "New " ]
         , newDraftMenu form menu
         ]
 
@@ -83,43 +84,43 @@ newDraft form menu =
 publish : Menu -> Html Msg
 publish menu =
     div []
-        [ a [ class "btn valign-wrapper z-depth-0", publishMenuEvent menu True ] [ text "publish" ]
+        [ a [ class "btn valign-wrapper z-depth-0", publishMenuEvent ] [ text "publish" ]
         , publishMenu menu
         ]
 
 
-publishMenuEvent : Menu -> Bool -> Attribute Msg
-publishMenuEvent menu bool =
+publishMenuEvent : Attribute Msg
+publishMenuEvent =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            OnMenuChange { menu | publish = bool, user = False, newDraft = False }
+            OnMenuChange menuPublish
 
 
-userMenuEvent : Menu -> Bool -> Attribute Msg
-userMenuEvent menu bool =
+userMenuEvent : Attribute Msg
+userMenuEvent =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            OnMenuChange { menu | user = bool, publish = False, newDraft = False }
+            OnMenuChange menuUser
 
 
-newDraftMenuEvent : Menu -> Bool -> Attribute Msg
-newDraftMenuEvent menu bool =
+newDraftMenuEvent : Attribute Msg
+newDraftMenuEvent =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            OnMenuChange { menu | newDraft = bool, user = False, publish = False }
+            OnMenuChange menuNewDraft
 
 
 userMenu : User -> Menu -> Html Msg
 userMenu user menu =
-    ul [ userMenuEvent menu True, class "dropdown-content", classList [ ( "dg-user-menu", menu.user ) ] ]
+    ul [ userMenuEvent, class "dropdown-content", classList [ ( "dg-user-menu", menu.user ) ] ]
         [ --   li [] [ a [ href <| path <| DraftRoute "1" ] [ i [ class "material-icons" ] [ text "add" ], text "Create Tutorial" ] ]
           li [] [ a [ href <| path DraftsRoute ] [ i [ class "material-icons" ] [ text "apps" ], text "Drafts" ] ]
         , li [ class "divider" ] []
         , li [ class "valign-wrapper" ]
             [ img [ class "circle", src user.picture ] []
-            , span [ class "dg-profile title" ] [ text "View Profile" ]
+            , span [ class "not-implemented dg-profile title" ] [ text "View Profile" ]
             ]
-        , li [] [ a [] [ i [ class "material-icons" ] [ text "settings" ], text "Settings" ] ]
+        , li [] [ a [ class "not-implemented" ] [ i [ class "material-icons" ] [ text "settings" ], text "Settings" ] ]
         , li [ class "divider" ] []
         , li [] [ a [ onClick Logout ] [ i [ class "material-icons" ] [ text "arrow_forward" ], text "Logout" ] ]
         ]
@@ -127,7 +128,7 @@ userMenu user menu =
 
 publishMenu : Menu -> Html Msg
 publishMenu menu =
-    div [ publishMenuEvent menu True, class "card  dg-publish", classList [ ( "dg-publish-menu", menu.publish ) ] ]
+    div [ publishMenuEvent, class "card  dg-publish", classList [ ( "dg-publish-menu", menu.publish ) ] ]
         [ div [ class "card-content" ]
             [ span [ class "card-title" ] [ text "Ready to publish?" ]
             ]
@@ -163,12 +164,12 @@ publishMenu menu =
 
 newDraftMenu : Form -> Menu -> Html Msg
 newDraftMenu form menu =
-    div [ newDraftMenuEvent menu True, class "card dg-new-draft", classList [ ( "dg-new-draft-show", menu.newDraft ) ] ]
+    div [ newDraftMenuEvent, class "card dg-new-draft", classList [ ( "dg-new-draft-show", menu.newDraft ) ] ]
         [ div [ class "card-content" ]
             [ p [] [ text "What is your draft about?" ]
             , input [ placeholder form.draftTitle, onInput (\title -> OnFormChange { form | draftTitle = title }) ] []
             ]
         , div [ class "card-action" ]
-            [ a [ onClick <| CreateDraft { updatedAt = "", createdAt = "", draftType = "TUTORIAL", content = "", title = form.draftTitle, id = "" } ] [ text "create" ]
+            [ a [ onClick <| CreateDraft { initialDraft | title = form.draftTitle } ] [ text "create" ]
             ]
         ]

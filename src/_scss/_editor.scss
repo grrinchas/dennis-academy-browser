@@ -1,6 +1,9 @@
 
 .dg-editor {
     @extend .dg-full-height;
+    background-color: $card-bg-color;
+
+
     .editor-row{
         @extend .dg-full-height;
     }

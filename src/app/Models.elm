@@ -1,15 +1,14 @@
 module Models exposing (..)
 
+import Date exposing (Date)
 import Dict exposing (Dict)
 import Err exposing (InputError, Oops)
-import Html exposing (Html)
 import Http
 import Mouse
 import Navigation exposing (Location)
 import RemoteData exposing (RemoteData(Failure, NotAsked), WebData)
 import Routes exposing (Route(HomeRoute), RouteError, parseLocation)
-import Slug exposing (Slug)
-import Window exposing (Size)
+import Time
 
 
 type alias Auth0Token =
@@ -22,18 +21,22 @@ type alias Auth0Token =
 
 type alias Draft =
     { id : String
-    , createdAt: String
-    , updatedAt: String
+    , createdAt : Date
+    , updatedAt : Date
     , content : String
     , draftType : String
     , title : String
     }
 
 
-type alias Menu =
-    { user : Bool
-    , publish : Bool
-    , newDraft : Bool
+initialDraft : Draft
+initialDraft =
+    { id = ""
+    , createdAt = Date.fromTime <| Time.millisecond * 0
+    , updatedAt = Date.fromTime <| Time.millisecond * 0
+    , content = ""
+    , draftType = "TUTORIAL"
+    , title = "Very descriptive draft title..."
     }
 
 
@@ -64,29 +67,6 @@ type alias Remote =
     , account : WebData Account
     , user : WebData User
     , savedDraft : WebData Draft
-    }
-
-
-type alias Topic =
-    { id : String
-    , title : String
-    , slug : Slug
-    , description : String
-    , questions : List Question
-    , icon : String
-    , colour : String
-    , next : Maybe Slug
-    , previous : Maybe Slug
-    }
-
-
-type alias Question =
-    { id : String
-    , title : String
-    , slug : Slug
-    , answer : String
-    , next : Maybe Slug
-    , previous : Maybe Slug
     }
 
 
@@ -239,30 +219,12 @@ resetForm model =
     form initialForm model
 
 
-menu : Menu -> Model -> Model
-menu menu model =
-    { model | menu = menu }
-
-
-menuUser : Bool -> Model -> Model
-menuUser bool model =
-    case model.menu of
-        menu ->
-            { model | menu = { menu | user = bool } }
-
-
-menuPublish : Bool -> Model -> Model
-menuPublish bool model =
-    case model.menu of
-        menu ->
-            { model | menu = { menu | publish = bool } }
-
-
-menuNewDraft : Bool -> Model -> Model
-menuNewDraft bool model =
-    case model.menu of
-        menu ->
-            { model | menu = { menu | newDraft = bool } }
+type alias Menu =
+    { user : Bool
+    , publish : Bool
+    , newDraft : Bool
+    , deleteDraft : { id : String, display : Bool }
+    }
 
 
 initialMenu : Menu
@@ -270,12 +232,46 @@ initialMenu =
     { user = False
     , publish = False
     , newDraft = False
+    , deleteDraft = { id = "", display = False }
     }
+
+
+isMenuVisible : Menu -> Bool
+isMenuVisible menu =
+    menu.user
+        || menu.publish
+        || menu.newDraft
+        || menu.deleteDraft.display
+
+
+menu : Menu -> Model -> Model
+menu menu model =
+    { model | menu = menu }
 
 
 resetMenu : Model -> Model
 resetMenu model =
     menu initialMenu model
+
+
+menuUser : Menu
+menuUser =
+    { initialMenu | user = True }
+
+
+menuPublish : Menu
+menuPublish =
+    { initialMenu | publish = True }
+
+
+menuNewDraft : Menu
+menuNewDraft =
+    { initialMenu | newDraft = True }
+
+
+menuDeleteDraft : String -> Menu
+menuDeleteDraft id =
+    { initialMenu | deleteDraft = { display = True, id = id } }
 
 
 remote : Remote -> Model -> Model
@@ -356,11 +352,11 @@ andThen apply ( a, c ) =
         ( b, c ++ d )
 
 
-withCommands : List (Cmd msg) -> Model -> ( Model, List (Cmd msg) )
+withCommands : List (Cmd msg) -> Model -> ( Model, Cmd msg )
 withCommands list model =
-    ( model, list )
+    ( model, Cmd.batch list )
 
 
-withNoCommand : Model -> ( Model, List (Cmd msg) )
+withNoCommand : Model -> ( Model, Cmd msg )
 withNoCommand model =
-    ( model, [] )
+    ( model, Cmd.none )

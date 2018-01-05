@@ -7,8 +7,15 @@
         color: $input-disabled-solid-color;
 
     }
+
+    .row {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
     .card {
 
+        min-width: 350px;
         small {
             color: $input-disabled-solid-color;
         }
@@ -17,23 +24,79 @@
             font-weight: bold;
         }
         .card-action {
+            justify-content: space-between;
+
+            .profile {
+                .name {
+                    color: $link-color !important;
+                }
+            }
+
+            .actions {
+                margin: 0;
+                li {
+                    display: inline-block;
+
+                    .relative {
+                        position: relative !important;
+
+                        .show-delete-draft-menu {
+                            line-height: initial;
+                            width: 100px;
+                            height: 130px;
+                            min-width: 200px !important;
+                            top: 20px;
+                            left: -100px;
+                            display: block !important;
+                            opacity: 1 !important;
+                            text-transform: none;
+
+                            a {
+                                cursor: pointer;
+                                color: $error-color !important;
+                                margin: 0 !important;
+
+                            }
+
+                        }
+                    }
+
+                    a {
+                        margin-right: 16px !important;
+
+                    }
+
+                    .delete-draft {
+                        margin-right: 0 !important;
+                    }
+
+                }
+            }
+
+            .name, .updated-at {
+                display: block;
+            }
+
+            .name {
+                text-transform: none !important;
+            }
+
             i {
                 cursor: pointer !important;
+            }
+            img {
+                @include profile-size;
+                margin-right: 10px;
 
             }
-            .delete-draft {
-                margin: 0 !important;
-            }
-
-
-
 
         }
     }
 
-
-
 }
+
+
+
 
 
 

@@ -101,8 +101,8 @@ createDraft draft token =
         [ GraphQl.field "createDraft"
             |> GraphQl.withArgument "ownerId" (GraphQl.string token.id)
             |> GraphQl.withArgument "type" (GraphQl.type_ draft.draftType)
-            |> GraphQl.withArgument "content" (GraphQl.string draft.content)
-            |> GraphQl.withArgument "title" (GraphQl.string draft.title)
+            |> GraphQl.withArgument "content" (GraphQl.string <| sanitize draft.content)
+            |> GraphQl.withArgument "title" (GraphQl.string <| sanitize draft.title)
             |> GraphQl.withSelectors
                 [ GraphQl.field "id"
                 , GraphQl.field "content"

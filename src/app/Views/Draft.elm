@@ -1,12 +1,14 @@
 module Views.Draft exposing (..)
 
 import Components exposing (loader, withLoader)
+import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Markdown
 import Models exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
+import Time
 import Views.NavBar exposing (publishMenu)
 
 
@@ -15,13 +17,14 @@ view webDraft draft =
     div [ class "dg-editor " ]
         [ div [ class "row header-row " ]
             [ div [ class "col s6 header-md" ]
-                [ small [] [ text <| "ID: " ++ draft.id ]
+                [ --small [] [ text <| "ID: " ++ draft.id ]
+                  small [] [ strong [] [ text "CREATED: " ], span [] [ text <| formatUpdated draft.createdAt draft.updatedAt ] ]
                 , save webDraft draft
                 ]
             , div
                 [ class "col s6 " ]
                 [ small [] [ text "HTML" ]
-                , a [ class "right" ] [ small [] [ text "PREVIEW" ] ]
+                , a [ class "right not-implemented" ] [ small [] [ text "PREVIEW" ] ]
                 ]
             ]
         , div [ class "row editor-row" ]
@@ -52,3 +55,28 @@ save webDraft draft =
 
         Failure err ->
             div [ class "error-save save" ] [ small [] [ text "Can't save!" ] ]
+
+
+formatCreated : Date -> String
+formatCreated date =
+    toString (Date.year date)
+        |> (++) ", "
+        |> (++) (toString <| Date.day date)
+        |> (++) " "
+        |> (++) (toString <| Date.month date)
+
+
+formatUpdated : Date -> Date -> String
+formatUpdated created updated =
+    let
+        diff =
+            Date.toTime updated - Date.toTime created
+    in
+        if (diff < 60000) then
+            (toString <| round (Time.inSeconds diff)) ++ " seconds ago"
+        else if (diff < 3600000) then
+            (toString <| round (Time.inMinutes diff)) ++ " minutes ago"
+        else if (diff < 86400000) then
+            (toString <| round (Time.inHours diff)) ++ " hours ago"
+        else
+            (toString <| (%) (round (Time.inHours diff)) 24) ++ " days ago"

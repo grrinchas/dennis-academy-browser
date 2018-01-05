@@ -2,6 +2,7 @@ module Components exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Models exposing (Menu, isMenuVisible)
 
 
 icon : String -> Html msg
@@ -14,9 +15,13 @@ empty =
     div [] []
 
 
-layout : Html msg -> Html msg -> Html msg
-layout head main =
-    div [ class "layout" ] [ header [] [ head ], main_ [] [ main ] ]
+layout : Menu -> Html msg -> Html msg -> Html msg
+layout menu head main =
+    div [ class "layout" ]
+        [ header [] [ head ]
+        , main_ [] [ main ]
+        , div [ class "overlay", classList [ ( "overlay-visible", isMenuVisible menu) ] ] []
+        ]
 
 
 withLoader : Html msg -> Html msg

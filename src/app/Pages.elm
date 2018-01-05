@@ -95,7 +95,7 @@ draftPage : String -> Model -> Html Msg
 draftPage id model =
     case model.remote.user of
         NotAsked ->
-            Error.view <| Routing NotFound
+            div [] []
 
         Loading ->
             div [] []
@@ -112,7 +112,7 @@ draftPage id model =
                                 ]
                                 |> NavBar.wrapper NavBar.logo
                     in
-                        layout header <| Draft.view model.remote.savedDraft draft
+                        layout model.menu header <| Draft.view model.remote.savedDraft draft
 
                 Nothing ->
                     Error.view <| Routing NotFound
@@ -125,7 +125,7 @@ dashboard : Model -> Html Msg
 dashboard model =
     case model.remote.user of
         NotAsked ->
-            Error.view <| Routing NotFound
+            div [] []
 
         Loading ->
             div [] []
@@ -165,7 +165,7 @@ draftsPage : Model -> Html Msg
 draftsPage model =
     case model.remote.user of
         NotAsked ->
-            Error.view <| Routing NotFound
+            div [] []
 
         Loading ->
             div [] []
@@ -174,13 +174,13 @@ draftsPage model =
             let
                 header =
                     NavBar.withButtons
-                        [NavBar.newDraft model.form model.menu
-                        ,NavBar.notifications
+                        [ NavBar.newDraft model.form model.menu
+                        , NavBar.notifications
                         , NavBar.profile user model.menu
                         ]
                         |> NavBar.wrapper NavBar.logo
             in
-                layout header (Drafts.view <| Dict.values user.drafts)
+                layout model.menu header <| Drafts.view model.menu user
 
         Failure err ->
             Error.view <| Http err
@@ -211,4 +211,3 @@ view model =
 
         Err oops ->
             Error.view <| Routing oops
-

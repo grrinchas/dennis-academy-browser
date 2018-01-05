@@ -1,5 +1,6 @@
 module Decoders exposing (..)
 
+import Date exposing (Date)
 import Dict
 import Err exposing (InputError(..))
 import Json.Decode as Decoder
@@ -78,13 +79,27 @@ userObject =
 
 draftObject : Decoder.Decoder Draft
 draftObject =
-    Pipeline.decode Draft
-        |> Pipeline.required "id" Decoder.string
-        |> Pipeline.required "createdAt" Decoder.string
-        |> Pipeline.required "updatedAt" Decoder.string
-        |> Pipeline.required "content" Decoder.string
-        |> Pipeline.required "type" Decoder.string
-        |> Pipeline.required "title" Decoder.string
+    let
+        toDecoder =
+            \id created updated content type_ title ->
+                case ( created, updated ) of
+                    ( Ok c, Ok u ) ->
+                        Decoder.succeed <| Draft id c u content type_ title
+
+                    ( Err err, _ ) ->
+                        Decoder.fail err
+
+                    ( _, Err err ) ->
+                        Decoder.fail err
+    in
+        Pipeline.decode toDecoder
+            |> Pipeline.required "id" Decoder.string
+            |> Pipeline.required "createdAt" (Decoder.map Date.fromString Decoder.string)
+            |> Pipeline.required "updatedAt" (Decoder.map Date.fromString Decoder.string)
+            |> Pipeline.required "content" Decoder.string
+            |> Pipeline.required "type" Decoder.string
+            |> Pipeline.required "title" Decoder.string
+            |> Pipeline.resolve
 
 
 dataField : Decoder.Decoder a -> Decoder.Decoder a

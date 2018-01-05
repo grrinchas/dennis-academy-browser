@@ -77,10 +77,9 @@
     cursor: pointer;
 }
 
-
+.dg-delete-draft,
 .dg-new-draft,
 .dg-publish {
-
         background-color: $dropdown-bg-color;
         margin: 0;
         display: none;
