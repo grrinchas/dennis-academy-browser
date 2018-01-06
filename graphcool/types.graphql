@@ -1,4 +1,7 @@
 
+
+
+
 type User @model {
     id: ID! @isUnique
 
@@ -22,9 +25,26 @@ type Draft @model {
     type: DraftType!
     content: String!
     owner: User! @relation(name: "UserOnDraft")
+    public: PublicDraft @relation(name: "DraftOnPublic")
 }
+
+type PublicDraft @model {
+    id: ID! @isUnique
+
+    createdAt: DateTime!
+    updatedAt: DateTime!
+
+    content: String!
+    title: String!
+
+    draft: Draft! @relation(name: "DraftOnPublic")
+}
+
 
 enum DraftType {
     TUTORIAL
 }
+
+
+
 

@@ -16,6 +16,7 @@ functions:
 permissions:
   - operation: User.read
     authenticated: true
+    fields: [username, email, picture, id]
     query: ./src/permissions/User.graphql:isOwnerCreate
 
   - operation: Draft.create
@@ -33,10 +34,16 @@ permissions:
 
   - operation: Draft.delete
     authenticated: true
-    fields: [content]
     query: ./src/permissions/Draft.graphql:isOwner
 
   - operation: UserOnDraft.connect
     authenticated: true
     query: ./src/permissions/UserOnDraft.graphql:isOwner
+
+  - operation: PublicDraft.create
+    authenticated: true
+    query: ./src/permissions/PublicDraft.graphql:isOwnerCreate
+
+  - operation: PublicDraft.read
+    authenticated: true
 

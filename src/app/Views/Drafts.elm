@@ -18,7 +18,7 @@ view menu user =
             , li [ class "tab" ] [ a [ class "not-implemented" ] [ text "Community" ] ]
             ]
         , div [ class "divider" ] []
-        , div [ class "row section valign-wrapper" ]
+        , div [ class "row cards section" ]
             (Dict.values user.drafts
                 |> List.sortBy (\date -> Date.toTime <| .updatedAt date)
                 |> List.reverse
@@ -29,11 +29,22 @@ view menu user =
 
 listCard : Menu -> User -> Draft -> Html Msg
 listCard menu user draft =
-    div [ class "col" ]
-        [ div [ class "card small", style [ ( "max-width", getWidth draft ) ] ]
-            [ div [ class "card-content" ]
-                [ span [ class "card-title" ] [ text draft.title ]
-                , p [ class "text-black" ] [ text <| (String.left 250 draft.content) ++ "..." ]
+    div [ class "col s12 m6 xl4" ]
+        [ div [ class "card small" ]
+            [ div [ class "card-content header valign-wrapper" ]
+                [ ul []
+                    [ li []
+                        [ span [ class "tooltip " ]
+                            [ i [ class "material-icons public" ] [ text "public" ]
+                            , small [ class "tooltip-text tooltip-bottom" ] [ text "Make public" ]
+                            ]
+                        ]
+                    ]
+                ]
+            , div [ class "divider" ] []
+            , div [ class "card-content" ]
+                [ span [ class "card-title" ] [ text <| (String.left 50 draft.title) ++ "..." ]
+                , p [ class "text-black" ] [ text <| (String.left 150 draft.content) ++ "..." ]
                 ]
             , div [ class "card-action valign-wrapper" ]
                 [ div [ class "valign-wrapper profile" ]
@@ -93,14 +104,6 @@ deleteDraftMenuEvent id =
         Json.Decode.succeed <|
             OnMenuChange <|
                 menuDeleteDraft id
-
-
-getWidth : Draft -> String
-getWidth draft =
-    if (String.length draft.title * 15) > 600 then
-        "600px"
-    else
-        (toString <| String.length draft.title * 15) ++ "px"
 
 
 formatDate : Date -> String

@@ -2,11 +2,20 @@
 .dg-draft {
     word-wrap: break-word;
 
+    i {
+        cursor: pointer !important;
+    }
+    .cards {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
     h1 {
         font-weight: bold;
         color: $input-disabled-solid-color;
 
     }
+
 
 
     .row {
@@ -16,7 +25,43 @@
 
     .card {
 
-        min-width: 350px;
+
+        .profile {
+
+            .name, .updated-at {
+                display: block;
+            }
+
+            .name {
+                color: $link-color !important;
+                text-transform: none !important;
+
+            }
+            img {
+                @include profile-size;
+                margin-right: 10px;
+
+            }
+
+        }
+
+        .header {
+            padding-top: 10px;
+            padding-bottom: 10px;
+            overflow: visible;
+            justify-content: flex-end;
+
+            .public {
+                opacity: 0.4 !important;
+            }
+
+            ul {
+                margin: 0;
+                li {
+                    height: 24px;
+                }
+            }
+        }
         small {
             color: $input-disabled-solid-color;
         }
@@ -27,15 +72,10 @@
         .card-action {
             justify-content: space-between;
 
-            .profile {
-                .name {
-                    color: $link-color !important;
-                }
-            }
-
             .actions {
                 margin: 0;
                 li {
+
                     display: inline-block;
 
                     .relative {
@@ -74,22 +114,6 @@
                 }
             }
 
-            .name, .updated-at {
-                display: block;
-            }
-
-            .name {
-                text-transform: none !important;
-            }
-
-            i {
-                cursor: pointer !important;
-            }
-            img {
-                @include profile-size;
-                margin-right: 10px;
-
-            }
 
         }
     }
