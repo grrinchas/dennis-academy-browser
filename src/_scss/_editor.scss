@@ -3,8 +3,23 @@
     @extend .dg-full-height;
     background-color: $card-bg-color;
 
+    .draft-title {
 
-    .editor-row{
+        margin: 0;
+        padding-top: 15px;
+        padding-bottom: 15px;
+
+
+        input, input:focus{
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            margin: 0;
+            font-weight: bold;
+            font-size: 35px !important;
+        }
+    }
+    .editor-row {
         @extend .dg-full-height;
     }
 
@@ -17,7 +32,6 @@
         border-bottom: 1px solid $table-border-color;
         margin-bottom: 0;
         color: $input-disabled-solid-color;
-
 
         .col {
             padding-top: 15px;
@@ -37,7 +51,6 @@
         .error-save {
             color: $error-color;
         }
-
 
         .draft-loader {
             position: relative;
@@ -87,8 +100,6 @@
         }
     }
 
-
-
     textarea {
         padding-top: 15px;
         resize: none;
@@ -97,7 +108,6 @@
         outline: none;
         height: calc(100vh - 64px - 80px);
     }
-
 
     .dg-preview {
         word-wrap: break-word;

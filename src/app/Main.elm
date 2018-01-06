@@ -35,7 +35,7 @@ autoSaveDraft model time =
                             SaveDraft draft
 
                         _ ->
-                            case RemoteData.map (\saved -> saved.content /= draft.content) model.remote.savedDraft |> RemoteData.withDefault False of
+                            case RemoteData.map (\saved -> saved.content /= draft.content || saved.title /= draft.title) model.remote.savedDraft |> RemoteData.withDefault False of
                                 True ->
                                     SaveDraft draft
 
@@ -84,7 +84,7 @@ reroute model =
                     ( { model | route = Err NotFound }, Cmd.none )
 
                 ( DraftRoute _, True ) ->
-                    ( model, Task.perform OnTime Time.now )
+                    withCommands [ Task.perform OnTime Time.now ] model
 
                 ( DraftsRoute, False ) ->
                     ( { model | route = Err NotFound }, Cmd.none )

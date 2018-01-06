@@ -77,6 +77,7 @@ saveDraft draft =
         [ GraphQl.field "updateDraft"
             |> GraphQl.withArgument "id" (GraphQl.string draft.id)
             |> GraphQl.withArgument "content" (GraphQl.string <| sanitize draft.content)
+            |> GraphQl.withArgument "title" (GraphQl.string <| sanitize draft.title)
             |> GraphQl.withSelectors
                 [ GraphQl.field "id"
                 , GraphQl.field "content"

@@ -79,15 +79,6 @@ type alias Model =
     }
 
 
-type alias Form =
-    { username : Maybe String
-    , email : Maybe String
-    , password : Maybe String
-    , repeatPass : Maybe String
-    , draftTitle : String
-    }
-
-
 type alias Account =
     { id : String
     , email : String
@@ -174,6 +165,15 @@ initialRoute =
     Ok HomeRoute
 
 
+type alias Form =
+    { username : Maybe String
+    , email : Maybe String
+    , password : Maybe String
+    , repeatPass : Maybe String
+    , draftTitleNew : String
+    }
+
+
 form : Form -> Model -> Model
 form form model =
     { model | form = form }
@@ -207,13 +207,20 @@ formPasswordRepeat maybe model =
             { model | form = { form | repeatPass = maybe } }
 
 
+formDraftTitleNew : String -> Model -> Model
+formDraftTitleNew string model =
+    case model.form of
+        form ->
+            { model | form = { form | draftTitleNew = string } }
+
+
 initialForm : Form
 initialForm =
     { username = Just "admin"
     , email = Just "admin@mail.com"
     , password = Just "admin1"
     , repeatPass = Just "admin1"
-    , draftTitle = "Very descriptive draft title..."
+    , draftTitleNew = "Very descriptive draft title..."
     }
 
 

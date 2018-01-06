@@ -12,14 +12,22 @@ import Time exposing (Time)
 import Views.NavBar exposing (publishMenu)
 
 
-view : Time -> WebData Draft -> Draft -> Html Msg
-view now webDraft draft =
+view : Model -> Draft -> Html Msg
+view model draft =
     div [ class "dg-editor " ]
-        [ div [ class "row header-row " ]
+        [ div [ class "row draft-title" ]
+            [ input
+                [ class "col"
+                , placeholder "Enter new title..."
+                , value draft.title
+                , onInput (\title -> OnDraftChange { draft | title = title })
+                ]
+                []
+            ]
+        , div [ class "row header-row " ]
             [ div [ class "col s6 header-md" ]
-                [ --small [] [ text <| "ID: " ++ draft.id ]
-                  small [] [ strong [] [ text "CREATED: " ], span [] [ text <| formatUpdated (Date.toTime draft.createdAt) now ] ]
-                , save webDraft draft
+                [ small [] [ strong [] [ text "CREATED: " ], span [] [ text <| formatUpdated (Date.toTime draft.createdAt) model.now ] ]
+                , save model.remote.savedDraft draft
                 ]
             , div
                 [ class "col s6 " ]
@@ -46,7 +54,7 @@ save webDraft draft =
             div [ class "right draft-loader valign-wrapper" ] [ loader ]
 
         Success savedDraft ->
-            case savedDraft.content == draft.content of
+            case savedDraft.content == draft.content && savedDraft.title == draft.title of
                 True ->
                     div [ class "save" ] [ small [] [ text "Saved successfully!" ] ]
 
