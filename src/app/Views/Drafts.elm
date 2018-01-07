@@ -6,7 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onWithOptions)
 import Json.Decode
-import Models exposing (Draft, DraftOwner, Menu, Msg(CreateDraft, DeleteDraft, OnMenuChange, SaveDraft, UpdateRoute), PublicDraft, User, Visibility(PRIVATE, PUBLIC), initialMenu, menuDeleteDraft)
+import Models exposing (Draft, DraftOwner, Menu, Msg(CreateDraft, DeleteDraft, OnMenuChange, SaveDraft, UpdateRoute), PublicDraft, User, Visibility(PRIVATE, PUBLIC), initialMenu, menuDeleteDraft, menuPublicDraft)
 import Routes exposing (Route(DraftRoute, DraftsRoute, HomeRoute, PublicDraftsRoute), path)
 
 
@@ -27,13 +27,27 @@ view bool menu user =
         ]
 
 
-getVisibilityIcon : Draft -> Html Msg
-getVisibilityIcon draft =
+getVisibilityIcon : Menu -> Draft -> Html Msg
+getVisibilityIcon menu draft =
     case draft.visibility of
         PRIVATE ->
-            span [ class "tooltip " ]
-                [ i [ class "material-icons private", onClick <| SaveDraft { draft | visibility = PUBLIC } ] [ text "public" ]
-                , small [ class "tooltip-text tooltip-bottom" ] [ text "Make public" ]
+            div [ class "relative" ]
+                [ span [ class "tooltip " ]
+                    [ i [ class "material-icons private", publicDraftMenuEvent draft.id ] [ text "public" ]
+                    , small [ class "tooltip-text tooltip-bottom" ] [ text "Make public" ]
+                    ]
+                , div
+                    [ class "card dg-public-draft"
+                    , publicDraftMenuEvent draft.id
+                    , classList [ ( "show-public-draft-menu", menu.publicDraft.display && menu.publicDraft.id == draft.id ) ]
+                    ]
+                    [ div [ class "card-content" ]
+                        [ p [] [ text "Are you sure you want to make it public?" ]
+                        ]
+                    , div [ class "card-action" ]
+                        [ a [ class "right", onClick <| SaveDraft { draft | visibility = PUBLIC } ] [ text "Public" ]
+                        ]
+                    ]
                 ]
 
         PUBLIC ->
@@ -49,7 +63,7 @@ listCard menu user draft =
         [ div [ class "card small" ]
             [ div [ class "card-content header valign-wrapper" ]
                 [ ul []
-                    [ li [] [ getVisibilityIcon draft ]
+                    [ li [] [ getVisibilityIcon menu draft ]
                     ]
                 ]
             , div [ class "divider" ] []
@@ -115,6 +129,14 @@ deleteDraftMenuEvent id =
         Json.Decode.succeed <|
             OnMenuChange <|
                 menuDeleteDraft id
+
+
+publicDraftMenuEvent : String -> Attribute Msg
+publicDraftMenuEvent id =
+    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
+        Json.Decode.succeed <|
+            OnMenuChange <|
+                menuPublicDraft id
 
 
 formatDate : Date -> String

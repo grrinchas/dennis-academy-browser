@@ -67,8 +67,8 @@ init tokens loc =
                 mapLoggedInUser
                     (\token ->
                         withCommands
-                            [ Api.fetchPublicDrafts token
-                            , Api.fetchUser token
+                            [ Api.fetchUser token
+                            , Api.fetchPublicDrafts token
                             , Task.perform OnTime Time.now
                             ]
                             model
@@ -209,7 +209,10 @@ onFetch web model =
         WebSaveDraft web ->
             case RemoteData.append model.remote.user web of
                 Success ( user, draft ) ->
-                    remoteUpdatedDraft web model |> remoteUser (succeed { user | drafts = Dict.insert draft.id draft user.drafts }) |> withCommands [ Task.perform OnTime Time.now ]
+                    remoteUpdatedDraft web model
+                        |> remoteUser (succeed { user | drafts = Dict.insert draft.id draft user.drafts })
+                        |> resetMenu
+                        |> withCommands [ Task.perform OnTime Time.now ]
 
                 Failure err ->
                     failRemoteUser err model

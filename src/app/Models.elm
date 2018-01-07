@@ -255,6 +255,7 @@ type alias Menu =
     , publish : Bool
     , newDraft : Bool
     , deleteDraft : { id : String, display : Bool }
+    , publicDraft : { id : String, display : Bool }
     }
 
 
@@ -264,6 +265,7 @@ initialMenu =
     , publish = False
     , newDraft = False
     , deleteDraft = { id = "", display = False }
+    , publicDraft = { id = "", display = False }
     }
 
 
@@ -273,6 +275,7 @@ isMenuVisible menu =
         || menu.publish
         || menu.newDraft
         || menu.deleteDraft.display
+        || menu.publicDraft.display
 
 
 menu : Menu -> Model -> Model
@@ -303,6 +306,11 @@ menuNewDraft =
 menuDeleteDraft : String -> Menu
 menuDeleteDraft id =
     { initialMenu | deleteDraft = { display = True, id = id } }
+
+
+menuPublicDraft : String -> Menu
+menuPublicDraft id =
+    { initialMenu | publicDraft = { display = True, id = id } }
 
 
 remote : Remote -> Model -> Model
