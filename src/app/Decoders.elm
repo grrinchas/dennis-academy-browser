@@ -77,20 +77,23 @@ userObject =
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
 
 
-draftObject : Decoder.Decoder Draft
-draftObject =
+publicDraftObject : Decoder.Decoder PublicDraft
+publicDraftObject =
     let
         toDecoder =
-            \id created updated content type_ title ->
-                case ( created, updated ) of
-                    ( Ok c, Ok u ) ->
-                        Decoder.succeed <| Draft id c u content type_ title
+            \id created updated content type_ title visibility owner ->
+                case ( created, updated, visibility ) of
+                    ( Ok c, Ok u, Just v ) ->
+                        Decoder.succeed <| PublicDraft (Draft id c u content type_ title v) owner
 
-                    ( Err err, _ ) ->
+                    ( Err err, _, _ ) ->
                         Decoder.fail err
 
-                    ( _, Err err ) ->
+                    ( _, Err err, _ ) ->
                         Decoder.fail err
+
+                    ( _, _, Nothing ) ->
+                        Decoder.fail "No such visibility"
     in
         Pipeline.decode toDecoder
             |> Pipeline.required "id" Decoder.string
@@ -99,7 +102,55 @@ draftObject =
             |> Pipeline.required "content" Decoder.string
             |> Pipeline.required "type" Decoder.string
             |> Pipeline.required "title" Decoder.string
+            |> Pipeline.required "visibility" (Decoder.map visibility Decoder.string)
+            |> Pipeline.required "owner" draftOwner
             |> Pipeline.resolve
+
+
+draftOwner : Decoder.Decoder DraftOwner
+draftOwner =
+    Pipeline.decode DraftOwner
+        |> Pipeline.required "username" Decoder.string
+        |> Pipeline.required "picture" Decoder.string
+
+
+draftObject : Decoder.Decoder Draft
+draftObject =
+    let
+        toDecoder =
+            \id created updated content type_ title visibility ->
+                case ( created, updated, visibility ) of
+                    ( Ok c, Ok u, Just v ) ->
+                        Decoder.succeed <| Draft id c u content type_ title v
+
+                    ( Err err, _, _ ) ->
+                        Decoder.fail err
+
+                    ( _, Err err, _ ) ->
+                        Decoder.fail err
+
+                    ( _, _, Nothing ) ->
+                        Decoder.fail "No such visibility"
+    in
+        Pipeline.decode toDecoder
+            |> Pipeline.required "id" Decoder.string
+            |> Pipeline.required "createdAt" (Decoder.map Date.fromString Decoder.string)
+            |> Pipeline.required "updatedAt" (Decoder.map Date.fromString Decoder.string)
+            |> Pipeline.required "content" Decoder.string
+            |> Pipeline.required "type" Decoder.string
+            |> Pipeline.required "title" Decoder.string
+            |> Pipeline.required "visibility" (Decoder.map visibility Decoder.string)
+            |> Pipeline.resolve
+
+
+visibility : String -> Maybe Visibility
+visibility visibility =
+    if visibility == "PRIVATE" then
+        Just PRIVATE
+    else if visibility == "PUBLIC" then
+        Just PUBLIC
+    else
+        Nothing
 
 
 dataField : Decoder.Decoder a -> Decoder.Decoder a
@@ -120,6 +171,11 @@ createDraftField decoder =
 deleteDraftField : Decoder.Decoder a -> Decoder.Decoder a
 deleteDraftField decoder =
     Decoder.field "deleteDraft" decoder
+
+
+allDraftsField : Decoder.Decoder a -> Decoder.Decoder a
+allDraftsField decoder =
+    Decoder.field "allDrafts" decoder
 
 
 userField : Decoder.Decoder a -> Decoder.Decoder a
@@ -151,4 +207,12 @@ decodeDeleteDraft =
     Decoder.string
         |> Decoder.field "id"
         |> deleteDraftField
+        |> dataField
+
+
+decodePublicDrafts : Decoder.Decoder (List PublicDraft)
+decodePublicDrafts =
+    publicDraftObject
+        |> Decoder.list
+        |> allDraftsField
         |> dataField

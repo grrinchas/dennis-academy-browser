@@ -13,6 +13,7 @@ type Route
     | LoginRoute
     | DraftRoute String
     | DraftsRoute
+    | PublicDraftsRoute
     | DashboardRoute
 
 
@@ -40,6 +41,7 @@ matchers =
         , map DraftRoute (s "editor" </> string)
         , map DashboardRoute (s "dashboard")
         , map DraftsRoute (s "drafts")
+        , map PublicDraftsRoute (s "drafts" </> s "public")
         ]
 
 
@@ -75,3 +77,6 @@ path route =
 
         DraftsRoute ->
             "#drafts"
+
+        PublicDraftsRoute ->
+            "#drafts/public"

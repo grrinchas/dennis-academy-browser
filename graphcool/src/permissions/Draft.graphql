@@ -1,3 +1,16 @@
+query isOwnerOrPublic($node_id: ID!, $user_id: ID!) {
+    SomeDraftExists(filter: {
+        OR: [{
+            id: $node_id
+            owner: {
+                id: $user_id
+            }
+        }, {
+            visibility: PUBLIC
+        }]
+    })
+}
+
 query isOwner($node_id: ID!, $user_id: ID!) {
     SomeDraftExists(filter: {
         id: $node_id
@@ -6,6 +19,7 @@ query isOwner($node_id: ID!, $user_id: ID!) {
         }
     })
 }
+
 
 query isOwnerCreate($user_id: ID!, $input_ownerId: ID!) {
     SomeUserExists(filter: {

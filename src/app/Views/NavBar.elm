@@ -173,3 +173,13 @@ newDraftMenu form menu =
             [ a [ onClick <| CreateDraft { initialDraft | title = form.draftTitleNew } ] [ text "create" ]
             ]
         ]
+
+
+draftsHeader : User -> Model -> Html Msg
+draftsHeader user model =
+    withButtons
+        [ newDraft model.form model.menu
+        , notifications
+        , profile user model.menu
+        ]
+        |> wrapper logo

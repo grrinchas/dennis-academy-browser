@@ -171,19 +171,27 @@ draftsPage model =
             div [] []
 
         Success user ->
-            let
-                header =
-                    NavBar.withButtons
-                        [ NavBar.newDraft model.form model.menu
-                        , NavBar.notifications
-                        , NavBar.profile user model.menu
-                        ]
-                        |> NavBar.wrapper NavBar.logo
-            in
-                layout model.menu header <| Drafts.view model.menu user
+                layout model.menu (NavBar.draftsHeader user model) <| Drafts.view False model.menu user
 
         Failure err ->
             Error.view <| Http err
+
+
+publicDraftsPage: Model -> Html Msg
+publicDraftsPage model =
+    case RemoteData.append model.remote.user model.remote.publicDrafts of
+        NotAsked ->
+            div [] []
+
+        Loading ->
+            div [] []
+
+        Success (user, drafts) ->
+                layout model.menu (NavBar.draftsHeader user model) <| Drafts.publicView True model.menu drafts
+
+        Failure err ->
+            Error.view <| Http err
+
 
 
 view : Model -> Html Msg
@@ -208,6 +216,9 @@ view model =
 
                 DraftsRoute ->
                     draftsPage model
+
+                PublicDraftsRoute ->
+                    publicDraftsPage model
 
         Err oops ->
             Error.view <| Routing oops

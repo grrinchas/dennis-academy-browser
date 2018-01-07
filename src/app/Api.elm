@@ -1,6 +1,6 @@
 module Api exposing (..)
 
-import Decoders exposing (decodeGraphCoolToken, decodeUser)
+import Decoders exposing (decodeGraphCoolToken, decodePublicDrafts, decodeUser)
 import GraphQl
 import Http exposing (Header, jsonBody)
 import Json.Decode
@@ -46,6 +46,13 @@ fetchUser token =
     authorised token (GraphQl.operationToBody GraphQl.OperationQuery (Encoders.userInfo token.id) Nothing) decodeUser
         |> RemoteData.sendRequest
         |> Cmd.map (\web -> OnFetch <| WebUser web)
+
+
+fetchPublicDrafts : AuthGraphCool -> Cmd Msg
+fetchPublicDrafts token =
+    authorised token (GraphQl.operationToBody GraphQl.OperationQuery Encoders.publicDrafts Nothing) decodePublicDrafts
+        |> RemoteData.sendRequest
+        |> Cmd.map (\web -> OnFetch <| WebPublicDrafts web)
 
 
 authorised : AuthGraphCool -> Http.Body -> Json.Decode.Decoder a -> Http.Request a

@@ -1,6 +1,14 @@
 
 .dg-draft {
+
     word-wrap: break-word;
+
+    .active {
+        font-weight: bold !important;
+
+    }
+
+
 
     i {
         cursor: pointer !important;
@@ -16,15 +24,12 @@
 
     }
 
-
-
     .row {
         flex-wrap: wrap;
         justify-content: center;
     }
 
     .card {
-
 
         .profile {
 
@@ -51,8 +56,8 @@
             overflow: visible;
             justify-content: flex-end;
 
-            .public {
-                opacity: 0.4 !important;
+            .private {
+                opacity: 0.3 !important;
             }
 
             ul {
@@ -113,7 +118,6 @@
 
                 }
             }
-
 
         }
     }

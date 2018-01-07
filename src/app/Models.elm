@@ -19,6 +19,23 @@ type alias Auth0Token =
     }
 
 
+type Visibility
+    = PRIVATE
+    | PUBLIC
+
+
+type alias DraftOwner =
+    { username : String
+    , picture : String
+    }
+
+
+type alias PublicDraft =
+    { draft : Draft
+    , owner : DraftOwner
+    }
+
+
 type alias Draft =
     { id : String
     , createdAt : Date
@@ -26,6 +43,7 @@ type alias Draft =
     , content : String
     , draftType : String
     , title : String
+    , visibility : Visibility
     }
 
 
@@ -37,6 +55,7 @@ initialDraft =
     , content = ""
     , draftType = "TUTORIAL"
     , title = "Very descriptive draft title..."
+    , visibility = PRIVATE
     }
 
 
@@ -67,6 +86,7 @@ type alias Remote =
     , account : WebData Account
     , user : WebData User
     , savedDraft : WebData Draft
+    , publicDrafts : WebData (List PublicDraft)
     }
 
 
@@ -104,6 +124,7 @@ type Web
     | WebSaveDraft (WebData Draft)
     | WebCreateDraft (WebData Draft)
     | WebDeleteDraft (WebData String)
+    | WebPublicDrafts (WebData (List PublicDraft))
 
 
 type Msg
@@ -324,6 +345,23 @@ remoteUpdatedDraft web model =
             { model | remote = { remote | savedDraft = web } }
 
 
+remotePublicDrafts : WebData (List PublicDraft) -> Model -> Model
+remotePublicDrafts web model =
+    case model.remote of
+        remote ->
+            { model | remote = { remote | publicDrafts = web } }
+
+
+isDraftPublic : Draft -> Bool
+isDraftPublic draft =
+    case draft.visibility of
+        PUBLIC ->
+            True
+
+        PRIVATE ->
+            False
+
+
 failRemoteUser : Http.Error -> Model -> Model
 failRemoteUser err model =
     remoteUser (Failure err) model
@@ -336,6 +374,7 @@ initialRemote =
     , account = RemoteData.NotAsked
     , user = RemoteData.NotAsked
     , savedDraft = RemoteData.NotAsked
+    , publicDrafts = RemoteData.NotAsked
     }
 
 

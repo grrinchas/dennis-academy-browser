@@ -1,7 +1,4 @@
 
-
-
-
 type User @model {
     id: ID! @isUnique
 
@@ -23,21 +20,14 @@ type Draft @model {
 
     title: String!
     type: DraftType!
+    visibility: Visibility! @defaultValue(value: PRIVATE)
     content: String!
     owner: User! @relation(name: "UserOnDraft")
-    public: PublicDraft @relation(name: "DraftOnPublic")
 }
 
-type PublicDraft @model {
-    id: ID! @isUnique
-
-    createdAt: DateTime!
-    updatedAt: DateTime!
-
-    content: String!
-    title: String!
-
-    draft: Draft! @relation(name: "DraftOnPublic")
+enum Visibility {
+    PRIVATE
+    PUBLIC
 }
 
 

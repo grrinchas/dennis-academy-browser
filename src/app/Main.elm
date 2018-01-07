@@ -63,7 +63,18 @@ init : Maybe Tokens -> Location -> ( Model, Cmd Msg )
 init tokens loc =
     location loc initialModel
         |> initTokens tokens
-        |> (\model -> mapLoggedInUser (\token -> withCommands [ Api.fetchUser token, Task.perform OnTime Time.now ] model) model)
+        |> (\model ->
+                mapLoggedInUser
+                    (\token ->
+                        withCommands
+                            [ Api.fetchPublicDrafts token
+                            , Api.fetchUser token
+                            , Task.perform OnTime Time.now
+                            ]
+                            model
+                    )
+                    model
+           )
 
 
 reroute : Model -> ( Model, Cmd Msg )
@@ -87,6 +98,9 @@ reroute model =
                     withCommands [ Task.perform OnTime Time.now ] model
 
                 ( DraftsRoute, False ) ->
+                    ( { model | route = Err NotFound }, Cmd.none )
+
+                ( PublicDraftsRoute, False ) ->
                     ( { model | route = Err NotFound }, Cmd.none )
 
                 _ ->
@@ -230,6 +244,10 @@ onFetch web model =
 
                 _ ->
                     withNoCommand model
+
+        WebPublicDrafts web ->
+            remotePublicDrafts web model
+                |> withNoCommand
 
 
 initTokens : Maybe Tokens -> Model -> Model

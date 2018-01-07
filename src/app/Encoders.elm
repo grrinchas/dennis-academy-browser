@@ -2,7 +2,7 @@ module Encoders exposing (..)
 
 import GraphQl exposing (Mutation, Named, Operation, Query)
 import Json.Encode as Encoder
-import Models exposing (Auth0Token, AuthGraphCool, Draft, User, ValidUser)
+import Models exposing (Auth0Token, AuthGraphCool, Draft, User, ValidUser, Visibility(PUBLIC))
 import Regex exposing (HowMany(All))
 import Validator
 
@@ -66,6 +66,7 @@ userInfo id =
                         , GraphQl.field "title"
                         , GraphQl.field "createdAt"
                         , GraphQl.field "updatedAt"
+                        , GraphQl.field "visibility"
                         ]
                 ]
         ]
@@ -78,6 +79,7 @@ saveDraft draft =
             |> GraphQl.withArgument "id" (GraphQl.string draft.id)
             |> GraphQl.withArgument "content" (GraphQl.string <| sanitize draft.content)
             |> GraphQl.withArgument "title" (GraphQl.string <| sanitize draft.title)
+            |> GraphQl.withArgument "visibility" (GraphQl.type_ <| toString draft.visibility)
             |> GraphQl.withSelectors
                 [ GraphQl.field "id"
                 , GraphQl.field "content"
@@ -85,6 +87,33 @@ saveDraft draft =
                 , GraphQl.field "title"
                 , GraphQl.field "createdAt"
                 , GraphQl.field "updatedAt"
+                , GraphQl.field "visibility"
+                ]
+        ]
+
+
+publicDrafts : Operation Query Named
+publicDrafts =
+    GraphQl.named "allDrafts"
+        [ GraphQl.field "allDrafts"
+            |> GraphQl.withArgument "filter"
+                (GraphQl.input
+                    [ ( "visibility", GraphQl.type_ <| toString PUBLIC )
+                    ]
+                )
+            |> GraphQl.withSelectors
+                [ GraphQl.field "id"
+                , GraphQl.field "content"
+                , GraphQl.field "type"
+                , GraphQl.field "title"
+                , GraphQl.field "createdAt"
+                , GraphQl.field "updatedAt"
+                , GraphQl.field "visibility"
+                , GraphQl.field "owner"
+                    |> GraphQl.withSelectors
+                        [ GraphQl.field "username"
+                        , GraphQl.field "picture"
+                        ]
                 ]
         ]
 
@@ -111,6 +140,7 @@ createDraft draft token =
                 , GraphQl.field "title"
                 , GraphQl.field "createdAt"
                 , GraphQl.field "updatedAt"
+                , GraphQl.field "visibility"
                 ]
         ]
 
