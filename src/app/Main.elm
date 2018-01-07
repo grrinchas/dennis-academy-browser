@@ -137,7 +137,14 @@ update msg model =
             ( menu m model, Cmd.none )
 
         CreateAccount maybeValid ->
-            Maybe.map (\user -> (remoteAccount Loading model |> withCommands [ Api.createAccount user ])) maybeValid
+            Maybe.map
+                (\user ->
+                    remoteAccount Loading model
+                        |> withCommands
+                            [ Api.createAccount user
+                            ]
+                )
+                maybeValid
                 |> Maybe.withDefault (withNoCommand model)
 
         Login maybeValid ->
@@ -158,30 +165,22 @@ update msg model =
             ( initTokens tokens model, Cmd.none )
 
         OnDraftChange draft ->
-            updateDraft draft model
-
-        MouseClicked _ ->
-            ( resetMenu model, Cmd.none )
-
-        SaveDraft draft ->
-            mapLoggedInUser (\token -> ( remoteUpdatedDraft Loading model, Api.saveDraft draft token )) model
-
-        CreateDraft draft ->
-            mapLoggedInUser (\token -> ( model, Api.createDraft draft token )) model
-
-        DeleteDraft draft ->
-            mapLoggedInUser (\token -> ( model, Api.deleteDraft draft token )) model
-
-
-updateDraft : Draft -> Model -> ( Model, Cmd Msg )
-updateDraft draft model =
-    case model.remote.user of
-        RemoteData.Success user ->
-            remoteUser (succeed { user | drafts = Dict.insert draft.id draft user.drafts }) model
+            updateDraft (succeed draft) model
                 |> withNoCommand
 
-        _ ->
-            withNoCommand model
+        MouseClicked _ ->
+            resetMenu model
+                |> withNoCommand
+
+        CreateDraft draft ->
+            Api.createDraft draft model
+
+        SaveDraft draft ->
+            remoteUpdatedDraft Loading model
+                |> Api.updateDraft draft
+
+        DeleteDraft draft ->
+            Api.deleteDraft draft model
 
 
 onFetch : Web -> Model -> ( Model, Cmd Msg )
@@ -207,46 +206,22 @@ onFetch web model =
                 |> (\( m, c ) -> ( m, Cmd.batch [ c, saveToken m ] ))
 
         WebSaveDraft web ->
-            case RemoteData.append model.remote.user web of
-                Success ( user, draft ) ->
-                    remoteUpdatedDraft web model
-                        |> remoteUser (succeed { user | drafts = Dict.insert draft.id draft user.drafts })
-                        |> resetMenu
-                        |> withCommands [ Task.perform OnTime Time.now ]
-
-                Failure err ->
-                    failRemoteUser err model
-                        |> withNoCommand
-
-                _ ->
-                    withNoCommand model
+            remoteUpdatedDraft web model
+                |> updateDraft web
+                |> resetMenu
+                |> withCommands
+                    [ Task.perform OnTime Time.now ]
 
         WebCreateDraft web ->
-            case RemoteData.append model.remote.user web of
-                Success ( user, draft ) ->
-                    remoteUser (succeed { user | drafts = Dict.insert draft.id draft user.drafts }) model
-                        |> resetForm
-                        |> resetMenu
-                        |> withNoCommand
-
-                Failure err ->
-                    failRemoteUser err model
-                        |> withNoCommand
-
-                _ ->
-                    withNoCommand model
+            updateDraft web model
+                |> resetForm
+                |> resetMenu
+                |> withNoCommand
 
         WebDeleteDraft web ->
-            case RemoteData.append model.remote.user web of
-                Success ( user, id ) ->
-                    remoteUser (succeed { user | drafts = Dict.remove id user.drafts }) model |> resetMenu |> withNoCommand
-
-                Failure err ->
-                    failRemoteUser err model
-                        |> withNoCommand
-
-                _ ->
-                    withNoCommand model
+            removeDraft web model
+                |> resetMenu
+                |> withNoCommand
 
         WebPublicDrafts web ->
             remotePublicDrafts web model

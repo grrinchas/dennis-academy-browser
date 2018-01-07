@@ -6,7 +6,7 @@ import Err exposing (InputError, Oops)
 import Http
 import Mouse
 import Navigation exposing (Location)
-import RemoteData exposing (RemoteData(Failure, NotAsked), WebData)
+import RemoteData exposing (RemoteData(Failure, NotAsked, Success), WebData, succeed)
 import Routes exposing (Route(HomeRoute), RouteError, parseLocation)
 import Time exposing (Time)
 
@@ -401,20 +401,52 @@ initialModel =
     }
 
 
-andThen : (a -> ( b, List c )) -> ( a, List c ) -> ( b, List c )
-andThen apply ( a, c ) =
-    let
-        ( b, d ) =
-            apply a
-    in
-        ( b, c ++ d )
-
-
 withCommands : List (Cmd msg) -> Model -> ( Model, Cmd msg )
 withCommands list model =
     ( model, Cmd.batch list )
 
 
+andAlso : (Model -> ( Model, Cmd msg )) -> ( Model, Cmd msg ) -> ( Model, Cmd msg )
+andAlso f ( model, cmd ) =
+    let
+        ( m, c ) =
+            f model
+    in
+        ( m, Cmd.batch [ c, cmd ] )
+
+
 withNoCommand : Model -> ( Model, Cmd msg )
 withNoCommand model =
     ( model, Cmd.none )
+
+
+updateDraft : WebData Draft -> Model -> Model
+updateDraft web model =
+    RemoteData.append web model.remote.user
+        |> RemoteData.map (\( draft, user ) -> { user | drafts = Dict.insert draft.id draft user.drafts })
+        |> RemoteData.map RemoteData.succeed
+        |> RemoteData.map (flip remoteUser model)
+        |> withError model
+
+
+removeDraft : WebData String -> Model -> Model
+removeDraft web model =
+    RemoteData.append web model.remote.user
+        |> RemoteData.map (\( id, user ) -> { user | drafts = Dict.remove id user.drafts })
+        |> RemoteData.map RemoteData.succeed
+        |> RemoteData.map (flip remoteUser model)
+        |> withError model
+
+
+withError : Model -> WebData Model -> Model
+withError model web =
+    case web of
+        Success a ->
+            a
+
+        Failure err ->
+            failRemoteUser err
+                model
+
+        _ ->
+            model

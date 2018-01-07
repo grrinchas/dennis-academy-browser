@@ -1,6 +1,7 @@
 module Encoders exposing (..)
 
-import GraphQl exposing (Mutation, Named, Operation, Query)
+import GraphQl exposing (Mutation, Named, Operation, OperationType(OperationMutation, OperationQuery), Query, operationToBody)
+import Http
 import Json.Encode as Encoder
 import Models exposing (Auth0Token, AuthGraphCool, Draft, User, ValidUser, Visibility(PUBLIC))
 import Regex exposing (HowMany(All))
@@ -72,26 +73,6 @@ userInfo id =
         ]
 
 
-saveDraft : Draft -> Operation Mutation Named
-saveDraft draft =
-    GraphQl.named "updateDraft"
-        [ GraphQl.field "updateDraft"
-            |> GraphQl.withArgument "id" (GraphQl.string draft.id)
-            |> GraphQl.withArgument "content" (GraphQl.string <| sanitize draft.content)
-            |> GraphQl.withArgument "title" (GraphQl.string <| sanitize draft.title)
-            |> GraphQl.withArgument "visibility" (GraphQl.type_ <| toString draft.visibility)
-            |> GraphQl.withSelectors
-                [ GraphQl.field "id"
-                , GraphQl.field "content"
-                , GraphQl.field "type"
-                , GraphQl.field "title"
-                , GraphQl.field "createdAt"
-                , GraphQl.field "updatedAt"
-                , GraphQl.field "visibility"
-                ]
-        ]
-
-
 publicDrafts : Operation Query Named
 publicDrafts =
     GraphQl.named "allDrafts"
@@ -125,7 +106,7 @@ sanitize string =
         |> Regex.replace All (Regex.regex "\"") (\_ -> "\\\"")
 
 
-createDraft : Draft -> AuthGraphCool -> Operation Mutation Named
+createDraft : Draft -> AuthGraphCool -> Http.Body
 createDraft draft token =
     GraphQl.named "createDraft"
         [ GraphQl.field "createDraft"
@@ -143,9 +124,31 @@ createDraft draft token =
                 , GraphQl.field "visibility"
                 ]
         ]
+        |> mutation
 
 
-deleteDraft : Draft -> AuthGraphCool -> Operation Mutation Named
+updateDraft :  Draft -> AuthGraphCool -> Http.Body
+updateDraft  draft _=
+    GraphQl.named "updateDraft"
+        [ GraphQl.field "updateDraft"
+            |> GraphQl.withArgument "id" (GraphQl.string draft.id)
+            |> GraphQl.withArgument "content" (GraphQl.string <| sanitize draft.content)
+            |> GraphQl.withArgument "title" (GraphQl.string <| sanitize draft.title)
+            |> GraphQl.withArgument "visibility" (GraphQl.type_ <| toString draft.visibility)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "id"
+                , GraphQl.field "content"
+                , GraphQl.field "type"
+                , GraphQl.field "title"
+                , GraphQl.field "createdAt"
+                , GraphQl.field "updatedAt"
+                , GraphQl.field "visibility"
+                ]
+        ]
+        |> mutation
+
+
+deleteDraft : Draft -> AuthGraphCool -> Http.Body
 deleteDraft draft token =
     GraphQl.named "deleteDraft"
         [ GraphQl.field "deleteDraft"
@@ -154,3 +157,14 @@ deleteDraft draft token =
                 [ GraphQl.field "id"
                 ]
         ]
+        |> mutation
+
+
+mutation : Operation Mutation a -> Http.Body
+mutation operation =
+    operationToBody OperationMutation operation Nothing
+
+
+query : Operation Query a -> Http.Body
+query operation =
+    operationToBody OperationQuery operation Nothing

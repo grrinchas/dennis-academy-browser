@@ -1,13 +1,13 @@
 module Api exposing (..)
 
 import Decoders exposing (decodeGraphCoolToken, decodePublicDrafts, decodeUser)
-import GraphQl
+import GraphQl exposing (Mutation, Operation, OperationType(OperationMutation, OperationQuery), Query, operationToBody)
 import Http exposing (Header, jsonBody)
 import Json.Decode
 import Json.Encode
 import Encoders
 import Models exposing (..)
-import RemoteData exposing (RemoteData)
+import RemoteData exposing (RemoteData(Failure, Success), WebData, sendRequest)
 
 
 domain : String
@@ -68,22 +68,52 @@ authorised token body decoder =
         }
 
 
-saveDraft : Draft -> AuthGraphCool -> Cmd Msg
-saveDraft draft token =
-    authorised token (GraphQl.operationToBody GraphQl.OperationMutation (Encoders.saveDraft draft) Nothing) Decoders.decodeUpdateDraft
-        |> RemoteData.sendRequest
-        |> Cmd.map (\web -> OnFetch <| WebSaveDraft web)
+aauthorised : (AuthGraphCool -> Http.Body) -> Json.Decode.Decoder a -> AuthGraphCool -> Http.Request a
+aauthorised body decoder token =
+    Http.request
+        { method = "POST"
+        , headers = [ Http.header "Authorization" <| "Bearer " ++ token.token ]
+        , url = graphCool
+        , body = body token
+        , expect = Http.expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
 
 
-createDraft : Draft -> AuthGraphCool -> Cmd Msg
-createDraft draft token =
-    authorised token (GraphQl.operationToBody GraphQl.OperationMutation (Encoders.createDraft draft token) Nothing) Decoders.decodeCreateDraft
-        |> RemoteData.sendRequest
-        |> Cmd.map (\web -> OnFetch <| WebCreateDraft web)
+deleteDraft : Draft -> Model -> ( Model, Cmd Msg )
+deleteDraft draft model =
+    RemoteData.map (aauthorised (Encoders.deleteDraft draft) Decoders.decodeDeleteDraft) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map (\web -> OnFetch <| WebDeleteDraft web))
+        |> withError model
 
 
-deleteDraft : Draft -> AuthGraphCool -> Cmd Msg
-deleteDraft draft token =
-    authorised token (GraphQl.operationToBody GraphQl.OperationMutation (Encoders.deleteDraft draft token) Nothing) Decoders.decodeDeleteDraft
-        |> RemoteData.sendRequest
-        |> Cmd.map (\web -> OnFetch <| WebDeleteDraft web)
+updateDraft : Draft -> Model -> ( Model, Cmd Msg )
+updateDraft draft model =
+    RemoteData.map (aauthorised (Encoders.updateDraft draft) Decoders.decodeUpdateDraft) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map (\web -> OnFetch <| WebSaveDraft web))
+        |> withError model
+
+
+createDraft : Draft -> Model -> ( Model, Cmd Msg )
+createDraft draft model =
+    RemoteData.map (aauthorised (Encoders.createDraft draft) Decoders.decodeCreateDraft) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map (\web -> OnFetch <| WebCreateDraft web))
+        |> withError model
+
+
+withError : Model -> WebData (Cmd Msg) -> ( Model, Cmd Msg )
+withError model web =
+    case web of
+        Success a ->
+            ( model, a )
+
+        Failure err ->
+            failRemoteUser err model
+                |> withNoCommand
+
+        _ ->
+            withNoCommand model
