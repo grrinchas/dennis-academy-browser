@@ -77,27 +77,29 @@
         .card-action {
             justify-content: space-between;
 
-            .actions {
-                margin: 0;
-                li {
 
-                    display: inline-block;
-
-                    a {
-                        margin-right: 16px !important;
-
-                    }
-
-                    .delete-draft {
-                        margin-right: 0 !important;
-                    }
-
-                }
-            }
 
         }
     }
 
+
+    .actions {
+        margin: 0;
+        li {
+
+            display: inline-block;
+
+            a {
+                margin-right: 16px !important;
+
+            }
+
+            .delete-draft {
+                margin-right: 0 !important;
+            }
+
+        }
+    }
 
     .relative {
         position: relative !important;
@@ -109,10 +111,11 @@
             height: 130px;
             min-width: 200px !important;
             top: 20px;
-            left: -100px;
+            right: 0;
             display: block !important;
             opacity: 1 !important;
             text-transform: none;
+
 
 
             a {

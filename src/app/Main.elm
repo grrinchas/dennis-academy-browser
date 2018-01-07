@@ -68,7 +68,6 @@ init tokens loc =
                     (\token ->
                         withCommands
                             [ Api.fetchUser token
-                            , Api.fetchPublicDrafts token
                             , Task.perform OnTime Time.now
                             ]
                             model
@@ -198,7 +197,7 @@ onFetch web model =
 
         WebGraphCoolToken token ->
             remoteGraphCool token model
-                |> (\model -> mapLoggedInUser (\token -> withCommands [ Api.fetchUser token ] model) model)
+                |> (\model -> mapLoggedInUser (\token -> withCommands [ Api.fetchUser token, Api.fetchPublicDrafts token ] model) model)
 
         WebUser user ->
             remoteUser user model
