@@ -179,22 +179,18 @@ draftsPage model =
 
 publicDraftsPage : Model -> Html Msg
 publicDraftsPage model =
-    let
-        _ =
-            Debug.log "" model.remote.publicDrafts
-    in
-        case RemoteData.append model.remote.user model.remote.publicDrafts of
-            NotAsked ->
-                div [] []
+    case RemoteData.append model.remote.user model.remote.publicDrafts of
+        NotAsked ->
+            div [] []
 
-            Loading ->
-                div [] []
+        Loading ->
+            div [] []
 
-            Success ( user, drafts ) ->
-                layout model.menu (NavBar.draftsHeader user model) <| Drafts.publicView True model.menu drafts
+        Success ( user, drafts ) ->
+            layout model.menu (NavBar.draftsHeader user model) <| Drafts.publicView True model.menu drafts
 
-            Failure err ->
-                Error.view <| Http err
+        Failure err ->
+            Error.view <| Http err
 
 
 view : Model -> Html Msg

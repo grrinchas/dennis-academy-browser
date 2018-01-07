@@ -68,6 +68,7 @@ init tokens loc =
                     (\token ->
                         withCommands
                             [ Api.fetchUser token
+                            , Api.fetchPublicDrafts token
                             , Task.perform OnTime Time.now
                             ]
                             model
