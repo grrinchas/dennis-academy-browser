@@ -8,6 +8,7 @@ import Mouse
 import Navigation exposing (Location)
 import RemoteData exposing (RemoteData(Failure, NotAsked, Success), WebData, succeed)
 import Routes exposing (Route(HomeRoute), RouteError, parseLocation)
+import Task
 import Time exposing (Time)
 
 
@@ -116,35 +117,32 @@ mdText =
     "# Ius manus Phoebeius nec iuris amantis\n\n## Corpore regni\n\nLorem markdownum arceat, derepta ferarum loquuntur fratres; vocant circumsonat\nexplorant totumque claudit volat maternaque. Crura fuerat, per committi homo\neadem pede contraria cava tu excutit. Ardor habere, paterque sepulcri, nec\nconcipit suam at sede amicior illius bracchia! Sternuntur Themin, ut siste,\ndixerat auras ego ungula!\n\n## Aureus ambiguus vitulos quondam\n\nIn ad mane, deus quae fatetur adiere avis obliquaque oculis. Est eras una lues clamantia ignea, est et neque caelobracchia festa truncoque\n\n? Celer sacrata abdit\nultima, carinas, malis proles sonat, in quod qui; ipsa. Lateri te vela motu\ninter Delon numinis expositum iubemur, manus. Quae si vero uritur ut nati matris\nferi, versata gravem abdiderat ales contigerant.\n\nSpes diu quibus terram, viro et exhorruit occiderat gestare adspexit! In quam,\nsolo perpessi nepotibus: nec currum senserit flagrant dea sublime perde hanc\nconiecto frontem legit? Forsitan frontis unda patria victrix corpore, mea\nadmissa mihi iuverat in illud. Frondem maternas iactantem vultum; nisi Argus,\nharundine, rogum malo. Adeo aurea videoque verba, est solita, tollor in.\n\n\n## Ingreditur temperie meus credidit\n\nInvidiosa corpora rogos miserrima versus, orbe, nec turbatum ait ecce Phoebique\nlunae, et. Manibus avidus. Silentum qui centauri victa cum cum flere?\n\n- In simul confido\n- A tenuisse Aeson veros\n- More luna imago et mallem exierat carpere\n\n## Ulvam optima\n\nNudumque quoque sumus inhonorati exercita virago? Dum ait, vulnera Oete subruit\net, tacita vulnusque terra freta Ereboque germanae curvarique si porrexit magnis\nne armenti. Lambit lucoque unus eventuque nexilibus nectar me mihi amor fuerat\nquia perpetuum fugit, densa. Adspexit nostro insidiisque Pylios; mota pereat\nconiuge nec carmina triplicis retinere cuspide nollem; percaluit lacerum!\n\n- Criminis fusum sucus spectas\n- Densa delphines aratro\n- Sua virgine pudore iamdudum\n- Repetisse dixerat eodem flammae\n- Thalamo iuxta unum ictus\n\nSi conubia formatus induitur dicere et iaculum flammas pariter illa magnis\nperque esse. Pietas fuit vanum dederam, canes Caucasiumque nulla. Sub hamos\nmedioque adsidua alimentaque. Cephisias animal tarda, Indis! Pastor omnis,\ndicit, Ionio Phoce, passim, Corythi."
 
 
-type Web
-    = WebAccount (WebData Account)
-    | WebAuth0Token (WebData Auth0Token)
-    | WebGraphCoolToken (WebData AuthGraphCool)
-    | WebUser (WebData User)
-    | WebSaveDraft (WebData Draft)
-    | WebCreateDraft (WebData Draft)
-    | WebDeleteDraft (WebData String)
-    | WebPublicDrafts (WebData (List PublicDraft))
-
-
 type Msg
-    = NoOperation
-    | OnLocationChange Location
-    | UpdateRoute Route
-    | OnFormChange Form
-    | OnMenuChange Menu
-    | CreateAccount (Maybe ValidUser)
-    | Login (Maybe ValidUser)
-    | OnLoadTokens (Maybe Tokens)
-    | OnFetch Web
-    | SaveDraft Draft
-    | CreateDraft Draft
-    | DeleteDraft Draft
-    | OnDraftChange Draft
-    | MouseClicked Mouse.Position
-    | Logout
-    | GetCurrentTime
-    | OnTime Time
+    = WhenNoOperation
+    | WhenTokensLoaded (Maybe Tokens)
+    | WhenLocationChanges Location
+    | WhenFormChanges Form
+    | WhenMenuChanges Menu
+    | WhenTimeChanges Time
+    | WhenDraftChanges Draft
+
+    | ClickMouse Mouse.Position
+    | ClickUpdateRoute Route
+    | ClickLogout
+    | ClickCreateAccount (Maybe ValidUser)
+    | ClickLogin (Maybe ValidUser)
+    | ClickUpdateDraft Draft
+    | ClickCreateDraft Draft
+    | ClickDeleteDraft Draft
+
+    | OnFetchCreatedAccount (WebData Account)
+    | OnFetchAuth0Token (WebData Auth0Token)
+    | OnFetchGraphCoolToken (WebData AuthGraphCool)
+    | OnFetchUserInfo (WebData User)
+    | OnFetchUpdatedDraft (WebData Draft)
+    | OnFetchCreatedDraft (WebData Draft)
+    | OnFetchDeletedDraft (WebData String)
+    | OnFetchPublicDrafts (WebData (List PublicDraft))
 
 
 type Valid
@@ -450,3 +448,15 @@ withError model web =
 
         _ ->
             model
+
+
+updateTokens : Maybe Tokens -> Model -> Model
+updateTokens tokens model =
+    case tokens of
+        Just { auth0, graphCool } ->
+            remoteAuth0 (succeed auth0) model
+                |> remoteGraphCool (succeed graphCool)
+
+        Nothing ->
+            remoteAuth0 NotAsked model
+                |> remoteGraphCool NotAsked

@@ -20,7 +20,7 @@ view model draft =
                 [ class "col"
                 , placeholder "Enter new title..."
                 , value draft.title
-                , onInput (\title -> OnDraftChange { draft | title = title })
+                , onInput (\title -> WhenDraftChanges { draft | title = title })
                 ]
                 []
             ]
@@ -37,7 +37,7 @@ view model draft =
             ]
         , div [ class "row editor-row" ]
             [ div [ class "col s6 editor-ta" ]
-                [ textarea [ onInput (\content -> OnDraftChange { draft | content = content }) ] [ text draft.content ] ]
+                [ textarea [ onInput (\content -> WhenDraftChanges { draft | content = content }) ] [ text draft.content ] ]
             , div [ class "col s6 dg-preview" ]
                 [ Markdown.toHtml [] draft.content ]
             ]
@@ -48,7 +48,7 @@ save : WebData Draft -> Draft -> Html Msg
 save webDraft draft =
     case webDraft of
         NotAsked ->
-            a [ class "right dg-save-draft", onClick <| SaveDraft draft ] [ small [] [ text "SAVE" ] ]
+            a [ class "right dg-save-draft", onClick <| ClickUpdateDraft draft ] [ small [] [ text "SAVE" ] ]
 
         Loading ->
             div [ class "right draft-loader valign-wrapper" ] [ loader ]
@@ -59,7 +59,7 @@ save webDraft draft =
                     div [ class "save" ] [ small [] [ text "Saved successfully!" ] ]
 
                 False ->
-                    a [ class "right dg-save-draft", onClick <| SaveDraft draft ] [ small [] [ text "SAVE" ] ]
+                    a [ class "right dg-save-draft", onClick <| ClickUpdateDraft draft ] [ small [] [ text "SAVE" ] ]
 
         Failure err ->
             div [ class "error-save save" ] [ small [] [ text "Can't save!" ] ]

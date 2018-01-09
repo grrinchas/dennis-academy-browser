@@ -21,7 +21,7 @@ decodeAuth0Token =
 decodeGraphCoolToken : Decoder.Decoder AuthGraphCool
 decodeGraphCoolToken =
     graphCoolTokenObject
-        |> authenticateField
+        |> Decoder.field "authenticate"
         |> dataField
 
 
@@ -52,7 +52,7 @@ decodeAccount =
 decodeUser : Decoder.Decoder User
 decodeUser =
     userObject
-        |> userField
+        |> Decoder.field "User"
         |> dataField
 
 
@@ -158,47 +158,17 @@ dataField decoder =
     Decoder.field "data" decoder
 
 
-updateDraftField : Decoder.Decoder a -> Decoder.Decoder a
-updateDraftField decoder =
-    Decoder.field "updateDraft" decoder
-
-
-createDraftField : Decoder.Decoder a -> Decoder.Decoder a
-createDraftField decoder =
-    Decoder.field "createDraft" decoder
-
-
-deleteDraftField : Decoder.Decoder a -> Decoder.Decoder a
-deleteDraftField decoder =
-    Decoder.field "deleteDraft" decoder
-
-
-allDraftsField : Decoder.Decoder a -> Decoder.Decoder a
-allDraftsField decoder =
-    Decoder.field "allDrafts" decoder
-
-
-userField : Decoder.Decoder a -> Decoder.Decoder a
-userField decoder =
-    Decoder.field "User" decoder
-
-
-authenticateField : Decoder.Decoder a -> Decoder.Decoder a
-authenticateField decoder =
-    Decoder.field "authenticate" decoder
-
-
 decodeUpdateDraft : Decoder.Decoder Draft
 decodeUpdateDraft =
     draftObject
-        |> updateDraftField
+        |> Decoder.field "updateDraft"
         |> dataField
 
 
 decodeCreateDraft : Decoder.Decoder Draft
 decodeCreateDraft =
     draftObject
-        |> createDraftField
+        |> Decoder.field "createDraft"
         |> dataField
 
 
@@ -206,7 +176,7 @@ decodeDeleteDraft : Decoder.Decoder String
 decodeDeleteDraft =
     Decoder.string
         |> Decoder.field "id"
-        |> deleteDraftField
+        |> Decoder.field "deleteDraft"
         |> dataField
 
 
@@ -214,5 +184,5 @@ decodePublicDrafts : Decoder.Decoder (List PublicDraft)
 decodePublicDrafts =
     publicDraftObject
         |> Decoder.list
-        |> allDraftsField
+        |> Decoder.field "allDrafts"
         |> dataField

@@ -37,7 +37,7 @@ login user =
         ]
 
 
-authGraphCool : Auth0Token -> Operation Mutation Named
+authGraphCool : Auth0Token -> Http.Body
 authGraphCool token =
     GraphQl.named "authenticate"
         [ GraphQl.field "authenticate"
@@ -47,13 +47,14 @@ authGraphCool token =
                 , GraphQl.field "token"
                 ]
         ]
+        |> mutation
 
 
-userInfo : String -> Operation Query Named
-userInfo id =
+userInfo : AuthGraphCool -> Http.Body
+userInfo token =
     GraphQl.named "queryUser"
         [ GraphQl.field "User"
-            |> GraphQl.withArgument "id" (GraphQl.string id)
+            |> GraphQl.withArgument "id" (GraphQl.string token.id)
             |> GraphQl.withSelectors
                 [ GraphQl.field "id"
                 , GraphQl.field "username"
@@ -71,10 +72,11 @@ userInfo id =
                         ]
                 ]
         ]
+        |> query
 
 
-publicDrafts : Operation Query Named
-publicDrafts =
+publicDrafts : AuthGraphCool -> Http.Body
+publicDrafts _ =
     GraphQl.named "allDrafts"
         [ GraphQl.field "allDrafts"
             |> GraphQl.withArgument "filter"
@@ -97,6 +99,7 @@ publicDrafts =
                         ]
                 ]
         ]
+        |> query
 
 
 sanitize : String -> String
@@ -127,8 +130,8 @@ createDraft draft token =
         |> mutation
 
 
-updateDraft :  Draft -> AuthGraphCool -> Http.Body
-updateDraft  draft _=
+updateDraft : Draft -> AuthGraphCool -> Http.Body
+updateDraft draft _ =
     GraphQl.named "updateDraft"
         [ GraphQl.field "updateDraft"
             |> GraphQl.withArgument "id" (GraphQl.string draft.id)

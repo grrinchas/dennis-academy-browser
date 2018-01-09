@@ -6,7 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onWithOptions)
 import Json.Decode
-import Models exposing (Draft, DraftOwner, Menu, Msg(CreateDraft, DeleteDraft, OnMenuChange, SaveDraft, UpdateRoute), PublicDraft, User, Visibility(PRIVATE, PUBLIC), initialMenu, menuDeleteDraft, menuPublicDraft)
+import Models exposing (..)
 import Routes exposing (Route(DraftRoute, DraftsRoute, HomeRoute, PublicDraftsRoute), path)
 
 
@@ -45,14 +45,14 @@ getVisibilityIcon menu draft =
                         [ p [] [ text "Are you sure you want to make it public?" ]
                         ]
                     , div [ class "card-action" ]
-                        [ a [ class "right", onClick <| SaveDraft { draft | visibility = PUBLIC } ] [ text "Public" ]
+                        [ a [ class "right", onClick <| ClickUpdateDraft { draft | visibility = PUBLIC } ] [ text "Public" ]
                         ]
                     ]
                 ]
 
         PUBLIC ->
             span [ class "tooltip " ]
-                [ i [ class "material-icons public", onClick <| SaveDraft { draft | visibility = PRIVATE } ] [ text "public" ]
+                [ i [ class "material-icons public", onClick <| ClickUpdateDraft { draft | visibility = PRIVATE } ] [ text "public" ]
                 , small [ class "tooltip-text tooltip-bottom" ] [ text "Make private" ]
                 ]
 
@@ -87,7 +87,7 @@ listCard menu user draft =
                             ]
                         ]
                     , li []
-                        [ a [ class "tooltip", onClick <| CreateDraft draft ]
+                        [ a [ class "tooltip", onClick <| ClickCreateDraft draft ]
                             [ i [ class "material-icons" ] [ text "content_copy" ]
                             , small [ class "tooltip-text" ] [ text "Duplicate" ]
                             ]
@@ -107,7 +107,7 @@ listCard menu user draft =
                                     [ p [] [ text "Are you sure you want to delete?" ]
                                     ]
                                 , div [ class "card-action" ]
-                                    [ a [ class "right", onClick <| DeleteDraft draft ] [ text "delete" ]
+                                    [ a [ class "right", onClick <| ClickDeleteDraft draft ] [ text "delete" ]
                                     ]
                                 ]
                             ]
@@ -127,7 +127,7 @@ deleteDraftMenuEvent : String -> Attribute Msg
 deleteDraftMenuEvent id =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            OnMenuChange <|
+            WhenMenuChanges <|
                 menuDeleteDraft id
 
 
@@ -135,7 +135,7 @@ publicDraftMenuEvent : String -> Attribute Msg
 publicDraftMenuEvent id =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            OnMenuChange <|
+            WhenMenuChanges <|
                 menuPublicDraft id
 
 
@@ -183,7 +183,7 @@ publicListCard menu public =
                     ]
                 , ul [ class "actions right" ]
                     [ li []
-                        [ a [ class "tooltip delete-draft", onClick <| CreateDraft public.draft ]
+                        [ a [ class "tooltip delete-draft", onClick <| ClickCreateDraft public.draft ]
                             [ i [ class "material-icons " ] [ text "content_copy" ]
                             , small [ class "tooltip-text" ] [ text "Copy" ]
                             ]

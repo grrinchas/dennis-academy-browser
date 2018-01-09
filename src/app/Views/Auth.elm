@@ -41,7 +41,7 @@ emailInput form =
             , placeholder "Email"
             , value <| Maybe.withDefault "" form.email
             , maxlength 30
-            , onInput (\email -> OnFormChange { form | email = Just email })
+            , onInput (\email -> WhenFormChanges { form | email = Just email })
             , validStyle Validator.email form.email
             , class "dg-input"
             ]
@@ -58,7 +58,7 @@ passwordInput form =
             [ type_ "password"
             , placeholder "Password"
             , value <| Maybe.withDefault "" form.password
-            , onInput (\pass -> OnFormChange { form | password = Just pass })
+            , onInput (\pass -> WhenFormChanges { form | password = Just pass })
             , validStyle Validator.password form.password
             , class "dg-input"
             ]
@@ -76,7 +76,7 @@ usernameInput form =
             , placeholder "Username"
             , value <| Maybe.withDefault "" form.username
             , maxlength 30
-            , onInput (\username -> OnFormChange { form | username = Just username })
+            , onInput (\username -> WhenFormChanges { form | username = Just username })
             , validStyle Validator.username form.username
             , class "dg-input"
             ]
@@ -93,7 +93,7 @@ repeatInput form =
             [ type_ "password"
             , placeholder "Password Repeat"
             , value <| Maybe.withDefault "" form.repeatPass
-            , onInput (\repeat -> OnFormChange { form | repeatPass = Just repeat })
+            , onInput (\repeat -> WhenFormChanges { form | repeatPass = Just repeat })
             , validRepeatStyle form.password form.repeatPass
             , class "dg-input"
             ]
@@ -225,7 +225,7 @@ signUpForm form response =
                 [ a
                     [ class "btn dg-right "
                     , classList [ ( "disabled", not <| Validator.validSignUpInputs form ) ]
-                    , onClick <| CreateAccount <| Validator.validSignUpUser form
+                    , onClick <| ClickCreateAccount <| Validator.validSignUpUser form
                     ]
                     [ text "Sign Up" ]
                 ]
@@ -248,7 +248,7 @@ loginForm form response =
                 [ a
                     [ class "btn dg-right "
                     , classList [ ( "disabled", not <| Validator.validLoginInputs form ) ]
-                    , onClick <| Login <| Validator.validLoginUser form
+                    , onClick <| ClickLogin <| Validator.validLoginUser form
                     ]
                     [ text "Login" ]
                 ]

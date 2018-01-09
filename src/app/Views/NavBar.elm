@@ -93,21 +93,21 @@ publishMenuEvent : Attribute Msg
 publishMenuEvent =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            OnMenuChange menuPublish
+            WhenMenuChanges menuPublish
 
 
 userMenuEvent : Attribute Msg
 userMenuEvent =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            OnMenuChange menuUser
+            WhenMenuChanges menuUser
 
 
 newDraftMenuEvent : Attribute Msg
 newDraftMenuEvent =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            OnMenuChange menuNewDraft
+            WhenMenuChanges menuNewDraft
 
 
 userMenu : User -> Menu -> Html Msg
@@ -122,7 +122,7 @@ userMenu user menu =
             ]
         , li [] [ a [ class "not-implemented" ] [ i [ class "material-icons" ] [ text "settings" ], text "Settings" ] ]
         , li [ class "divider" ] []
-        , li [] [ a [ onClick Logout ] [ i [ class "material-icons" ] [ text "arrow_forward" ], text "Logout" ] ]
+        , li [] [ a [ onClick ClickLogout ] [ i [ class "material-icons" ] [ text "arrow_forward" ], text "Logout" ] ]
         ]
 
 
@@ -167,10 +167,10 @@ newDraftMenu form menu =
     div [ newDraftMenuEvent, class "card dg-new-draft", classList [ ( "dg-new-draft-show", menu.newDraft ) ] ]
         [ div [ class "card-content" ]
             [ p [] [ text "What is your draft about?" ]
-            , input [ placeholder form.draftTitleNew, onInput (\title -> OnFormChange { form | draftTitleNew = title }) ] []
+            , input [ placeholder form.draftTitleNew, onInput (\title -> WhenFormChanges { form | draftTitleNew = title }) ] []
             ]
         , div [ class "card-action" ]
-            [ a [ onClick <| CreateDraft { initialDraft | title = form.draftTitleNew } ] [ text "create" ]
+            [ a [ onClick <| ClickCreateDraft { initialDraft | title = form.draftTitleNew } ] [ text "create" ]
             ]
         ]
 
