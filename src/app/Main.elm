@@ -165,6 +165,15 @@ update msg model =
                 |> resetForm
                 |> resetMenu
                 |> reroute
+                |> andAlso
+                    (\m -> case m.route of
+                           Ok PublicDraftsRoute  ->
+                               RemoteData.map (\d -> DraftRoute d.id) web
+                                |> RemoteData.map (\r -> [Navigation.newUrl <| path r])
+                                |> RemoteData.map (flip withCommands m)
+                                |> RemoteData.withDefault (withNoCommand m)
+                           _ -> withNoCommand m
+                    )
 
         OnFetchDeletedDraft web ->
             removeDraft web model
@@ -174,3 +183,5 @@ update msg model =
         OnFetchPublicDrafts web ->
             remotePublicDrafts web model
                 |> withNoCommand
+
+
