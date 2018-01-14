@@ -17,9 +17,12 @@ view menu user profile =
                 [ img [class "circle", src profile.picture ] []
                 , div []
                     [ h1 [class ""] [text profile.username]
-                    , input [placeholder "Enter your bio..", type_ "text"] []
+                    , case user.username == profile.username of
+                        True ->  input [placeholder "Enter your bio..", type_ "text"] []
+                        False -> input [readonly True,  placeholder "Enter your bio..", type_ "text"] []
                     ]
                 ]
+
 
           , div [class "row section"] []
           , div [class "row section"]
