@@ -112,12 +112,11 @@ newDraftMenuEvent =
 userMenu : User -> Menu -> Html Msg
 userMenu user menu =
     ul [ userMenuEvent, class "dropdown-content", classList [ ( "dg-user-menu", menu.user ) ] ]
-        [ --   li [] [ a [ href <| path <| DraftRoute "1" ] [ i [ class "material-icons" ] [ text "add" ], text "Create Tutorial" ] ]
-          li [] [ a [ href <| path DraftsRoute ] [ i [ class "material-icons" ] [ text "apps" ], text "Drafts" ] ]
+        [ li [] [ a [ href <| path DraftsRoute ] [ i [ class "material-icons" ] [ text "apps" ], text "Drafts" ] ]
         , li [ class "divider" ] []
         , li [ class "valign-wrapper" ]
             [ img [ class "circle", src user.picture ] []
-            , span [ class "not-implemented dg-profile title" ] [ text "View Profile" ]
+            , a [href <| path <| ProfileRoute user.username, class "dg-profile title"] [ text "View Profile" ]
             ]
         , li [] [ a [ class "not-implemented" ] [ i [ class "material-icons" ] [ text "settings" ], text "Settings" ] ]
         , li [ class "divider" ] []

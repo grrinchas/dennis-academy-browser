@@ -97,6 +97,14 @@ fetchUser model =
         |> withError model
 
 
+fetchUserProfile : String -> Model -> ( Model, Cmd Msg )
+fetchUserProfile username model =
+    RemoteData.map (authorised (Encoders.userProfile username ) Decoders.decodeUserProfile) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map OnFetchUserProfile)
+        |> withError model
+
+
 fetchPublicDrafts : Model -> ( Model, Cmd Msg )
 fetchPublicDrafts model =
     RemoteData.map (authorised Encoders.publicDrafts Decoders.decodePublicDrafts) model.remote.graphCool

@@ -14,6 +14,7 @@ import Views.Auth as Auth
 import Views.NavBar as NavBar
 import Views.Draft as Draft
 import Views.Drafts as Drafts
+import Views.UserProfile as UserProfile
 import Models exposing (..)
 import Routes exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
@@ -171,7 +172,7 @@ draftsPage model =
             div [] []
 
         Success user ->
-            layout model.menu (NavBar.draftsHeader user model) <| Drafts.view False model.menu user
+            layout model.menu (NavBar.draftsHeader user model) <| Drafts.view False model.menu user (Dict.values user.drafts)
 
         Failure err ->
             Error.view <| Http err
@@ -187,7 +188,24 @@ publicDraftsPage model =
             div [] []
 
         Success ( user, drafts ) ->
-            layout model.menu (NavBar.draftsHeader user model) <| Drafts.publicView True model.menu drafts model.remote.refreshedPublicDrafts
+            layout model.menu (NavBar.draftsHeader user model) <| Drafts.publicView True model.menu user drafts model.remote.refreshedPublicDrafts
+
+        Failure err ->
+            Error.view <| Http err
+
+
+userProfilePage : String -> Model -> Html Msg
+userProfilePage username model =
+    case RemoteData.append model.remote.user model.remote.userProfile of
+        NotAsked ->
+            div [] []
+
+        Loading ->
+            div [] []
+
+        Success ( user, profile ) ->
+            NavBar.withButtons [NavBar.notifications,  NavBar.profile user model.menu] |> NavBar.wrapper NavBar.logo
+                |> (\h -> layout model.menu h <| UserProfile.view model.menu user profile)
 
         Failure err ->
             Error.view <| Http err
@@ -218,6 +236,8 @@ view model =
 
                 PublicDraftsRoute ->
                     publicDraftsPage model
+
+                ProfileRoute username -> userProfilePage username model
 
         Err oops ->
             Error.view <| Routing oops

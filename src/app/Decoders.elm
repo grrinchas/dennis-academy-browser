@@ -77,14 +77,14 @@ userObject =
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
 
 
-publicDraftObject : Decoder.Decoder PublicDraft
-publicDraftObject =
+draftObject : Decoder.Decoder Draft
+draftObject =
     let
         toDecoder =
             \id created updated content type_ title visibility owner ->
                 case ( created, updated, visibility ) of
                     ( Ok c, Ok u, Just v ) ->
-                        Decoder.succeed <| PublicDraft (Draft id c u content type_ title v) owner
+                        Decoder.succeed <| Draft id c u content type_ title v owner
 
                     ( Err err, _, _ ) ->
                         Decoder.fail err
@@ -114,33 +114,13 @@ draftOwner =
         |> Pipeline.required "picture" Decoder.string
 
 
-draftObject : Decoder.Decoder Draft
-draftObject =
-    let
-        toDecoder =
-            \id created updated content type_ title visibility ->
-                case ( created, updated, visibility ) of
-                    ( Ok c, Ok u, Just v ) ->
-                        Decoder.succeed <| Draft id c u content type_ title v
+userProfile : Decoder.Decoder UserProfile
+userProfile =
+    Pipeline.decode UserProfile
+        |> Pipeline.required "username" Decoder.string
+        |> Pipeline.required "picture" Decoder.string
+        |> Pipeline.required "drafts" (Decoder.list draftObject)
 
-                    ( Err err, _, _ ) ->
-                        Decoder.fail err
-
-                    ( _, Err err, _ ) ->
-                        Decoder.fail err
-
-                    ( _, _, Nothing ) ->
-                        Decoder.fail "No such visibility"
-    in
-        Pipeline.decode toDecoder
-            |> Pipeline.required "id" Decoder.string
-            |> Pipeline.required "createdAt" (Decoder.map Date.fromString Decoder.string)
-            |> Pipeline.required "updatedAt" (Decoder.map Date.fromString Decoder.string)
-            |> Pipeline.required "content" Decoder.string
-            |> Pipeline.required "type" Decoder.string
-            |> Pipeline.required "title" Decoder.string
-            |> Pipeline.required "visibility" (Decoder.map visibility Decoder.string)
-            |> Pipeline.resolve
 
 
 visibility : String -> Maybe Visibility
@@ -180,9 +160,18 @@ decodeDeleteDraft =
         |> dataField
 
 
-decodePublicDrafts : Decoder.Decoder (List PublicDraft)
+decodePublicDrafts : Decoder.Decoder (List Draft)
 decodePublicDrafts =
-    publicDraftObject
+    draftObject
         |> Decoder.list
         |> Decoder.field "allDrafts"
         |> dataField
+
+
+
+decodeUserProfile : Decoder.Decoder UserProfile
+decodeUserProfile =
+    userProfile
+        |> Decoder.field "User"
+        |> dataField
+

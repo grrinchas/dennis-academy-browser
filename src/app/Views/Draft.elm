@@ -9,7 +9,6 @@ import Markdown
 import Models exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
 import Time exposing (Time)
-import Views.NavBar exposing (publishMenu)
 
 
 view : Model -> Draft -> Html Msg
@@ -25,7 +24,7 @@ view model draft =
                 []
             ]
         , div [ class "row header-row " ]
-            [ div [ class "col s6 header-md" ]
+            [ div [ class "col s6 header-md " ]
                 [ small [] [ strong [] [ text "CREATED: " ], span [] [ text <| formatUpdated (Date.toTime draft.createdAt) model.now ] ]
                 , save model.remote.savedDraft draft
                 ]
@@ -88,3 +87,5 @@ formatUpdated created updated =
             (toString <| round (Time.inHours diff)) ++ " hours ago"
         else
             (toString <| (%) (round (Time.inHours diff)) 24) ++ " days ago"
+
+

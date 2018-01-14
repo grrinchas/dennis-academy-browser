@@ -15,6 +15,7 @@ type Route
     | DraftsRoute
     | PublicDraftsRoute
     | DashboardRoute
+    | ProfileRoute String
 
 
 type RouteError
@@ -42,7 +43,18 @@ matchers =
         , map DashboardRoute (s "dashboard")
         , map DraftsRoute (s "drafts")
         , map PublicDraftsRoute (s "drafts" </> s "public")
+        , map ProfileRoute profileMatcher
         ]
+
+profileMatcher: Parser (String -> a ) a
+profileMatcher =
+    custom "PROFILE" <|
+        \segment ->
+            case String.startsWith "@" segment of
+                True -> Ok <| String.dropLeft 1 segment
+
+                False ->
+                    Err "Malformed Path"
 
 
 slugMatcher : Parser (Slug -> a) a
@@ -80,6 +92,9 @@ path route =
 
         PublicDraftsRoute ->
             "#drafts/public"
+
+        ProfileRoute username ->
+            "#/@" ++ username
 
 
 

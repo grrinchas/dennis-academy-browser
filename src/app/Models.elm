@@ -30,12 +30,6 @@ type alias DraftOwner =
     }
 
 
-type alias PublicDraft =
-    { draft : Draft
-    , owner : DraftOwner
-    }
-
-
 type alias Draft =
     { id : String
     , createdAt : Date
@@ -44,6 +38,7 @@ type alias Draft =
     , draftType : String
     , title : String
     , visibility : Visibility
+    , owner: DraftOwner
     }
 
 
@@ -56,6 +51,7 @@ initialDraft =
     , draftType = "TUTORIAL"
     , title = "Very descriptive draft title..."
     , visibility = PRIVATE
+    , owner = DraftOwner "" ""
     }
 
 
@@ -65,6 +61,12 @@ type alias User =
     , email : String
     , picture : String
     , drafts : Dict String Draft
+    }
+
+type alias UserProfile =
+    { username: String
+    , picture: String
+    , drafts: List Draft
     }
 
 
@@ -86,8 +88,9 @@ type alias Remote =
     , account : WebData Account
     , user : WebData User
     , savedDraft : WebData Draft
-    , publicDrafts : WebData (List PublicDraft)
+    , publicDrafts : WebData (List Draft)
     , refreshedPublicDrafts: WebData ()
+    , userProfile: WebData UserProfile
     }
 
 
@@ -143,7 +146,8 @@ type Msg
     | OnFetchUpdatedDraft (WebData Draft)
     | OnFetchCreatedDraft (WebData Draft)
     | OnFetchDeletedDraft (WebData String)
-    | OnFetchPublicDrafts (WebData (List PublicDraft))
+    | OnFetchPublicDrafts (WebData (List Draft))
+    | OnFetchUserProfile (WebData UserProfile)
 
 
 type Valid
@@ -352,7 +356,7 @@ remoteUpdatedDraft web model =
             { model | remote = { remote | savedDraft = web } }
 
 
-remotePublicDrafts : WebData (List PublicDraft) -> Model -> Model
+remotePublicDrafts : WebData (List Draft) -> Model -> Model
 remotePublicDrafts web model =
     case model.remote of
         remote ->
@@ -364,6 +368,13 @@ remoteRefreshedPublicDrafts web model =
     case model.remote of
         remote ->
             { model | remote = { remote | refreshedPublicDrafts = web } }
+
+
+remoteUserProfile : WebData UserProfile -> Model -> Model
+remoteUserProfile web model =
+    case model.remote of
+        remote ->
+            { model | remote = { remote | userProfile = web } }
 
 
 isDraftPublic : Draft -> Bool
@@ -390,6 +401,7 @@ initialRemote =
     , savedDraft = RemoteData.NotAsked
     , publicDrafts = RemoteData.NotAsked
     , refreshedPublicDrafts = RemoteData.NotAsked
+    , userProfile = RemoteData.NotAsked
     }
 
 

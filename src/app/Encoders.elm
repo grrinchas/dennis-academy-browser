@@ -13,6 +13,7 @@ clientId =
     "enJKDQwKtcKbhrcGg8IlEIeyNJb5noXJ"
 
 
+
 createAccount : ValidUser -> Encoder.Value
 createAccount user =
     Encoder.object
@@ -61,15 +62,7 @@ userInfo token =
                 , GraphQl.field "email"
                 , GraphQl.field "picture"
                 , GraphQl.field "drafts"
-                    |> GraphQl.withSelectors
-                        [ GraphQl.field "id"
-                        , GraphQl.field "content"
-                        , GraphQl.field "type"
-                        , GraphQl.field "title"
-                        , GraphQl.field "createdAt"
-                        , GraphQl.field "updatedAt"
-                        , GraphQl.field "visibility"
-                        ]
+                    |> GraphQl.withSelectors draftSelector
                 ]
         ]
         |> query
@@ -84,20 +77,7 @@ publicDrafts _ =
                     [ ( "visibility", GraphQl.type_ <| toString PUBLIC )
                     ]
                 )
-            |> GraphQl.withSelectors
-                [ GraphQl.field "id"
-                , GraphQl.field "content"
-                , GraphQl.field "type"
-                , GraphQl.field "title"
-                , GraphQl.field "createdAt"
-                , GraphQl.field "updatedAt"
-                , GraphQl.field "visibility"
-                , GraphQl.field "owner"
-                    |> GraphQl.withSelectors
-                        [ GraphQl.field "username"
-                        , GraphQl.field "picture"
-                        ]
-                ]
+            |> GraphQl.withSelectors draftSelector
         ]
         |> query
 
@@ -117,15 +97,7 @@ createDraft draft token =
             |> GraphQl.withArgument "type" (GraphQl.type_ draft.draftType)
             |> GraphQl.withArgument "content" (GraphQl.string <| sanitize draft.content)
             |> GraphQl.withArgument "title" (GraphQl.string <| sanitize draft.title)
-            |> GraphQl.withSelectors
-                [ GraphQl.field "id"
-                , GraphQl.field "content"
-                , GraphQl.field "type"
-                , GraphQl.field "title"
-                , GraphQl.field "createdAt"
-                , GraphQl.field "updatedAt"
-                , GraphQl.field "visibility"
-                ]
+            |> GraphQl.withSelectors draftSelector
         ]
         |> mutation
 
@@ -138,15 +110,7 @@ updateDraft draft _ =
             |> GraphQl.withArgument "content" (GraphQl.string <| sanitize draft.content)
             |> GraphQl.withArgument "title" (GraphQl.string <| sanitize draft.title)
             |> GraphQl.withArgument "visibility" (GraphQl.type_ <| toString draft.visibility)
-            |> GraphQl.withSelectors
-                [ GraphQl.field "id"
-                , GraphQl.field "content"
-                , GraphQl.field "type"
-                , GraphQl.field "title"
-                , GraphQl.field "createdAt"
-                , GraphQl.field "updatedAt"
-                , GraphQl.field "visibility"
-                ]
+            |> GraphQl.withSelectors draftSelector
         ]
         |> mutation
 
@@ -163,6 +127,40 @@ deleteDraft draft token =
         |> mutation
 
 
+userProfile : String -> AuthGraphCool -> Http.Body
+userProfile username _ =
+    GraphQl.named "userProfile"
+        [ GraphQl.field "User"
+            |> GraphQl.withArgument "username" (GraphQl.string username)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "username"
+                , GraphQl.field "picture"
+                , GraphQl.field "drafts"
+                    |> GraphQl.withArgument "filter" (GraphQl.input [ ( "visibility", GraphQl.type_ <| toString PUBLIC ) ] )
+                    |> GraphQl.withArgument "orderBy" (GraphQl.type_  "updatedAt_DESC")
+                    |> GraphQl.withSelectors draftSelector
+                ]
+        ]
+        |> query
+
+
+draftSelector: List (GraphQl.Value a)
+draftSelector =
+        [ GraphQl.field "id"
+        , GraphQl.field "content"
+        , GraphQl.field "type"
+        , GraphQl.field "title"
+        , GraphQl.field "createdAt"
+        , GraphQl.field "updatedAt"
+        , GraphQl.field "visibility"
+        , GraphQl.field "owner"
+            |> GraphQl.withSelectors
+                [ GraphQl.field "username"
+                , GraphQl.field "picture"
+                ]
+        ]
+
+
 mutation : Operation Mutation a -> Http.Body
 mutation operation =
     operationToBody OperationMutation operation Nothing
@@ -171,3 +169,5 @@ mutation operation =
 query : Operation Query a -> Http.Body
 query operation =
     operationToBody OperationQuery operation Nothing
+
+

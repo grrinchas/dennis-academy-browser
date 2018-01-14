@@ -1,5 +1,6 @@
 module Commands exposing (..)
 
+import Api
 import Models exposing (..)
 import Navigation
 import Ports
@@ -57,6 +58,13 @@ reroute model =
 
                 ( PublicDraftsRoute, False ) ->
                     ( { model | route = Err NotFound }, Cmd.none )
+
+                ( ProfileRoute _ , False ) ->
+                    ( { model | route = Err NotFound }, Cmd.none )
+
+                ( ProfileRoute id, True ) ->
+                    Api.fetchUserProfile id model
+
 
                 _ ->
                     withNoCommand model

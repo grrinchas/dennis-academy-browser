@@ -24,10 +24,6 @@
         }
     }
 
-
-    i {
-        cursor: pointer !important;
-    }
     .cards {
         max-width: 1200px;
         margin: 0 auto;
@@ -36,7 +32,6 @@
     h1 {
         font-weight: bold;
         color: $input-disabled-solid-color;
-
     }
 
     .row {
@@ -44,109 +39,106 @@
         justify-content: center;
     }
 
-    .card {
-
-        .profile {
-
-            .name, .updated-at {
-                display: block;
-            }
-
-            .name {
-                color: $link-color !important;
-                text-transform: none !important;
-
-            }
-            img {
-                @include profile-size;
-                margin-right: 10px;
-
-            }
-
-        }
-
-        .header {
-            padding-top: 10px;
-            padding-bottom: 10px;
-            overflow: visible;
-            justify-content: flex-end;
-
-            .private {
-                opacity: 0.3 !important;
-            }
-
-            ul {
-                margin: 0;
-                li {
-                    height: 24px;
-                }
-            }
-        }
-        small {
-            color: $input-disabled-solid-color;
-        }
-
-        .card-title {
-            font-weight: bold;
-        }
-        .card-action {
-            justify-content: space-between;
-
-
-
-        }
-    }
-
-
-    .actions {
-        margin: 0;
-        li {
-
-            display: inline-block;
-
-            a {
-                margin-right: 16px !important;
-
-            }
-
-            .delete-draft {
-                margin-right: 0 !important;
-            }
-
-        }
-    }
-
-    .relative {
-        position: relative !important;
-
-        .show-public-draft-menu,
-        .show-delete-draft-menu {
-            line-height: initial;
-            width: 100px;
-            height: 130px;
-            min-width: 200px !important;
-            top: 20px;
-            right: 0;
-            display: block !important;
-            opacity: 1 !important;
-            text-transform: none;
-
-
-
-            a {
-                cursor: pointer;
-                color: $error-color !important;
-                margin: 0 !important;
-
-            }
-
-        }
-    }
-
+}
+i {
+    cursor: pointer !important;
 }
 
+.draft-card {
 
 
+    .profile {
 
+        .name, .updated-at {
+            display: block;
+        }
 
+        .name {
+            color: $link-color !important;
+            text-transform: none !important;
+
+        }
+        img {
+            @include profile-size;
+            margin-right: 10px;
+
+        }
+
+    }
+
+    .header {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        overflow: visible !important;
+        justify-content: flex-end;
+
+        .private {
+            opacity: 0.3 !important;
+        }
+
+        ul {
+            margin: 0;
+            li {
+                height: 24px;
+            }
+        }
+    }
+    small {
+        color: $input-disabled-solid-color;
+    }
+
+    .card-title {
+        font-weight: bold;
+    }
+    .card-action {
+        justify-content: space-between;
+
+    }
+}
+
+.draft-card-actions {
+    margin: 0;
+    li {
+
+        display: inline-block;
+
+        a {
+            margin-right: 16px !important;
+
+        }
+        .no-margin-right {
+            margin-right: 0 !important;
+        }
+
+        .delete-draft {
+            margin-right: 0 !important;
+        }
+
+    }
+}
+
+.draft-card-relative {
+    position: relative !important;
+
+}
+    .show-public-draft-menu,
+    .show-delete-draft-menu {
+        line-height: initial;
+        width: 100px;
+        height: 130px;
+        min-width: 200px !important;
+        top: 20px;
+        right: 0;
+        display: block !important;
+        opacity: 1 !important;
+        text-transform: none;
+
+        a {
+            cursor: pointer;
+            color: $error-color !important;
+            margin: 0 !important;
+
+        }
+
+    }
 
