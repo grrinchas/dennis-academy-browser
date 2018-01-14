@@ -1,5 +1,6 @@
 module Views.Drafts exposing (..)
 
+import Components exposing (loader)
 import Date exposing (Date)
 import Dict
 import Html exposing (..)
@@ -7,6 +8,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onWithOptions)
 import Json.Decode
 import Models exposing (..)
+import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
 import Routes exposing (Route(DraftRoute, DraftsRoute, HomeRoute, PublicDraftsRoute), path)
 
 
@@ -148,13 +150,19 @@ formatDate date =
         |> (++) (toString <| Date.month date)
 
 
-publicView : Bool -> Menu -> List PublicDraft -> Html Msg
-publicView bool menu drafts =
-    div [ class "dg-draft " ]
-        [ ul [ class "tabs" ]
-            [ li [ class "tab" ] [ a [ href <| path DraftsRoute, classList [ ( "active", not bool ) ] ] [ text "Mine" ] ]
-            , li [ class "tab" ] [ a [ href <| path PublicDraftsRoute, classList [ ( "active", bool ) ] ] [ text "Community" ] ]
+publicView : Bool -> Menu -> List PublicDraft -> WebData ()-> Html Msg
+publicView bool menu drafts webRefresh =
+    div [ class "dg-draft" ]
+        [ div [class "dg-tabs valign-wrapper"]
+            [ ul [ class "tabs" ]
+                [ li [ class "tab" ] [ a [ href <| path DraftsRoute, classList [ ( "active", not bool ) ] ] [ text "Mine" ] ]
+                , li [ class "tab" ] [ a [ href <| path PublicDraftsRoute, classList [ ( "active", bool ) ] ] [ text "Community" ] ]
+                ]
+            , div [class "refresh"]
+                [ refresh webRefresh
+                ]
             ]
+
         , div [ class "divider" ] []
         , div [ class "row cards section" ]
             (drafts
@@ -163,6 +171,15 @@ publicView bool menu drafts =
                 |> List.map (publicListCard menu)
             )
         ]
+
+refresh : WebData () -> Html Msg
+refresh web =
+    case web of
+        Loading ->
+            div [ class "right draft-loader valign-wrapper" ] [ loader ]
+        _ ->
+             i [class "material-icons", onClick ClickRefreshPublicDrafts] [text "autorenew"]
+
 
 
 publicListCard : Menu -> PublicDraft -> Html Msg

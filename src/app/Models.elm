@@ -8,7 +8,6 @@ import Mouse
 import Navigation exposing (Location)
 import RemoteData exposing (RemoteData(Failure, NotAsked, Success), WebData, succeed)
 import Routes exposing (Route(HomeRoute), RouteError, parseLocation)
-import Task
 import Time exposing (Time)
 
 
@@ -88,6 +87,7 @@ type alias Remote =
     , user : WebData User
     , savedDraft : WebData Draft
     , publicDrafts : WebData (List PublicDraft)
+    , refreshedPublicDrafts: WebData ()
     }
 
 
@@ -134,6 +134,7 @@ type Msg
     | ClickUpdateDraft Draft
     | ClickCreateDraft Draft
     | ClickDeleteDraft Draft
+    | ClickRefreshPublicDrafts
 
     | OnFetchCreatedAccount (WebData Account)
     | OnFetchAuth0Token (WebData Auth0Token)
@@ -358,6 +359,13 @@ remotePublicDrafts web model =
             { model | remote = { remote | publicDrafts = web } }
 
 
+remoteRefreshedPublicDrafts : WebData () -> Model -> Model
+remoteRefreshedPublicDrafts web model =
+    case model.remote of
+        remote ->
+            { model | remote = { remote | refreshedPublicDrafts = web } }
+
+
 isDraftPublic : Draft -> Bool
 isDraftPublic draft =
     case draft.visibility of
@@ -381,6 +389,7 @@ initialRemote =
     , user = RemoteData.NotAsked
     , savedDraft = RemoteData.NotAsked
     , publicDrafts = RemoteData.NotAsked
+    , refreshedPublicDrafts = RemoteData.NotAsked
     }
 
 

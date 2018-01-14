@@ -8,6 +8,21 @@
 
     }
 
+    .dg-tabs {
+        background-color: $tabs-bg-color;
+        .refresh {
+            margin-right: 24px;
+            position: relative;
+            .preloader-wrapper {
+                width: 25px;
+                height: 25px;
+                top: 11px;
+                .circle {
+                    border-width: 2px;
+                }
+            }
+        }
+    }
 
 
     i {

@@ -132,6 +132,10 @@ update msg model =
         ClickDeleteDraft draft ->
             Api.deleteDraft draft model
 
+        ClickRefreshPublicDrafts ->
+            remoteRefreshedPublicDrafts Loading model
+                |> Api.fetchPublicDrafts
+
         OnFetchCreatedAccount account ->
             remoteAccount account model
                 |> resetForm
@@ -182,6 +186,7 @@ update msg model =
 
         OnFetchPublicDrafts web ->
             remotePublicDrafts web model
+                |> remoteRefreshedPublicDrafts (succeed ())
                 |> withNoCommand
 
 

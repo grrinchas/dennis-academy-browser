@@ -187,7 +187,7 @@ publicDraftsPage model =
             div [] []
 
         Success ( user, drafts ) ->
-            layout model.menu (NavBar.draftsHeader user model) <| Drafts.publicView True model.menu drafts
+            layout model.menu (NavBar.draftsHeader user model) <| Drafts.publicView True model.menu drafts model.remote.refreshedPublicDrafts
 
         Failure err ->
             Error.view <| Http err

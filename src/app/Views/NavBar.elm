@@ -1,6 +1,5 @@
 module Views.NavBar exposing (..)
 
-import Date
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
