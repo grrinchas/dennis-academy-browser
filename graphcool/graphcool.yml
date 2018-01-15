@@ -16,8 +16,12 @@ functions:
 permissions:
   - operation: User.read
     authenticated: true
-    fields: [username, email, picture, id]
+    fields: [username, email, picture, id, bio]
 
+  - operation: User.update
+    authenticated: true
+    fields: [bio]
+    query: ./src/permissions/User.graphql:isOwnerCreate
 
   - operation: Draft.create
     authenticated: true

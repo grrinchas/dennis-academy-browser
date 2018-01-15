@@ -73,6 +73,7 @@ userObject =
         |> Pipeline.required "username" Decoder.string
         |> Pipeline.required "email" Decoder.string
         |> Pipeline.required "picture" Decoder.string
+        |> Pipeline.required "bio" Decoder.string
         |> Pipeline.required "drafts"
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
 
@@ -112,6 +113,7 @@ draftOwner =
     Pipeline.decode DraftOwner
         |> Pipeline.required "username" Decoder.string
         |> Pipeline.required "picture" Decoder.string
+        |> Pipeline.required "bio" Decoder.string
 
 
 userProfile : Decoder.Decoder UserProfile
@@ -119,7 +121,9 @@ userProfile =
     Pipeline.decode UserProfile
         |> Pipeline.required "username" Decoder.string
         |> Pipeline.required "picture" Decoder.string
+        |> Pipeline.required "bio" Decoder.string
         |> Pipeline.required "drafts" (Decoder.list draftObject)
+
 
 
 
@@ -131,6 +135,7 @@ visibility visibility =
         Just PUBLIC
     else
         Nothing
+
 
 
 dataField : Decoder.Decoder a -> Decoder.Decoder a
@@ -175,3 +180,9 @@ decodeUserProfile =
         |> Decoder.field "User"
         |> dataField
 
+
+decodeUpdateProfile: Decoder.Decoder UserProfile
+decodeUpdateProfile =
+    userProfile
+        |> Decoder.field "updateUser"
+        |> dataField

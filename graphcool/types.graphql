@@ -9,6 +9,7 @@ type User @model {
     username: String! @isUnique
     email: String! @isUnique
     picture: String! @isUnique
+    bio: String! @defaultValue (value: "No bio provided...")
     drafts: [Draft!]! @relation(name: "UserOnDraft")
 }
 

@@ -136,6 +136,10 @@ update msg model =
             remoteRefreshedPublicDrafts Loading model
                 |> Api.fetchPublicDrafts
 
+        ClickUpdateProfile ->
+            remoteUserProfile Loading model
+                |> Api.fetchUpdateProfile
+
         OnFetchCreatedAccount account ->
             remoteAccount account model
                 |> resetForm
@@ -209,6 +213,8 @@ update msg model =
 
         OnFetchUserProfile web ->
             remoteUserProfile web model
+                |> (\m -> RemoteData.map (\p -> formUserBio p.bio m) web |> RemoteData.withDefault m)
                 |> withNoCommand
+
 
 

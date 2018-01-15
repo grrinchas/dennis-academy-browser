@@ -89,6 +89,15 @@ authGraphCool model =
         |> withError model
 
 
+fetchUpdateProfile : Model -> ( Model, Cmd Msg )
+fetchUpdateProfile model =
+    RemoteData.map (authorised (Encoders.updateProfile model.form) Decoders.decodeUpdateProfile) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map OnFetchUserProfile)
+        |> withError model
+
+
+
 fetchUser : Model -> ( Model, Cmd Msg )
 fetchUser model =
     RemoteData.map (authorised Encoders.userInfo Decoders.decodeUser) model.remote.graphCool

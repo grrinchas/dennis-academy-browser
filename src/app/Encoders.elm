@@ -3,7 +3,7 @@ module Encoders exposing (..)
 import GraphQl exposing (Mutation, Named, Operation, OperationType(OperationMutation, OperationQuery), Query, operationToBody)
 import Http
 import Json.Encode as Encoder
-import Models exposing (Auth0Token, AuthGraphCool, Draft, User, ValidUser, Visibility(PUBLIC))
+import Models exposing (Auth0Token, AuthGraphCool, Draft, Form, User, ValidUser, Visibility(PUBLIC))
 import Regex exposing (HowMany(All))
 import Validator
 
@@ -61,6 +61,7 @@ userInfo token =
                 , GraphQl.field "username"
                 , GraphQl.field "email"
                 , GraphQl.field "picture"
+                , GraphQl.field "bio"
                 , GraphQl.field "drafts"
                     |> GraphQl.withSelectors draftSelector
                 ]
@@ -127,38 +128,55 @@ deleteDraft draft token =
         |> mutation
 
 
+updateProfile: Form -> AuthGraphCool -> Http.Body
+updateProfile form token =
+    GraphQl.named "updateUser"
+        [ GraphQl.field "updateUser"
+            |> GraphQl.withArgument "id" (GraphQl.string token.id)
+            |> GraphQl.withArgument "bio" (GraphQl.string form.userBio)
+            |> GraphQl.withSelectors profileSelector
+        ]
+        |> mutation
+
+
 userProfile : String -> AuthGraphCool -> Http.Body
 userProfile username _ =
     GraphQl.named "userProfile"
         [ GraphQl.field "User"
             |> GraphQl.withArgument "username" (GraphQl.string username)
-            |> GraphQl.withSelectors
-                [ GraphQl.field "username"
-                , GraphQl.field "picture"
-                , GraphQl.field "drafts"
-                    |> GraphQl.withArgument "filter" (GraphQl.input [ ( "visibility", GraphQl.type_ <| toString PUBLIC ) ] )
-                    |> GraphQl.withArgument "orderBy" (GraphQl.type_  "updatedAt_DESC")
-                    |> GraphQl.withSelectors draftSelector
-                ]
+            |> GraphQl.withSelectors profileSelector
         ]
         |> query
 
 
+profileSelector: List (GraphQl.Value a)
+profileSelector =
+    [ GraphQl.field "username"
+    , GraphQl.field "picture"
+    , GraphQl.field "bio"
+    , GraphQl.field "drafts"
+        |> GraphQl.withArgument "filter" (GraphQl.input [ ( "visibility", GraphQl.type_ <| toString PUBLIC ) ] )
+        |> GraphQl.withArgument "orderBy" (GraphQl.type_  "updatedAt_DESC")
+        |> GraphQl.withSelectors draftSelector
+    ]
+
+
 draftSelector: List (GraphQl.Value a)
 draftSelector =
-        [ GraphQl.field "id"
-        , GraphQl.field "content"
-        , GraphQl.field "type"
-        , GraphQl.field "title"
-        , GraphQl.field "createdAt"
-        , GraphQl.field "updatedAt"
-        , GraphQl.field "visibility"
-        , GraphQl.field "owner"
-            |> GraphQl.withSelectors
-                [ GraphQl.field "username"
-                , GraphQl.field "picture"
-                ]
-        ]
+    [ GraphQl.field "id"
+    , GraphQl.field "content"
+    , GraphQl.field "type"
+    , GraphQl.field "title"
+    , GraphQl.field "createdAt"
+    , GraphQl.field "updatedAt"
+    , GraphQl.field "visibility"
+    , GraphQl.field "owner"
+        |> GraphQl.withSelectors
+            [ GraphQl.field "username"
+            , GraphQl.field "picture"
+            , GraphQl.field "bio"
+            ]
+    ]
 
 
 mutation : Operation Mutation a -> Http.Body

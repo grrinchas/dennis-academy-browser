@@ -27,6 +27,7 @@ type Visibility
 type alias DraftOwner =
     { username : String
     , picture : String
+    , bio : String
     }
 
 
@@ -51,7 +52,7 @@ initialDraft =
     , draftType = "TUTORIAL"
     , title = "Very descriptive draft title..."
     , visibility = PRIVATE
-    , owner = DraftOwner "" ""
+    , owner = DraftOwner "" "" ""
     }
 
 
@@ -60,12 +61,14 @@ type alias User =
     , username : String
     , email : String
     , picture : String
+    , bio: String
     , drafts : Dict String Draft
     }
 
 type alias UserProfile =
     { username: String
     , picture: String
+    , bio: String
     , drafts: List Draft
     }
 
@@ -138,6 +141,7 @@ type Msg
     | ClickCreateDraft Draft
     | ClickDeleteDraft Draft
     | ClickRefreshPublicDrafts
+    | ClickUpdateProfile
 
     | OnFetchCreatedAccount (WebData Account)
     | OnFetchAuth0Token (WebData Auth0Token)
@@ -195,6 +199,7 @@ type alias Form =
     , password : Maybe String
     , repeatPass : Maybe String
     , draftTitleNew : String
+    , userBio: String
     }
 
 
@@ -237,6 +242,11 @@ formDraftTitleNew string model =
         form ->
             { model | form = { form | draftTitleNew = string } }
 
+formUserBio : String -> Model -> Model
+formUserBio string model =
+    case model.form of
+        form ->
+            { model | form = { form | userBio = string } }
 
 initialForm : Form
 initialForm =
@@ -245,6 +255,7 @@ initialForm =
     , password = Just "admin1"
     , repeatPass = Just "admin1"
     , draftTitleNew = "Very descriptive draft title..."
+    , userBio = ""
     }
 
 
