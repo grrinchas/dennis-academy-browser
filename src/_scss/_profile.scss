@@ -13,6 +13,32 @@
         }
     }
 
+
+    .bio-other{
+        font-size: 25px !important;
+        color: $input-disabled-color;
+        font-weight: bold;
+        display: block;
+    }
+
+    .bio-full {
+        width: 100%;
+    }
+
+    .bio {
+        color: $input-disabled-color;
+
+        input,  input:focus, input:active{
+         //   border-bottom: 1px dashed $input-disabled-color !important;
+
+        }
+        a {
+            margin-left: 16px;
+            cursor: pointer;
+        }
+
+    }
+
     input, input:focus{
         border: none !important;
         outline: none !important;

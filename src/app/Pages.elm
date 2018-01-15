@@ -205,7 +205,7 @@ userProfilePage username model =
 
         Success ( user, profile ) ->
             NavBar.withButtons [NavBar.notifications,  NavBar.profile user model.menu] |> NavBar.wrapper NavBar.logo
-                |> (\h -> layout model.menu h <| UserProfile.view model.form model.menu user profile)
+                |> (\h -> layout model.menu h <| UserProfile.view model.form model.menu user profile model.remote.userProfile)
 
         Failure err ->
             Error.view <| Http err
