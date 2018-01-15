@@ -15,30 +15,36 @@ view form menu user profile profileWeb =
     div [class "container user-profile"]
         [ div [class "row section"] []
           , header [class "row"]
-                [ div [class "col s12 valign-wrapper"]
-                   [ img [class "circle", src profile.picture ] []
-                   , div [class "bio-full"]
-                       [ h1 [class ""] [text profile.username]
-                       , case user.username == profile.username of
+          [ case user.username == profile.username of
+                True ->
+                     div [class "col s12 valign-wrapper"]
+                        [ img [class "circle", src profile.picture ] []
+                        , div [class "bio-full"]
+                            [ div [class "row "] [ h1 [class "col s12"] [text profile.username]]
+                            , div [class "row valign-wrapper"]
+                                [ div [class "col s9"]
+                                    [ input [ onInput <| (\bio -> WhenFormChanges {form| userBio = bio})
+                                        , placeholder "Enter your bio.."
+                                        , type_ "text"
+                                        , value form.userBio
+                                        , maxlength 150
+                                        ] []
+                                    ]
+                                , div [class "col s3 save right-align"] [ save profileWeb form ]
 
-                           True -> div [class "valign-wrapper bio"]
-                                 [ input [ onInput <| (\bio -> WhenFormChanges {form| userBio = bio})
-                                     , placeholder "Enter your bio.."
-                                     , type_ "text"
-                                     , value form.userBio
-                                     ] []
-                                     , save profileWeb form
+                                ]
+                            ]
+                        ]
 
-                                 ]
-                           False -> span [class "bio-other"] [text profile.bio]
-                       ]
-                   ]
-                , div [class "col"]
-                    [
-                    ]
-
-                ]
-
+                False ->
+                     div [class "col s12 valign-wrapper"]
+                        [ img [class "circle", src profile.picture ] []
+                        , div [class "bio-full"]
+                            [ div [class "row "] [ h1 [class "col s12"] [text profile.username]]
+                            , div [class "row "] [ span [class "bio-other"] [text profile.bio]]
+                            ]
+                        ]
+          ]
           , div [class "row section"] []
           , div [class "row "]
             [ div [class "col s12"]

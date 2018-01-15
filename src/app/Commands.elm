@@ -4,7 +4,7 @@ import Api
 import Models exposing (..)
 import Navigation
 import Ports
-import RemoteData exposing (RemoteData(Success))
+import RemoteData exposing (RemoteData(Loading, Success))
 import Routes exposing (..)
 import Task
 import Time
@@ -63,7 +63,10 @@ reroute model =
                     ( { model | route = Err NotFound }, Cmd.none )
 
                 ( ProfileRoute id, True ) ->
-                    Api.fetchUserProfile id model
+                    remoteUserProfile Loading model
+                        |> Api.fetchUserProfile id
+
+
 
 
                 _ ->
