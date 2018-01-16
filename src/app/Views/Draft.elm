@@ -11,10 +11,17 @@ import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), Web
 import Time exposing (Time)
 
 
-view : Model -> Draft -> Html Msg
+view : Model -> Maybe Draft -> Html Msg
 view model draft =
     div [ class "dg-editor " ]
-        [ div [ class "row draft-title" ]
+        <| case (model.remote.user, draft)of
+             (Success user, Just draft) -> display model draft
+             _ -> [loader]
+
+
+display : Model -> Draft -> List (Html Msg)
+display model draft =
+        [div [ class "row draft-title" ]
             [ input
                 [ class "col"
                 , placeholder "Enter new title..."
@@ -41,7 +48,6 @@ view model draft =
                 [ Markdown.toHtml [] draft.content ]
             ]
         ]
-
 
 save : WebData Draft -> Draft -> Html Msg
 save webDraft draft =

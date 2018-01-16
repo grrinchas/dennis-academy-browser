@@ -3,6 +3,14 @@
     @extend .dg-full-height;
     background-color: $card-bg-color;
 
+    position: relative;
+
+    .dg-loading-wrapper {
+        background-color: transparent;
+        height: 80vh;
+    }
+
+
     .draft-title {
 
         margin: 0;

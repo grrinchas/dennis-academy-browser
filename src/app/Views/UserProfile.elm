@@ -10,11 +10,21 @@ import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), Web
 import Routes exposing (Route(DraftRoute, ProfileRoute), path)
 
 
-view : Form -> Menu -> User -> UserProfile -> WebData UserProfile -> Html Msg
-view form menu user profile profileWeb =
+view: Model -> Html Msg
+view model =
     div [class "container user-profile"]
         [ div [class "row section"] []
-          , header [class "row"]
+        , case RemoteData.append model.remote.userProfile model.remote.user of
+                 Success (profile, user) -> display model user profile
+                 _-> div [] [loader]
+        ]
+
+
+
+display : Model -> User -> UserProfile -> Html Msg
+display model user profile=
+    let form = model.form in
+      header [class "row"]
           [ case user.username == profile.username of
                 True ->
                      div [class "col s12 valign-wrapper"]
@@ -30,7 +40,7 @@ view form menu user profile profileWeb =
                                         , maxlength 150
                                         ] []
                                     ]
-                                , div [class "col s3 save right-align"] [ save profileWeb form ]
+                                , div [class "col s3 save right-align"] [ save model.remote.userProfile form ]
 
                                 ]
                             ]
@@ -44,21 +54,20 @@ view form menu user profile profileWeb =
                             , div [class "row "] [ span [class "bio-other"] [text profile.bio]]
                             ]
                         ]
-          ]
           , div [class "row section"] []
           , div [class "row "]
             [ div [class "col s12"]
                 [ ul [ class "tabs" ]
-                   [ li [ class "tab" ] [ a [ ] [ text "Drafts" ] ] ]
+                   [ li [ class "tab" ] [ a [ ] [ text <| "Drafts (" ++ (toString <| List.length profile.drafts) ++ ")"] ] ]
                 ]
             ]
           , div [class "row "]
                 (List.sortBy (\date -> Date.toTime <| .createdAt date) profile.drafts
                                 |> List.reverse
-                                |> List.map (draftCard menu user)
+                                |> List.map (draftCard model.menu user)
                             )
 
-        ]
+          ]
 
 
 save : WebData UserProfile -> Form -> Html Msg

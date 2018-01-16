@@ -8,15 +8,17 @@
     height: 64px;
 }
 
-
 .dg-nav-bar {
     @extend .dg-nav-height;
     margin-bottom: 0;
 
     .dg-start {
-        img {
-            width: 120px;
-            display: block;
+        div {
+            width: 120px !important;
+            img {
+                display: block;
+                width: 120px;
+            }
         }
     }
 
@@ -24,22 +26,36 @@
         padding-right: 0;
     }
 
-
     .drop {
         height: 30px !important;
         line-height: 30px !important;
     }
-
-
 
     .dg-end {
         .dg-notifications {
             padding-left: 0;
         }
 
-
         .profile-menu-btn {
-            margin-right: 10px;
+            margin-right: 11px;
+            .dg-loading-wrapper {
+                display: block;
+                width: 30px;
+                height: 30px;
+                margin-left: 10px;
+                margin-right: -10px;
+                top: 3px;
+                position: relative;
+                background-color: transparent;
+            }
+
+            .preloader-wrapper {
+                width: 28px;
+                height: 28px;
+                .circle {
+                    border-width: 2px;
+                }
+            }
             img {
                 display: block;
                 height: 30px;
@@ -47,33 +63,32 @@
                 margin-left: 0;
             }
         }
-            .dg-user-menu {
+        .dg-user-menu {
 
-                img {
-                    margin-left: 16px;
-                }
+            img {
+                margin-left: 16px;
+            }
 
-                top: 60px;
-                right: 10px;
-                display: block;
-                opacity: 1;
-                min-width: 200px;
-                a {
-                    color: $primary-color !important;
-                }
-                .dg-profile {
-                    color: $link-color !important;
+            top: 60px;
+            right: 10px;
+            display: block;
+            opacity: 1;
+            min-width: 200px;
+            a {
+                color: $primary-color !important;
+            }
+            .dg-profile {
+                color: $link-color !important;
 
-                }
-                .dg-profile:hover {
-                    background-color: initial;
-                }
+            }
+            .dg-profile:hover {
+                background-color: initial;
+            }
 
         }
 
     }
 }
-
 
 .profile-menu-btn,
 .dg-logo {
@@ -84,19 +99,18 @@
 .dg-delete-draft,
 .dg-new-draft,
 .dg-publish {
-        background-color: $dropdown-bg-color;
-        margin: 0;
-        display: none;
-        max-height: 650px;
-        overflow-y: auto;
-        opacity: 0;
-        position: absolute;
-        z-index: 999;
-        color: $primary-color;
-        max-width: 350px;
-        min-width: 200px;
+    background-color: $dropdown-bg-color;
+    margin: 0;
+    display: none;
+    max-height: 650px;
+    overflow-y: auto;
+    opacity: 0;
+    position: absolute;
+    z-index: 999;
+    color: $primary-color;
+    max-width: 350px;
+    min-width: 200px;
 }
-
 
 .dg-new-draft-show {
     line-height: initial;
@@ -109,14 +123,12 @@
         padding: 0;
     }
 
-
-    input, input:focus, textarea:active{
+    input, input:focus, textarea:active {
         border: none !important;
         outline: none !important;
         box-shadow: none !important;
         margin: 0;
     }
-
 
     .card-content {
         padding-top: 16px;
@@ -126,8 +138,6 @@
         }
     }
 
-
-
     .card-action:hover {
         a {
             width: 55px;
@@ -135,7 +145,6 @@
         }
     }
 }
-
 
 .dg-publish-menu {
     line-height: initial;

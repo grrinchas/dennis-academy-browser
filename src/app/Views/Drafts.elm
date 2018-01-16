@@ -12,8 +12,8 @@ import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), Web
 import Routes exposing (Route(DraftRoute, DraftsRoute, HomeRoute, ProfileRoute, PublicDraftsRoute), path)
 
 
-view : Bool -> Menu -> User -> List Draft -> Html Msg
-view bool menu user drafts =
+view : Bool -> Model -> Html Msg
+view bool model =
     div [ class "dg-draft " ]
         [ ul [ class "tabs" ]
             [ li [ class "tab" ] [ a [ href <| path DraftsRoute, classList [ ( "active", not bool ) ] ] [ text "Mine" ] ]
@@ -21,16 +21,20 @@ view bool menu user drafts =
             ]
         , div [ class "divider" ] []
         , div [ class "row cards section" ]
-            (List.sortBy (\date -> Date.toTime <| .createdAt date) drafts
-                |> List.reverse
-                |> List.map (draftCard menu user)
-            )
+            <| case model.remote.user of
+                Success user ->
+                    (List.sortBy (\date -> Date.toTime <| .createdAt date) (Dict.values user.drafts)
+                         |> List.reverse
+                         |> List.map (draftCard model.menu user )
+                    )
+
+                _ -> [loader]
         ]
 
 
 
-publicView : Bool -> Menu -> User -> List Draft -> WebData ()-> Html Msg
-publicView bool menu user drafts webRefresh =
+publicView : Bool -> Model -> Html Msg
+publicView bool model =
     div [ class "dg-draft" ]
         [ div [class "dg-tabs valign-wrapper"]
             [ ul [ class "tabs" ]
@@ -38,17 +42,21 @@ publicView bool menu user drafts webRefresh =
                 , li [ class "tab" ] [ a [ href <| path PublicDraftsRoute, classList [ ( "active", bool ) ] ] [ text "Community" ] ]
                 ]
             , div [class "refresh"]
-                [ refresh webRefresh
+                [ refresh model.remote.refreshedPublicDrafts
                 ]
             ]
 
         , div [ class "divider" ] []
         , div [ class "row cards section" ]
-            (drafts
-                |> List.sortBy (\draft -> Date.toTime <| .createdAt draft)
-                |> List.reverse
-                |> List.map (draftCard menu user)
-            )
+            <| case RemoteData.append model.remote.publicDrafts model.remote.user of
+                 Success (drafts, user) ->
+                  (drafts
+                        |> List.sortBy (\draft -> Date.toTime <| .createdAt draft)
+                        |> List.reverse
+                        |> List.map (draftCard model.menu user)
+                    )
+
+                 _ -> [loader]
         ]
 
 refresh : WebData () -> Html Msg

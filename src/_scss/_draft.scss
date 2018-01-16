@@ -25,8 +25,14 @@
     }
 
     .cards {
+        position: relative;
         max-width: 1200px;
+        height: 80vh;
         margin: 0 auto;
+        .dg-loading-wrapper {
+            background-color: transparent;
+        }
+
     }
 
     h1 {

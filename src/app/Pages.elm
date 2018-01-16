@@ -95,25 +95,9 @@ loginPage model =
 draftPage : String -> Model -> Html Msg
 draftPage id model =
     case model.remote.user of
-        NotAsked ->
-            div [] []
-
-        Loading ->
-            div [] []
-
         Success user ->
             case Dict.get id user.drafts of
-                Just draft ->
-                    let
-                        header =
-                            NavBar.withButtons
-                                [ NavBar.publish model.menu
-                                , NavBar.notifications
-                                , NavBar.profile user model.menu
-                                ]
-                                |> NavBar.wrapper NavBar.logo
-                    in
-                        layout model.menu header <| Draft.view model draft
+                Just draft -> layout model.menu (NavBar.draft model) <| Draft.view model (Just draft)
 
                 Nothing ->
                     Error.view <| Routing NotFound
@@ -121,94 +105,58 @@ draftPage id model =
         Failure err ->
             Error.view <| Http err
 
+        _ -> layout model.menu (NavBar.draft model) <| Draft.view model Nothing
 
-dashboard : Model -> Html Msg
-dashboard model =
+
+dashboardPage : Model -> Html Msg
+dashboardPage model =
     case model.remote.user of
-        NotAsked ->
-            div [] []
-
-        Loading ->
-            div [] []
-
-        Success user ->
-            NavBar.withButtons
-                [ NavBar.notifications, NavBar.profile user model.menu ]
-                |> NavBar.wrapper NavBar.logo
-
         Failure err ->
             Error.view <| Http err
 
+        _ -> NavBar.dashboard model
 
-landing : Model -> Html Msg
-landing model =
+
+landingPage : Model -> Html Msg
+landingPage model =
     case model.remote.user of
-        NotAsked ->
-            NavBar.withButtons
-                [ NavBar.login, NavBar.or, NavBar.signUp ]
-                |> NavBar.wrapper NavBar.logo
-
-        Loading ->
-            NavBar.withButtons
-                [ NavBar.login, NavBar.or, NavBar.signUp ]
-                |> NavBar.wrapper NavBar.logo
-
-        Success user ->
-            NavBar.withButtons
-                [ NavBar.dashboard ]
-                |> NavBar.wrapper NavBar.logo
-
         Failure err ->
             Error.view <| Http err
+
+        _ -> NavBar.landing model
 
 
 draftsPage : Model -> Html Msg
 draftsPage model =
     case model.remote.user of
-        NotAsked ->
-            div [] []
-
-        Loading ->
-            div [] []
-
-        Success user ->
-            layout model.menu (NavBar.draftsHeader user model) <| Drafts.view False model.menu user (Dict.values user.drafts)
-
         Failure err ->
             Error.view <| Http err
+
+        _ ->
+            layout model.menu (NavBar.drafts model) <| Drafts.view False model
+
 
 
 publicDraftsPage : Model -> Html Msg
 publicDraftsPage model =
     case RemoteData.append model.remote.user model.remote.publicDrafts of
-        NotAsked ->
-            div [] []
-
-        Loading ->
-            div [] []
-
-        Success ( user, drafts ) ->
-            layout model.menu (NavBar.draftsHeader user model) <| Drafts.publicView True model.menu user drafts model.remote.refreshedPublicDrafts
-
         Failure err ->
             Error.view <| Http err
+
+        _ ->
+            layout model.menu (NavBar.dashboard model) <| Drafts.publicView True model
+
 
 
 userProfilePage : String -> Model -> Html Msg
 userProfilePage username model =
     case RemoteData.append model.remote.user model.remote.userProfile of
-        NotAsked ->
-            div [] []
-
-        Loading ->
-            div [] []
-
-        Success ( user, profile ) ->
-            NavBar.withButtons [NavBar.notifications,  NavBar.profile user model.menu] |> NavBar.wrapper NavBar.logo
-                |> (\h -> layout model.menu h <| UserProfile.view model.form model.menu user profile model.remote.userProfile)
-
         Failure err ->
             Error.view <| Http err
+
+        _ ->
+            layout model.menu (NavBar.dashboard model) <| UserProfile.view model
+
 
 
 view : Model -> Html Msg
@@ -217,7 +165,7 @@ view model =
         Ok route ->
             case route of
                 HomeRoute ->
-                    landing model
+                    landingPage model
 
                 SignUpRoute ->
                     signUpPage model
@@ -229,7 +177,7 @@ view model =
                     draftPage id model
 
                 DashboardRoute ->
-                    dashboard model
+                    dashboardPage model
 
                 DraftsRoute ->
                     draftsPage model

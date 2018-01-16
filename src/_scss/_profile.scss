@@ -1,6 +1,14 @@
 
 
 .user-profile {
+    position: relative;
+    height: 80vh;
+
+        .dg-loading-wrapper {
+            background-color: transparent;
+        }
+
+
 
     .tabs {
         background-color: $body-bg-color;

@@ -1,10 +1,12 @@
 module Views.NavBar exposing (..)
 
+import Components exposing (loader)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
 import Json.Decode
 import Models exposing (..)
+import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import Routes exposing (..)
 
 
@@ -23,7 +25,7 @@ wrapper start end =
 
 withButtons : List (Html Msg) -> Html Msg
 withButtons list =
-    ul [ class " buttons-wrapper right valign-wrapper" ]
+    ul [ class "right valign-wrapper" ]
         (List.map
             (\btn -> li [] [ btn ])
             list
@@ -31,14 +33,11 @@ withButtons list =
 
 
 logo : Html Msg
-logo =
-    a [ href <| path HomeRoute ]
-        [ img [ src logoImg ] []
-        ]
+logo = div [] [ a [ href <| path HomeRoute ] [ img [ src logoImg ] [] ] ]
 
 
-dashboard : Html msg
-dashboard =
+dashboardBtn : Html msg
+dashboardBtn =
     a [ class "btn", href <| path DashboardRoute ]
         [ text "Dashboard" ]
 
@@ -70,6 +69,7 @@ profile user menu =
         , i [ class "material-icons drop" ] [ text "arrow_drop_down" ]
         , userMenu user menu
         ]
+
 
 
 newDraft : Form -> Menu -> Html Msg
@@ -173,11 +173,57 @@ newDraftMenu form menu =
         ]
 
 
-draftsHeader : User -> Model -> Html Msg
-draftsHeader user model =
-    withButtons
-        [ newDraft model.form model.menu
-        , notifications
-        , profile user model.menu
-        ]
-        |> wrapper logo
+draft : Model -> Html Msg
+draft model =
+    case model.remote.user of
+        Success user ->
+            withButtons [publish model.menu, notifications, newProfile (Just user) model.menu] |> wrapper logo
+
+        _ -> withButtons [publish model.menu, notifications, newProfile Nothing model.menu] |> wrapper logo
+
+
+
+drafts : Model -> Html Msg
+drafts model =
+    case model.remote.user of
+        Success user ->
+            withButtons [newDraft model.form model.menu, notifications, newProfile (Just user) model.menu] |> wrapper logo
+
+        _ -> withButtons [notifications, newProfile Nothing model.menu] |> wrapper logo
+
+
+landing: Model -> Html Msg
+landing model =
+    case model.remote.user of
+        Success _ ->
+            withButtons [ dashboardBtn ] |> wrapper logo
+
+        _ ->
+            withButtons [ login, or, signUp ] |> wrapper logo
+
+
+
+dashboard : Model -> Html Msg
+dashboard model =
+    case model.remote.user of
+        Success user ->
+            withButtons [ notifications, newProfile (Just user) model.menu] |> wrapper logo
+
+        _ -> withButtons [ notifications, newProfile Nothing model.menu] |> wrapper logo
+
+
+
+newProfile : Maybe User -> Menu -> Html Msg
+newProfile user menu =
+    div [ class "valign-wrapper profile-menu-btn", userMenuEvent ]
+       <|  case user of
+            Just u ->
+                [ img [ src u.picture, class "circle" ] []
+                , i [ class "material-icons drop" ] [ text "arrow_drop_down" ]
+                , userMenu u menu
+                ]
+            Nothing ->
+                [loader
+                , i [ class "material-icons drop" ] [ text "arrow_drop_down" ]
+                ]
+
