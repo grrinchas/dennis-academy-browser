@@ -44,7 +44,7 @@ publicView bool model =
 
             , ul [ class "tabs right flex-flex-end" ]
                 [ li [class "left-padding tab"] [ display model.menu ]
-                , li [class "left-padding tab"] [ filter model.menu ]
+                , li [class "left-padding tab"] [ filterPublic model.menu ]
                 , li [class "left-padding tab"] [ refresh model.remote.refreshedPublicDrafts ]
                 ]
             ]
@@ -52,11 +52,18 @@ publicView bool model =
         , div [ class "row container section" ] <|
             case RemoteData.append model.remote.publicDrafts model.remote.user of
                 Success ( drafts, user ) ->
-                    (drafts
-                        |> List.sortBy (\draft -> Date.toTime <| .createdAt draft)
-                        |> List.reverse
-                        |> List.map (draftCard model.menu user)
-                    )
+                    case (model.menu.filterDraft.publicDraftsPage.mine, model.menu.filterDraft.publicDraftsPage.others) of
+                        (True,True) ->
+                            List.map (draftCard model.menu user) drafts
+
+                        (True, False) ->
+                            List.filter (\d-> d.owner.username == user.username) drafts
+                                |> List.map (draftCard model.menu user)
+                        (False, True) ->
+                            List.filter (\d-> d.owner.username /= user.username) drafts
+                                |> List.map (draftCard model.menu user)
+
+                        (False, False)-> List.map (draftCard model.menu user) []
 
                 _ ->
                     [div [class "loader-wrapper"] [ newLoader [] ]]
@@ -77,12 +84,11 @@ refresh web =
 
 
 
-filterMenuEvent : Attribute Msg
-filterMenuEvent =
+filterMenuEvent : DisplayMenu -> Attribute Msg
+filterMenuEvent menu =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            WhenMenuChanges menuFilterDraft
-
+            WhenMenuChanges (menuFilterDraft menu)
 
 displayMenuEvent : Attribute Msg
 displayMenuEvent =
@@ -91,27 +97,59 @@ displayMenuEvent =
             WhenMenuChanges menuDisplayDraft
 
 
-filterMenu : Menu -> Html Msg
-filterMenu menu =
-    ul [ filterMenuEvent, class "dropdown-content top-55-right-0", classList [ ( "active", menu.filterDraft ) ] ]
-        [ li [] [ a [ class "block" ] [ i [ class "material-icons" ] [ text "done" ], text "Show all" ] ]
-        , li [ class "divider" ] []
-        , li [] [ a [ class "block" ] [ i [ class "material-icons" ] [ text "done" ], text "Mine" ] ]
-        , li [] [ a [ class "block" ] [ i [ class "material-icons" ] [ text "done" ], text "Others" ] ]
+filterPublicMineMenuEvent : Bool -> DisplayMenu -> Attribute Msg
+filterPublicMineMenuEvent bool menu =
+    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
+        Json.Decode.succeed <|
+            WhenMenuChanges (menuFilterPublicDraftMine bool menu)
+
+filterPublicOthersMenuEvent : Bool -> DisplayMenu -> Attribute Msg
+filterPublicOthersMenuEvent bool menu =
+    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
+        Json.Decode.succeed <|
+            WhenMenuChanges (menuFilterPublicDraftOthers bool menu)
+
+
+
+
+filterPublicMenu : DisplayMenu -> Html Msg
+filterPublicMenu menu =
+    ul [  class "dropdown-content top-55-right-0", classList [ ( "active", menu.filterDraft.display ) ] ]
+        [
+        case menu.filterDraft.publicDraftsPage.mine of
+            True ->
+                li [] [ a [ class "block", filterPublicMineMenuEvent False menu]
+                 [ i [ class "material-icons", classList [("visible", True)] ] [ text "done" ], text "Mine" ] ]
+            False ->
+                li [] [ a [ class "block", filterPublicMineMenuEvent True menu]
+                 [ i [ class "material-icons",  classList [("not-visible", True)] ] [ text "done" ], text "Mine" ] ]
+        ,
+        case menu.filterDraft.publicDraftsPage.others of
+            True ->
+                li [] [ a [ class "block", filterPublicOthersMenuEvent False menu]
+                 [ i [ class "material-icons", classList [("visible", True)] ] [ text "done" ], text "Others" ] ]
+            False ->
+                li [] [ a [ class "block", filterPublicOthersMenuEvent True menu]
+                 [ i [ class "material-icons",  classList [("not-visible", True)] ] [ text "done" ], text "Others" ] ]
+
         ]
 
 
 
-filter : Menu -> Html Msg
-filter menu =
+filterPublic : DisplayMenu -> Html Msg
+filterPublic menu =
     div [ class "valign-wrapper dropdown-wrapper" ]
-        [ span [ class "clickable", filterMenuEvent ] [ text "FILTER" ]
-        , i [ class "material-icons clickable", filterMenuEvent ] [ text "arrow_drop_down" ]
-        , filterMenu menu
+        [ span [ class "clickable", filterMenuEvent menu] [ text "FILTER" ]
+        , i [ class "material-icons clickable", filterMenuEvent menu] [ text "arrow_drop_down" ]
+        , filterPublicMenu menu
         ]
 
 
-display : Menu -> Html Msg
+
+
+
+
+display : DisplayMenu -> Html Msg
 display menu =
     div [ class "valign-wrapper dropdown-wrapper" ]
         [ span [ class "clickable", displayMenuEvent ] [ text "DISPLAY" ]
@@ -119,7 +157,7 @@ display menu =
         , displayMenu menu
         ]
 
-displayMenu : Menu -> Html Msg
+displayMenu : DisplayMenu -> Html Msg
 displayMenu menu =
     ul [ displayMenuEvent, class "dropdown-content top-55-right-0", classList [ ( "active", menu.displayDraft ) ] ]
         [ li [] [ a [ class "block" ] [ i [ class "material-icons" ] [ text "done" ], text "Show all" ] ]

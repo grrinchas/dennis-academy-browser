@@ -101,7 +101,7 @@ type alias Remote =
 type alias Model =
     { route : Result RouteError Route
     , form : Form
-    , menu : Menu
+    , menu : DisplayMenu
     , remote : Remote
     , now : Time
     }
@@ -124,7 +124,7 @@ type Msg
     | WhenTokensLoaded (Maybe Tokens)
     | WhenLocationChanges Location
     | WhenFormChanges Form
-    | WhenMenuChanges Menu
+    | WhenMenuChanges DisplayMenu
     | WhenTimeChanges Time
     | WhenDraftChanges Draft
     | ClickMouse Mouse.Position
@@ -260,81 +260,130 @@ resetForm model =
     form initialForm model
 
 
-type alias Menu =
+
+type alias DisplayMenu =
     { user : Bool
     , publish : Bool
     , newDraft : Bool
     , deleteDraft : { id : String, display : Bool }
     , publicDraft : { id : String, display : Bool }
-    , filterDraft : Bool
     , displayDraft : Bool
+    , filterDraft :
+        { display: Bool
+         ,publicDraftsPage:
+            { mine: Bool
+            , others: Bool
+            }
+        }
     }
 
 
-initialMenu : Menu
+initialMenu : DisplayMenu
 initialMenu =
     { user = False
     , publish = False
     , newDraft = False
     , deleteDraft = { id = "", display = False }
     , publicDraft = { id = "", display = False }
-    , filterDraft = False
     , displayDraft = False
+    , filterDraft =
+        { display = False
+        , publicDraftsPage =
+            { mine = True
+            , others = True
+            }
+        }
     }
 
 
-isMenuVisible : Menu -> Bool
+isMenuVisible : DisplayMenu -> Bool
 isMenuVisible menu =
     menu.user
         || menu.publish
         || menu.newDraft
         || menu.deleteDraft.display
         || menu.publicDraft.display
-        || menu.filterDraft
         || menu.displayDraft
+        || menu.filterDraft.display
 
 
-menu : Menu -> Model -> Model
+menu : DisplayMenu -> Model -> Model
 menu menu model =
     { model | menu = menu }
 
 
+reset: DisplayMenu -> DisplayMenu
+reset menu =
+        { user = False
+        , publish = False
+        , newDraft = False
+        , deleteDraft = { id = "", display = False }
+        , publicDraft = { id = "", display = False }
+        , displayDraft = False
+        , filterDraft =
+            { display = False
+            , publicDraftsPage =
+                { mine = menu.filterDraft.publicDraftsPage.mine
+                , others = menu.filterDraft.publicDraftsPage.others
+                }
+            }
+        }
+
+
+
 resetMenu : Model -> Model
-resetMenu model =
-    menu initialMenu model
+resetMenu model = {model | menu = reset model.menu}
 
 
-menuUser : Menu
-menuUser =
-    { initialMenu | user = True }
+menuUser : DisplayMenu -> DisplayMenu
+menuUser menu =
+    case reset menu of
+        newMenu -> { newMenu | user = True }
 
 
-menuPublish : Menu
-menuPublish =
-    { initialMenu | publish = True }
+menuPublish : DisplayMenu -> DisplayMenu
+menuPublish menu =
+    case reset menu of
+        newMenu -> { newMenu | publish = True }
 
 
-menuNewDraft : Menu
-menuNewDraft =
-    { initialMenu | newDraft = True }
+menuNewDraft : DisplayMenu -> DisplayMenu
+menuNewDraft menu =
+    case reset menu of
+        newMenu -> { newMenu | newDraft = True }
 
 
-menuDeleteDraft : String -> Menu
-menuDeleteDraft id =
-    { initialMenu | deleteDraft = { display = True, id = id } }
+menuDeleteDraft : String -> DisplayMenu -> DisplayMenu
+menuDeleteDraft id menu =
+    case reset menu of
+        newMenu -> { newMenu | deleteDraft = { display = True, id = id }}
 
 
-menuPublicDraft : String -> Menu
-menuPublicDraft id =
-    { initialMenu | publicDraft = { display = True, id = id } }
+menuPublicDraft : String -> DisplayMenu -> DisplayMenu
+menuPublicDraft id menu =
+    case reset menu of
+        newMenu -> { newMenu | publicDraft = { display = True, id = id }}
 
 
-menuFilterDraft : Menu
-menuFilterDraft =
-    { initialMenu | filterDraft = True }
+menuFilterDraft : DisplayMenu -> DisplayMenu
+menuFilterDraft menu =
+    case (reset menu, menu.filterDraft) of
+        (newMenu, filter) -> { newMenu | filterDraft = {filter | display = True}}
 
 
-menuDisplayDraft : Menu
+menuFilterPublicDraftMine : Bool -> DisplayMenu -> DisplayMenu
+menuFilterPublicDraftMine bool menu =
+    case ( menu.filterDraft, menu.filterDraft.publicDraftsPage) of
+        (filter, page) -> { menu | filterDraft = {filter | publicDraftsPage = {page | mine = bool}}}
+
+
+menuFilterPublicDraftOthers : Bool -> DisplayMenu -> DisplayMenu
+menuFilterPublicDraftOthers bool menu =
+    case ( menu.filterDraft, menu.filterDraft.publicDraftsPage) of
+        ( filter, page) -> { menu | filterDraft = {filter | publicDraftsPage = {page | others = bool}}}
+
+
+menuDisplayDraft : DisplayMenu
 menuDisplayDraft =
     { initialMenu | displayDraft = True }
 

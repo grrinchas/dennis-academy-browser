@@ -7,6 +7,14 @@ body {
 }
 
 
+.visible {
+    visibility: visible;
+}
+
+.not-visible {
+    visibility: hidden;
+}
+
 .clickable {
     cursor: pointer;
 }

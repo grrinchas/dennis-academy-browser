@@ -63,38 +63,39 @@ notifications =
     div [] [a [ class "bg-transparent"] [ i [ class "material-icons" ] [ text "notifications" ] ]]
 
 
-publish : Menu -> Html Msg
+publish : DisplayMenu -> Html Msg
 publish menu =
     div [class "dropdown-wrapper"]
-        [ a [ class "btn z-depth-0  reset-margin-right", publishMenuEvent ] [ text "publish" ]
+        [ a [ class "btn z-depth-0  reset-margin-right", publishMenuEvent menu] [ text "publish" ]
         , publishMenu menu
         ]
 
 
-publishMenuEvent : Attribute Msg
-publishMenuEvent =
+publishMenuEvent : DisplayMenu -> Attribute Msg
+publishMenuEvent menu =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            WhenMenuChanges menuPublish
+            WhenMenuChanges (menuPublish menu)
 
 
-userMenuEvent : Attribute Msg
-userMenuEvent =
+userMenuEvent : DisplayMenu -> Attribute Msg
+userMenuEvent menu =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            WhenMenuChanges menuUser
+            WhenMenuChanges (menuUser menu)
 
 
-newDraftMenuEvent : Attribute Msg
-newDraftMenuEvent =
+
+newDraftMenuEvent : DisplayMenu -> Attribute Msg
+newDraftMenuEvent menu =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            WhenMenuChanges menuNewDraft
+            WhenMenuChanges (menuNewDraft menu)
 
 
-userMenu : User -> Menu -> Html Msg
+userMenu : User -> DisplayMenu -> Html Msg
 userMenu user menu =
-    ul [ userMenuEvent, class "dropdown-content top-70-right-0", classList [ ( "active ", menu.user) ] ]
+    ul [ userMenuEvent menu, class "dropdown-content top-70-right-0", classList [ ( "active ", menu.user) ] ]
         [ li [] [ a [ href <| path DraftsRoute ] [ i [ class "material-icons" ] [ text "apps" ], text "Drafts" ] ]
         , li [ class "divider" ] []
         , li [] [ a [ href <| path <| ProfileRoute user.username, class "valign-wrapper fg-link-color" ]
@@ -108,9 +109,9 @@ userMenu user menu =
         ]
 
 
-publishMenu : Menu -> Html Msg
+publishMenu : DisplayMenu -> Html Msg
 publishMenu menu =
-    div [ publishMenuEvent, class "card  dropdown-content top-70-right-15", classList [ ( "active", menu.publish ) ] ]
+    div [ publishMenuEvent menu, class "card  dropdown-content top-70-right-15", classList [ ( "active", menu.publish ) ] ]
         [ div [ class "card-content" ]
 
             [ span [ class "card-title" ] [ text "Ready to publish?" ]
@@ -145,17 +146,18 @@ publishMenu menu =
         ]
 
 
-newDraft : Form -> Menu -> Html Msg
+newDraft : Form -> DisplayMenu -> Html Msg
 newDraft form menu =
     div [ class "dropdown-wrapper" ]
-        [ a [ class "btn z-depth-0 reset-margin-right", newDraftMenuEvent ] [ text "New " ]
+        [ a [ class "btn z-depth-0 reset-margin-right", newDraftMenuEvent menu] [ text "New " ]
         , newDraftMenu form menu
         ]
 
 
-newDraftMenu : Form -> Menu -> Html Msg
+
+newDraftMenu : Form -> DisplayMenu -> Html Msg
 newDraftMenu form menu =
-    div [ newDraftMenuEvent, class "card dropdown-content top-70-right-0 width-350", classList [ ( "active", menu.newDraft) ] ]
+    div [ newDraftMenuEvent menu, class "card dropdown-content top-70-right-0 width-350", classList [ ( "active", menu.newDraft) ] ]
         [ div [ class "card-content reset-bottom" ]
             [ p [] [ text "What is your draft about?" ]
             , input [ class "no-style", placeholder form.draftTitleNew, maxlength 100, onInput (\title -> WhenFormChanges { form | draftTitleNew = title }) ] []
@@ -209,9 +211,9 @@ dashboard model =
 
 
 
-profile : Maybe User -> Menu -> Html Msg
+profile : Maybe User -> DisplayMenu -> Html Msg
 profile user menu =
-    div [ class "valign-wrapper dropdown-wrapper clickable", userMenuEvent ] <|
+    div [ class "valign-wrapper dropdown-wrapper clickable", userMenuEvent menu] <|
         case user of
             Just u ->
                 [ img [class "medium", src u.picture, class "circle" ] []

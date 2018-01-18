@@ -89,6 +89,7 @@ update msg model =
                 |> withNoCommand
 
         WhenMenuChanges m ->
+            let _ = Debug.log "" m.filterDraft.publicDraftsPage.mine in
             menu m model
                 |> withNoCommand
 

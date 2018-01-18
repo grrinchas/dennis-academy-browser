@@ -20,7 +20,7 @@ empty =
     div [] []
 
 
-layout : Menu -> Html msg -> Html msg -> Html msg
+layout : DisplayMenu -> Html msg -> Html msg -> Html msg
 layout menu head main =
     div [ class "layout" ]
         [ header [] [ head ]
@@ -64,23 +64,23 @@ newLoader attr = div (attr ++[ class "preloader-wrapper active" ]) <| List.map l
 
 
 
-deleteDraftMenuEvent : String -> Attribute Msg
-deleteDraftMenuEvent id =
+deleteDraftMenuEvent : String -> DisplayMenu -> Attribute Msg
+deleteDraftMenuEvent id menu =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
             WhenMenuChanges <|
-                menuDeleteDraft id
+                menuDeleteDraft id menu
 
 
-publicDraftMenuEvent : String -> Attribute Msg
-publicDraftMenuEvent id =
+publicDraftMenuEvent : String -> DisplayMenu -> Attribute Msg
+publicDraftMenuEvent id menu =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
             WhenMenuChanges <|
-                menuPublicDraft id
+                menuPublicDraft id menu
 
 
-getVisibilityIcon : User -> Menu -> Draft -> Html Msg
+getVisibilityIcon : User -> DisplayMenu -> Draft -> Html Msg
 getVisibilityIcon user menu draft =
     case draft.visibility of
         PRIVATE ->
@@ -106,7 +106,7 @@ formatDate date =
         |> (++) (toString <| Date.month date)
 
 
-draftCard : Menu -> User -> Draft -> Html Msg
+draftCard : DisplayMenu -> User -> Draft -> Html Msg
 draftCard menu user draft =
     div [ class "col s12 m6 xl4" ]
         [ div [ class "card very-small" ]
@@ -158,10 +158,10 @@ draftCard menu user draft =
         ]
 
 
-deleteDraft : Menu -> Draft -> Html Msg
+deleteDraft : DisplayMenu -> Draft -> Html Msg
 deleteDraft menu draft =
     div [ class "dropdown-wrapper" ]
-        [ a [ class "tooltip-wrapper", deleteDraftMenuEvent draft.id ]
+        [ a [ class "tooltip-wrapper", deleteDraftMenuEvent draft.id menu ]
             [ i [ class "material-icons clickable" ] [ text "delete" ]
             , small [ class "tooltip no-transform -top-50-right-0" ] [ text "Delete" ]
             ]
@@ -169,29 +169,29 @@ deleteDraft menu draft =
         ]
 
 
-publicDraft : User -> Menu -> Draft -> Html Msg
+publicDraft : User -> DisplayMenu -> Draft -> Html Msg
 publicDraft user menu draft =
     div [ class "dropdown-wrapper" ]
         [ div [ class "tooltip-wrapper" ]
-            [ i [ class "material-icons clickable opacity-quarter ", publicDraftMenuEvent draft.id ] [ text "public" ]
+            [ i [ class "material-icons clickable opacity-quarter ", publicDraftMenuEvent draft.id menu ] [ text "public" ]
            , small [ class "tooltip -top-35-right-0 width-100" ] [ text "Make public" ]
             ]
         , publicDraftMenu menu user draft
         ]
 
 
-deleteDraftMenu : Menu -> Draft -> Html Msg
+deleteDraftMenu : DisplayMenu -> Draft -> Html Msg
 deleteDraftMenu menu draft =
-    div [ class "card dropdown-content  width-200 top-40-right-0 ", deleteDraftMenuEvent draft.id, classList [ ( "active", menu.deleteDraft.display && menu.deleteDraft.id == draft.id ) ] ]
+    div [ class "card dropdown-content  width-200 top-40-right-0 ", deleteDraftMenuEvent draft.id menu , classList [ ( "active", menu.deleteDraft.display && menu.deleteDraft.id == draft.id ) ] ]
         [ div [ class "card-content fg-text-color" ] [ p [] [ text "Are you sure you want to delete?" ] ]
         , div [ class "card-action" ] [ a [ class "right clickable", onClick <| ClickDeleteDraft draft ] [ text "delete" ] ]
         ]
 
 
 
-publicDraftMenu : Menu -> User -> Draft -> Html Msg
+publicDraftMenu : DisplayMenu -> User -> Draft -> Html Msg
 publicDraftMenu menu user draft =
-    div [ class "card dropdown-content width-200 top-40-right-0", publicDraftMenuEvent draft.id, classList [ ( "active", menu.publicDraft.display && menu.publicDraft.id == draft.id ) ] ]
+    div [ class "card dropdown-content width-200 top-40-right-0", publicDraftMenuEvent draft.id menu, classList [ ( "active", menu.publicDraft.display && menu.publicDraft.id == draft.id ) ] ]
         [ div [ class "card-content fg-text-color"] [ span [] [ text "Are you sure you want to make it public?" ] ]
         , div [ class "card-action" ]
             [ case user.username == draft.owner.username of
