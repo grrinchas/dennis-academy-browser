@@ -1,0 +1,134 @@
+
+.dg-registration {
+    width: 100%;
+    background-color: $primary-color;
+
+
+    .loader {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .load {
+            background-color: rgba(0,0,0,0.5);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+
+    .card-title, .btn {
+        background-color: #313131;
+        color: $card-bg-color;
+    }
+
+    .card-title {
+        text-align: center;
+        padding: 15px 0;
+    }
+
+    .input {
+        display: flex;
+        justify-content: center;
+        color: $card-bg-color;
+
+        i {
+            margin-right: 15px;
+        }
+        input {
+            margin-bottom: 3px !important;
+            flex-grow: 1;
+        }
+    }
+
+    input::placeholder, .or {
+        color: #717171;
+    }
+
+    .disabled {
+
+        background-color: #616161 !important;
+    }
+
+    form{
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 600px;
+        background-color: #515151 !important;
+        @extend .z-depth-0;
+        @extend .card;
+
+    }
+}
+
+@media screen and (min-width: 600px) {
+
+    .dg-registration {
+        position: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        form {
+            max-width: 450px;
+        }
+    }
+
+
+}
+
+.dg-not-valid, .dg-not-valid:focus {
+    border-bottom: 1px solid $error-color !important;
+    box-shadow: 0 1px 0 0 $error-color !important;
+}
+
+.dg-valid, .dg-valid:focus {
+    border-bottom: 1px solid $success-color !important;
+    box-shadow: 0 1px 0 0 $success-color !important;
+}
+
+.dg-response-error, .dg-response-success {
+    @extend .section;
+    @extend .valign-wrapper;
+    padding-left: 24px;
+    padding-right: 24px;
+    color: white;
+    div, i {
+        display: inline-block !important;
+    }
+    i {
+        padding-right: 18px;
+    }
+
+}
+
+.dg-response-success {
+
+    background-color: $success-color !important;
+    a {
+        color: color("orange", "accent-2");
+    }
+    a:hover {
+        color: lighten($card-link-color, 20%);
+    }
+}
+
+.dg-response-error {
+    background-color: $error-color;
+}
+
+.dg-data-error {
+    color: $error-color;
+    font-size: small;
+    margin-left: 42px;
+}
+
+
+
+

@@ -5,8 +5,6 @@ import Regex exposing (Regex)
 import Models exposing (..)
 
 
-
-
 password : Maybe String -> Result InputError Valid
 password maybe =
     case maybe of

@@ -1,11 +1,12 @@
 module Views.Auth exposing (..)
 
-import Components exposing (icon, loader)
+import Components exposing (icon, loader, newLoader)
 import Err exposing (InputError(DoNotMatch, Empty, WrongSize))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Models exposing (..)
+import RemoteData exposing (RemoteData(Loading), WebData)
 import Routes exposing (Route(LoginRoute, SignUpRoute), path)
 import Validator exposing (isValid)
 
@@ -27,14 +28,16 @@ validStyle f m =
 
 regHeader : String -> Html Msg
 regHeader text_ =
-    div [ class "dg-center dg-nav-height card-title dg-reg-header" ]
+    div [ class " card-title " ]
         [ span [] [ text text_ ]
         ]
 
 
 emailInput : Form -> Html Msg
 emailInput form =
-    div [ class "input-field col s8" ]
+    div [ class "input-field" ]
+        [
+        div [class "input"]
         [ icon "email"
         , input
             [ type_ "email"
@@ -43,9 +46,9 @@ emailInput form =
             , maxlength 30
             , onInput (\email -> WhenFormChanges { form | email = Just email })
             , validStyle Validator.email form.email
-            , class "dg-input"
             ]
             []
+        ]
         , validMsg <| validateEmail form.email
         ]
 
@@ -53,16 +56,18 @@ emailInput form =
 passwordInput : Form -> Html Msg
 passwordInput form =
     div [ class "input-field" ]
-        [ icon "lock"
+        [ div [class "input"]
+            [
+        icon "lock"
         , input
             [ type_ "password"
             , placeholder "Password"
             , value <| Maybe.withDefault "" form.password
             , onInput (\pass -> WhenFormChanges { form | password = Just pass })
             , validStyle Validator.password form.password
-            , class "dg-input"
             ]
             []
+            ]
         , validMsg <| validatePassword form.password
         ]
 
@@ -70,7 +75,8 @@ passwordInput form =
 usernameInput : Form -> Html Msg
 usernameInput form =
     div [ class "input-field" ]
-        [ icon "person"
+        [ div [class "input"] [
+        icon "person"
         , input
             [ type_ "text"
             , placeholder "Username"
@@ -78,9 +84,8 @@ usernameInput form =
             , maxlength 30
             , onInput (\username -> WhenFormChanges { form | username = Just username })
             , validStyle Validator.username form.username
-            , class "dg-input"
             ]
-            []
+            []]
         , validMsg <| validateUsername form.username
         ]
 
@@ -88,16 +93,18 @@ usernameInput form =
 repeatInput : Form -> Html Msg
 repeatInput form =
     div [ class "input-field" ]
-        [ icon "lock"
+        [  div [class "input"]
+            [
+        icon "lock"
         , input
             [ type_ "password"
             , placeholder "Password Repeat"
             , value <| Maybe.withDefault "" form.repeatPass
             , onInput (\repeat -> WhenFormChanges { form | repeatPass = Just repeat })
             , validRepeatStyle form.password form.repeatPass
-            , class "dg-input"
             ]
             []
+            ]
         , validMsg <| validateRepeat form.password form.repeatPass
         ]
 
@@ -207,8 +214,8 @@ successResponse account =
 
 wrapper : Html Msg -> Html Msg
 wrapper view =
-    div [ class "dg-center dg-registration" ]
-        [ view ]
+    div [ class " dg-registration" ]
+        [ view]
 
 
 signUpForm : Form -> Html Msg -> Html Msg
@@ -216,12 +223,12 @@ signUpForm form response =
     Html.form []
         [ regHeader "Sign Up"
         , response
-        , div [ class "card-content" ]
+        , div [ class "card-content reset-padding-top" ]
             [ usernameInput form
             , emailInput form
             , passwordInput form
             , repeatInput form
-            , div [ class "valign-wrapper" ]
+            , div [ class "flex-flex-end" ]
                 [ a
                     [ class "btn dg-right "
                     , classList [ ( "disabled", not <| Validator.validSignUpInputs form ) ]
@@ -231,7 +238,7 @@ signUpForm form response =
                 ]
             ]
         , div [ class "card-action" ]
-            [ a [ href <| path LoginRoute ] [ text "Already have an account" ]
+            [ a [href <| path LoginRoute ] [ text "Already have an account" ]
             ]
         ]
 
@@ -241,12 +248,12 @@ loginForm form response =
     Html.form []
         [ regHeader "Login"
         , response
-        , div [ class "card-content login" ]
+        , div [ class "card-content reset-padding-top" ]
             [ emailInput form
             , passwordInput form
-            , div [ class "valign-wrapper" ]
+            , div [ class "flex-flex-end" ]
                 [ a
-                    [ class "btn dg-right "
+                    [ class "btn "
                     , classList [ ( "disabled", not <| Validator.validLoginInputs form ) ]
                     , onClick <| ClickLogin <| Validator.validLoginUser form
                     ]
@@ -258,3 +265,13 @@ loginForm form response =
                 [ text "Do not have an account" ]
             ]
         ]
+
+
+loader:  Html Msg -> Html Msg
+loader  view = div [class "loader"] [div [class "load"] [ newLoader []], view]
+
+
+
+
+
+

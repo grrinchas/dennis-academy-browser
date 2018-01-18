@@ -168,12 +168,17 @@ update msg model =
                 |> withCommands
                     [ updateTime ]
                 |> andAlso
-                    (\m -> case m.route of
-                           Ok PublicDraftsRoute -> Api.fetchPublicDrafts m
-                           Ok (ProfileRoute id)-> Api.fetchUserProfile id m
-                           _ -> withNoCommand m
-                    )
+                    (\m ->
+                        case m.route of
+                            Ok PublicDraftsRoute ->
+                                Api.fetchPublicDrafts m
 
+                            Ok (ProfileRoute id) ->
+                                Api.fetchUserProfile id m
+
+                            _ ->
+                                withNoCommand m
+                    )
 
         OnFetchCreatedDraft web ->
             updateDraft web model
@@ -181,30 +186,38 @@ update msg model =
                 |> resetMenu
                 |> reroute
                 |> andAlso
-                    (\m -> case m.route of
-                           Ok PublicDraftsRoute  ->
-                               RemoteData.map (\d -> DraftRoute d.id) web
-                                |> RemoteData.map (\r -> [Navigation.newUrl <| path r])
-                                |> RemoteData.map (flip withCommands m)
-                                |> RemoteData.withDefault (withNoCommand m)
+                    (\m ->
+                        case m.route of
+                            Ok PublicDraftsRoute ->
+                                RemoteData.map (\d -> DraftRoute d.id) web
+                                    |> RemoteData.map (\r -> [ Navigation.newUrl <| path r ])
+                                    |> RemoteData.map (flip withCommands m)
+                                    |> RemoteData.withDefault (withNoCommand m)
 
-                           Ok (ProfileRoute _)  ->
-                               RemoteData.map (\d -> DraftRoute d.id) web
-                                |> RemoteData.map (\r -> [Navigation.newUrl <| path r])
-                                |> RemoteData.map (flip withCommands m)
-                                |> RemoteData.withDefault (withNoCommand m)
-                           _ -> withNoCommand m
+                            Ok (ProfileRoute _) ->
+                                RemoteData.map (\d -> DraftRoute d.id) web
+                                    |> RemoteData.map (\r -> [ Navigation.newUrl <| path r ])
+                                    |> RemoteData.map (flip withCommands m)
+                                    |> RemoteData.withDefault (withNoCommand m)
+
+                            _ ->
+                                withNoCommand m
                     )
 
         OnFetchDeletedDraft web ->
             removeDraft web model
                 |> resetMenu
-                |>
-                    (\m -> case m.route of
-                           Ok PublicDraftsRoute -> Api.fetchPublicDrafts m
-                           Ok (ProfileRoute id)-> Api.fetchUserProfile id m
-                           _ -> withNoCommand m
-                    )
+                |> (\m ->
+                        case m.route of
+                            Ok PublicDraftsRoute ->
+                                Api.fetchPublicDrafts m
+
+                            Ok (ProfileRoute id) ->
+                                Api.fetchUserProfile id m
+
+                            _ ->
+                                withNoCommand m
+                   )
 
         OnFetchPublicDrafts web ->
             remotePublicDrafts web model
@@ -215,6 +228,3 @@ update msg model =
             remoteUserProfile web model
                 |> (\m -> RemoteData.map (\p -> formUserBio p.bio m) web |> RemoteData.withDefault m)
                 |> withNoCommand
-
-
-

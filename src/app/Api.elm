@@ -97,7 +97,6 @@ fetchUpdateProfile model =
         |> withError model
 
 
-
 fetchUser : Model -> ( Model, Cmd Msg )
 fetchUser model =
     RemoteData.map (authorised Encoders.userInfo Decoders.decodeUser) model.remote.graphCool
@@ -108,7 +107,7 @@ fetchUser model =
 
 fetchUserProfile : String -> Model -> ( Model, Cmd Msg )
 fetchUserProfile username model =
-    RemoteData.map (authorised (Encoders.userProfile username ) Decoders.decodeUserProfile) model.remote.graphCool
+    RemoteData.map (authorised (Encoders.userProfile username) Decoders.decodeUserProfile) model.remote.graphCool
         |> RemoteData.map sendRequest
         |> RemoteData.map (Cmd.map OnFetchUserProfile)
         |> withError model

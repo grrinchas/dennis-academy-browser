@@ -39,7 +39,7 @@ type alias Draft =
     , draftType : String
     , title : String
     , visibility : Visibility
-    , owner: DraftOwner
+    , owner : DraftOwner
     }
 
 
@@ -61,15 +61,16 @@ type alias User =
     , username : String
     , email : String
     , picture : String
-    , bio: String
+    , bio : String
     , drafts : Dict String Draft
     }
 
+
 type alias UserProfile =
-    { username: String
-    , picture: String
-    , bio: String
-    , drafts: List Draft
+    { username : String
+    , picture : String
+    , bio : String
+    , drafts : List Draft
     }
 
 
@@ -92,8 +93,8 @@ type alias Remote =
     , user : WebData User
     , savedDraft : WebData Draft
     , publicDrafts : WebData (List Draft)
-    , refreshedPublicDrafts: WebData ()
-    , userProfile: WebData UserProfile
+    , refreshedPublicDrafts : WebData ()
+    , userProfile : WebData UserProfile
     }
 
 
@@ -118,7 +119,6 @@ isLoggedIn model =
     RemoteData.isSuccess model.remote.user
 
 
-
 type Msg
     = WhenNoOperation
     | WhenTokensLoaded (Maybe Tokens)
@@ -127,7 +127,6 @@ type Msg
     | WhenMenuChanges Menu
     | WhenTimeChanges Time
     | WhenDraftChanges Draft
-
     | ClickMouse Mouse.Position
     | ClickUpdateRoute Route
     | ClickLogout
@@ -138,7 +137,6 @@ type Msg
     | ClickDeleteDraft Draft
     | ClickRefreshPublicDrafts
     | ClickUpdateProfile
-
     | OnFetchCreatedAccount (WebData Account)
     | OnFetchAuth0Token (WebData Auth0Token)
     | OnFetchGraphCoolToken (WebData AuthGraphCool)
@@ -195,7 +193,7 @@ type alias Form =
     , password : Maybe String
     , repeatPass : Maybe String
     , draftTitleNew : String
-    , userBio: String
+    , userBio : String
     }
 
 
@@ -238,11 +236,13 @@ formDraftTitleNew string model =
         form ->
             { model | form = { form | draftTitleNew = string } }
 
+
 formUserBio : String -> Model -> Model
 formUserBio string model =
     case model.form of
         form ->
             { model | form = { form | userBio = string } }
+
 
 initialForm : Form
 initialForm =
@@ -266,6 +266,8 @@ type alias Menu =
     , newDraft : Bool
     , deleteDraft : { id : String, display : Bool }
     , publicDraft : { id : String, display : Bool }
+    , filterDraft : Bool
+    , displayDraft : Bool
     }
 
 
@@ -276,6 +278,8 @@ initialMenu =
     , newDraft = False
     , deleteDraft = { id = "", display = False }
     , publicDraft = { id = "", display = False }
+    , filterDraft = False
+    , displayDraft = False
     }
 
 
@@ -286,6 +290,8 @@ isMenuVisible menu =
         || menu.newDraft
         || menu.deleteDraft.display
         || menu.publicDraft.display
+        || menu.filterDraft
+        || menu.displayDraft
 
 
 menu : Menu -> Model -> Model
@@ -321,6 +327,16 @@ menuDeleteDraft id =
 menuPublicDraft : String -> Menu
 menuPublicDraft id =
     { initialMenu | publicDraft = { display = True, id = id } }
+
+
+menuFilterDraft : Menu
+menuFilterDraft =
+    { initialMenu | filterDraft = True }
+
+
+menuDisplayDraft : Menu
+menuDisplayDraft =
+    { initialMenu | displayDraft = True }
 
 
 remote : Remote -> Model -> Model

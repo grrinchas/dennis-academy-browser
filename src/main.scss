@@ -1,144 +1,159 @@
 $roboto-font-path: "~materialize-css/dist/fonts/roboto/";
-@import "~materialize-css/sass/materialize";
-
-@import "./_scss/variables";
-@import "./_scss/registration";
-@import "./_scss/loading";
-@import "./_scss/error";
-@import "./_scss/editor";
-@import "./_scss/navBar";
-@import "./_scss/draft";
-@import "./_scss/tooltip";
-@import "./_scss/profile";
-
-html, body, #app {
-    @extend .dg-full-height;
-}
+@import "materialize/materialize";
 
 body {
-    min-width: 600px;
-    background-color: $body-bg-color;
-}
-
-.dg-full-height {
-    height: 100%;
+    min-width: $small-screen;
+    background-color: $text-color;
 }
 
 
-.dg-visible, .dg-topic-img {
+.clickable {
+    cursor: pointer;
+}
+
+.opacity-quarter {
+    opacity: 0.25;
+}
+
+.block {
     display: block;
 }
 
-.dg-invisible {
-    display: none;
-}
-
-.dg-topic-img {
-    margin: auto;
-    height: $topic-size;
-    width: $topic-size;
-}
-
-
-.dg-input {
-    margin-bottom: 3px !important;
-}
-
-.dg-not-valid, .dg-not-valid:focus {
-    @extend .error-style
-}
-
-.dg-valid, .dg-valid:focus {
-    @extend .success-style
-}
-
-.dg-response-error, .dg-response-success {
-    @extend .section;
-    @extend .valign-wrapper;
-    padding-left: 24px;
-    padding-right: 24px;
-    color: white;
-    div, i {
-        display: inline-block !important;
-    }
-    i {
-        padding-right: 18px;
-    }
-
-}
-
-.dg-response-success {
-
-    background-color: $success-color !important;
-    a {
-        color: color("orange", "accent-2");
-    }
-    a:hover {
-        color: lighten($card-link-color, 20%);
-    }
-}
-
-.dg-response-error {
-    background-color: $error-color;
-}
-
-.dg-data-error {
-    color: $error-color;
-    font-size: small;
-    margin-left: 42px;
-}
-
-.dg-text-black {
-    color: $text-color;
-}
-
-.dg-text-white {
-    color: $body-bg-color !important;
-}
-
-.dg-text-grey {
-    color: grey;
-}
-
-.dg-text-bold {
-    font-weight: bold !important;
-}
-
-
-.dg-center {
-    @extend .valign-wrapper;
+.loader-wrapper {
+    position: relative;
+    display: flex;
     justify-content: center;
-}
-
-.dg-left {
-    margin-left: auto;
-}
-
-.dg-no-margins {
-    margin: 0 !important;
-}
-
-.dg-right {
-    margin-left: auto;
-}
-
-.overlay {
-    position: fixed;
-    display: block;
-    top: 0;
-    right: 0;
-    background-color: rgba(0, 0, 0, 0.8);
-    transition: opacity 0.2s linear;
-    opacity: 0;
-    z-index: -1;
-
+    vertical-align: center;
+    min-height: 70vh;
+    align-items: center;
 
 }
 
-.overlay-visible {
-    opacity: 1;
-    z-index: 100;
-    min-height: 100vh;
-    min-width: 100vw;
+.no-transform {
+    text-transform: none !important;
+}
+
+.bg-transparent:hover {
+    background-color: transparent;
+}
+
+$colors: (
+    primary-color: $primary-color,
+    primary-color-light: $primary-color-light,
+    primary-color-dark: $primary-color-dark,
+    secondary-color: $secondary-color,
+    success-color: $success-color,
+    error-color: $error-color,
+    link-color: $link-color,
+    text-color: $text-color,
+    grey-color: $grey-color,
+);
+
+@each $name, $value in $colors {
+    .bg-#{$name} {
+        background-color: $value !important;
+    }
+
+    .fg-#{$name} {
+        color: $value !important;
+    }
+}
+
+$flexes: flex-end, flex-start, center, space-between, space-around, space-evenly;
+@each $flex in $flexes {
+    .flex-#{$flex} {
+        display: flex;
+        justify-content: $flex;
+    }
+}
+
+@mixin reset-classes($property, $appendix, $value) {
+    .reset-#{$property}-#{$appendix} {
+        #{$property}-#{$appendix}: $value !important;
+    }
+}
+
+$appendix: left, right, top, bottom;
+@each $app in $appendix {
+    @include reset-classes("margin", $app, 0);
+    @include reset-classes("padding", $app, 0);
+    @include reset-classes("border", $app, none);
+}
+
+$widths: 50, 100, 150, 200, 250, 300, 350, 400, 450, 500;
+@each $width in $widths {
+
+    .width-#{$width} {
+        width: $width + px;
+    }
+}
+
+$offsets: 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100;
+@each $offset-1 in $offsets {
+    @each $offset-2 in $offsets {
+        .bottom-#{$offset-1}-right-#{$offset-2} {
+            top: $offset-1 + px;
+            right: $offset-2 + px;
+        }
+
+        .bottom-#{$offset-1}-left-#{$offset-2} {
+            top: $offset-1 + px;
+            left: $offset-2 + px;
+        }
+
+        .top-#{$offset-1}-right-#{$offset-2} {
+            top: $offset-1 + px;
+            right: $offset-2 + px;
+        }
+
+        .top-#{$offset-1}-left-#{$offset-2} {
+            top: $offset-1 + px;
+            left: $offset-2 + px;
+        }
+        .-bottom-#{$offset-1}-right-#{$offset-2} {
+            top: -$offset-1 + px;
+            right: -$offset-2 + px;
+        }
+
+        .-bottom-#{$offset-1}-left-#{$offset-2} {
+            top: -$offset-1 + px;
+            left: -$offset-2 + px;
+        }
+
+        .-top-#{$offset-1}-right-#{$offset-2} {
+            top: -$offset-1 + px;
+            right: -$offset-2 + px;
+        }
+        .-top-#{$offset-1}-left-#{$offset-2} {
+            top: -$offset-1 + px;
+            left: -$offset-2 + px;
+        }
+    }
+
+}
+
+
+
+.profile {
+    img {
+
+        margin-right: 15px;
+    }
+    .bio {
+        h1 {
+            font-weight: bold;
+        }
+        width: 1200px;
+        min-width: 400px;
+
+        input, span{
+            font-weight: bold;
+            font-size: 20px ;
+            color: $input-disabled-color ;
+
+        }
+
+    }
+
 }
 

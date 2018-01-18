@@ -46,12 +46,14 @@ matchers =
         , map ProfileRoute profileMatcher
         ]
 
-profileMatcher: Parser (String -> a ) a
+
+profileMatcher : Parser (String -> a) a
 profileMatcher =
     custom "PROFILE" <|
         \segment ->
             case String.startsWith "@" segment of
-                True -> Ok <| String.dropLeft 1 segment
+                True ->
+                    Ok <| String.dropLeft 1 segment
 
                 False ->
                     Err "Malformed Path"
@@ -95,6 +97,3 @@ path route =
 
         ProfileRoute username ->
             "#/@" ++ username
-
-
-

@@ -30,9 +30,6 @@ removeTokens =
     Ports.saveTokens Nothing
 
 
-
-
-
 reroute : Model -> ( Model, Cmd Msg )
 reroute model =
     case model.route of
@@ -59,15 +56,12 @@ reroute model =
                 ( PublicDraftsRoute, False ) ->
                     ( { model | route = Err NotFound }, Cmd.none )
 
-                ( ProfileRoute _ , False ) ->
+                ( ProfileRoute _, False ) ->
                     ( { model | route = Err NotFound }, Cmd.none )
 
                 ( ProfileRoute id, True ) ->
                     remoteUserProfile Loading model
                         |> Api.fetchUserProfile id
-
-
-
 
                 _ ->
                     withNoCommand model

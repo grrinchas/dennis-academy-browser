@@ -1,6 +1,6 @@
 module Views.NavBar exposing (..)
 
-import Components exposing (loader)
+import Components exposing (loader, newLoader)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
@@ -17,28 +17,29 @@ logoImg =
 
 wrapper : Html Msg -> Html Msg -> Html Msg
 wrapper start end =
-    nav [ class "row  dg-nav-bar valign-wrapper" ]
-        [ div [ class "dg-start col s6" ] [ start ]
-        , div [ class "dg-end col s6" ] [ end ]
+    div [ class "navbar-fixed" ]
+        [ nav []
+            [ div [ class "nav-wrapper" ]
+                [ a [ class "brand-logo left", href <| path HomeRoute ] [ img [ src logoImg ] [] ]
+                , end
+                ]
+            ]
         ]
 
 
 withButtons : List (Html Msg) -> Html Msg
 withButtons list =
-    ul [ class "right valign-wrapper" ]
-        (List.map
-            (\btn -> li [] [ btn ])
-            list
-        )
+    ul [ class "right" ] <| List.map (\btn -> li [] [ btn ]) list
 
 
 logo : Html Msg
-logo = div [] [ a [ href <| path HomeRoute ] [ img [ src logoImg ] [] ] ]
+logo =
+    div [] [ a [ href <| path HomeRoute ] [ img [ src logoImg ] [] ] ]
 
 
 dashboardBtn : Html msg
 dashboardBtn =
-    a [ class "btn", href <| path DashboardRoute ]
+    a [ class "btn z-depth-0", href <| path DashboardRoute ]
         [ text "Dashboard" ]
 
 
@@ -49,41 +50,23 @@ signUp =
 
 login : Html msg
 login =
-    a [ href <| path LoginRoute ] [ text "Login" ]
+    a [ class "btn cyan darken-3", href <| path LoginRoute ] [ text "Login" ]
 
 
 or : Html Msg
 or =
-    span [ class "dg-text-grey" ] [ text "or" ]
+    span [] [ text "or" ]
 
 
 notifications : Html Msg
 notifications =
-    div [] [ a [ class "dg-notifications not-implemented" ] [ i [ class "material-icons" ] [ text "notifications" ] ] ]
-
-
-profile : User -> Menu -> Html Msg
-profile user menu =
-    div [ class "valign-wrapper profile-menu-btn", userMenuEvent ]
-        [ img [ src user.picture, class "  circle" ] []
-        , i [ class "material-icons drop" ] [ text "arrow_drop_down" ]
-        , userMenu user menu
-        ]
-
-
-
-newDraft : Form -> Menu -> Html Msg
-newDraft form menu =
-    div []
-        [ a [ class "new-draft btn z-depth-0", newDraftMenuEvent ] [ text "New " ]
-        , newDraftMenu form menu
-        ]
+    div [] [a [ class "bg-transparent"] [ i [ class "material-icons" ] [ text "notifications" ] ]]
 
 
 publish : Menu -> Html Msg
 publish menu =
-    div []
-        [ a [ class "btn valign-wrapper z-depth-0", publishMenuEvent ] [ text "publish" ]
+    div [class "dropdown-wrapper"]
+        [ a [ class "btn z-depth-0  reset-margin-right", publishMenuEvent ] [ text "publish" ]
         , publishMenu menu
         ]
 
@@ -111,14 +94,15 @@ newDraftMenuEvent =
 
 userMenu : User -> Menu -> Html Msg
 userMenu user menu =
-    ul [ userMenuEvent, class "dropdown-content", classList [ ( "dg-user-menu", menu.user ) ] ]
+    ul [ userMenuEvent, class "dropdown-content top-70-right-0", classList [ ( "active ", menu.user) ] ]
         [ li [] [ a [ href <| path DraftsRoute ] [ i [ class "material-icons" ] [ text "apps" ], text "Drafts" ] ]
         , li [ class "divider" ] []
-        , li [ class "valign-wrapper" ]
-            [ img [ class "circle", src user.picture ] []
-            , a [href <| path <| ProfileRoute user.username, class "dg-profile title"] [ text "View Profile" ]
-            ]
-        , li [] [ a [ class "not-implemented" ] [ i [ class "material-icons" ] [ text "settings" ], text "Settings" ] ]
+        , li [] [ a [ href <| path <| ProfileRoute user.username, class "valign-wrapper fg-link-color" ]
+                    [ img [ class "circle medium", src user.picture ] []
+                    , text "View Profile"
+                    ]
+                ]
+        , li [] [ a [] [ i [ class "material-icons" ] [ text "settings" ], text "Settings" ] ]
         , li [ class "divider" ] []
         , li [] [ a [ onClick ClickLogout ] [ i [ class "material-icons" ] [ text "arrow_forward" ], text "Logout" ] ]
         ]
@@ -126,8 +110,9 @@ userMenu user menu =
 
 publishMenu : Menu -> Html Msg
 publishMenu menu =
-    div [ publishMenuEvent, class "card  dg-publish", classList [ ( "dg-publish-menu", menu.publish ) ] ]
+    div [ publishMenuEvent, class "card  dropdown-content top-70-right-15", classList [ ( "active", menu.publish ) ] ]
         [ div [ class "card-content" ]
+
             [ span [ class "card-title" ] [ text "Ready to publish?" ]
             ]
         , div [ class "divider" ] []
@@ -160,15 +145,23 @@ publishMenu menu =
         ]
 
 
+newDraft : Form -> Menu -> Html Msg
+newDraft form menu =
+    div [ class "dropdown-wrapper" ]
+        [ a [ class "btn z-depth-0 reset-margin-right", newDraftMenuEvent ] [ text "New " ]
+        , newDraftMenu form menu
+        ]
+
+
 newDraftMenu : Form -> Menu -> Html Msg
 newDraftMenu form menu =
-    div [ newDraftMenuEvent, class "card dg-new-draft", classList [ ( "dg-new-draft-show", menu.newDraft ) ] ]
-        [ div [ class "card-content" ]
+    div [ newDraftMenuEvent, class "card dropdown-content top-70-right-0 width-350", classList [ ( "active", menu.newDraft) ] ]
+        [ div [ class "card-content reset-bottom" ]
             [ p [] [ text "What is your draft about?" ]
-            , input [ placeholder form.draftTitleNew, onInput (\title -> WhenFormChanges { form | draftTitleNew = title }) ] []
+            , input [ class "no-style", placeholder form.draftTitleNew, maxlength 100, onInput (\title -> WhenFormChanges { form | draftTitleNew = title }) ] []
             ]
-        , div [ class "card-action" ]
-            [ a [ onClick <| ClickCreateDraft { initialDraft | title = form.draftTitleNew } ] [ text "create" ]
+        , div [ class "card-action reset-top" ]
+            [ a [ class "right", onClick <| ClickCreateDraft { initialDraft | title = form.draftTitleNew } ] [ text "create" ]
             ]
         ]
 
@@ -177,9 +170,11 @@ draft : Model -> Html Msg
 draft model =
     case model.remote.user of
         Success user ->
-            withButtons [publish model.menu, notifications, newProfile (Just user) model.menu] |> wrapper logo
+            withButtons [ publish model.menu, notifications, profile (Just user) model.menu ] |> wrapper logo
 
-        _ -> withButtons [publish model.menu, notifications, newProfile Nothing model.menu] |> wrapper logo
+        _ ->
+            withButtons [ publish model.menu, notifications, profile Nothing model.menu ] |> wrapper logo
+
 
 
 
@@ -187,12 +182,13 @@ drafts : Model -> Html Msg
 drafts model =
     case model.remote.user of
         Success user ->
-            withButtons [newDraft model.form model.menu, notifications, newProfile (Just user) model.menu] |> wrapper logo
+            withButtons [ newDraft model.form model.menu, notifications, profile (Just user) model.menu ] |> wrapper logo
 
-        _ -> withButtons [notifications, newProfile Nothing model.menu] |> wrapper logo
+        _ ->
+            withButtons [ notifications, profile Nothing model.menu ] |> wrapper logo
 
 
-landing: Model -> Html Msg
+landing : Model -> Html Msg
 landing model =
     case model.remote.user of
         Success _ ->
@@ -202,28 +198,28 @@ landing model =
             withButtons [ login, or, signUp ] |> wrapper logo
 
 
-
 dashboard : Model -> Html Msg
 dashboard model =
     case model.remote.user of
         Success user ->
-            withButtons [ notifications, newProfile (Just user) model.menu] |> wrapper logo
+            withButtons [ notifications, profile (Just user) model.menu ] |> wrapper logo
 
-        _ -> withButtons [ notifications, newProfile Nothing model.menu] |> wrapper logo
+        _ ->
+            withButtons [ notifications, profile Nothing model.menu ] |> wrapper logo
 
 
 
-newProfile : Maybe User -> Menu -> Html Msg
-newProfile user menu =
-    div [ class "valign-wrapper profile-menu-btn", userMenuEvent ]
-       <|  case user of
+profile : Maybe User -> Menu -> Html Msg
+profile user menu =
+    div [ class "valign-wrapper dropdown-wrapper clickable", userMenuEvent ] <|
+        case user of
             Just u ->
-                [ img [ src u.picture, class "circle" ] []
-                , i [ class "material-icons drop" ] [ text "arrow_drop_down" ]
+                [ img [class "medium", src u.picture, class "circle" ] []
+                , i [ class "material-icons" ] [ text "arrow_drop_down" ]
                 , userMenu u menu
                 ]
-            Nothing ->
-                [loader
-                , i [ class "material-icons drop" ] [ text "arrow_drop_down" ]
-                ]
 
+            Nothing ->
+                [ newLoader [class "img"]
+                , i [ class "material-icons" ] [ text "arrow_drop_down" ]
+                ]

@@ -13,7 +13,6 @@ clientId =
     "enJKDQwKtcKbhrcGg8IlEIeyNJb5noXJ"
 
 
-
 createAccount : ValidUser -> Encoder.Value
 createAccount user =
     Encoder.object
@@ -128,7 +127,7 @@ deleteDraft draft token =
         |> mutation
 
 
-updateProfile: Form -> AuthGraphCool -> Http.Body
+updateProfile : Form -> AuthGraphCool -> Http.Body
 updateProfile form token =
     GraphQl.named "updateUser"
         [ GraphQl.field "updateUser"
@@ -149,19 +148,19 @@ userProfile username _ =
         |> query
 
 
-profileSelector: List (GraphQl.Value a)
+profileSelector : List (GraphQl.Value a)
 profileSelector =
     [ GraphQl.field "username"
     , GraphQl.field "picture"
     , GraphQl.field "bio"
     , GraphQl.field "drafts"
-        |> GraphQl.withArgument "filter" (GraphQl.input [ ( "visibility", GraphQl.type_ <| toString PUBLIC ) ] )
-        |> GraphQl.withArgument "orderBy" (GraphQl.type_  "updatedAt_DESC")
+        |> GraphQl.withArgument "filter" (GraphQl.input [ ( "visibility", GraphQl.type_ <| toString PUBLIC ) ])
+        |> GraphQl.withArgument "orderBy" (GraphQl.type_ "updatedAt_DESC")
         |> GraphQl.withSelectors draftSelector
     ]
 
 
-draftSelector: List (GraphQl.Value a)
+draftSelector : List (GraphQl.Value a)
 draftSelector =
     [ GraphQl.field "id"
     , GraphQl.field "content"
@@ -187,5 +186,3 @@ mutation operation =
 query : Operation Query a -> Http.Body
 query operation =
     operationToBody OperationQuery operation Nothing
-
-

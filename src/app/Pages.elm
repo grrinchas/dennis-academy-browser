@@ -28,9 +28,7 @@ signUpPage model =
                 |> Auth.wrapper
 
         Loading ->
-            Auth.signUpForm model.form empty
-                |> withLoader
-                |> Auth.wrapper
+            Auth.wrapper (Auth.loader <| Auth.signUpForm model.form empty)
 
         Success account ->
             Auth.successResponse account
@@ -67,13 +65,10 @@ loginPage : Model -> Html Msg
 loginPage model =
     case model.remote.user of
         NotAsked ->
-            Auth.loginForm model.form empty
-                |> Auth.wrapper
+            Auth.loginForm model.form empty |> Auth.wrapper
 
         Loading ->
-            Auth.loginForm model.form empty
-                |> withLoader
-                |> Auth.wrapper
+            Auth.wrapper (Auth.loader <| Auth.loginForm  model.form empty)
 
         Success _ ->
             Error.view <| Routing NotFound
@@ -97,7 +92,8 @@ draftPage id model =
     case model.remote.user of
         Success user ->
             case Dict.get id user.drafts of
-                Just draft -> layout model.menu (NavBar.draft model) <| Draft.view model (Just draft)
+                Just draft ->
+                    layout model.menu (NavBar.draft model) <| Draft.view model (Just draft)
 
                 Nothing ->
                     Error.view <| Routing NotFound
@@ -105,7 +101,8 @@ draftPage id model =
         Failure err ->
             Error.view <| Http err
 
-        _ -> layout model.menu (NavBar.draft model) <| Draft.view model Nothing
+        _ ->
+            layout model.menu (NavBar.draft model) <| Draft.view model Nothing
 
 
 dashboardPage : Model -> Html Msg
@@ -114,7 +111,8 @@ dashboardPage model =
         Failure err ->
             Error.view <| Http err
 
-        _ -> NavBar.dashboard model
+        _ ->
+            NavBar.dashboard model
 
 
 landingPage : Model -> Html Msg
@@ -123,7 +121,8 @@ landingPage model =
         Failure err ->
             Error.view <| Http err
 
-        _ -> NavBar.landing model
+        _ ->
+            NavBar.landing model
 
 
 draftsPage : Model -> Html Msg
@@ -136,7 +135,6 @@ draftsPage model =
             layout model.menu (NavBar.drafts model) <| Drafts.view False model
 
 
-
 publicDraftsPage : Model -> Html Msg
 publicDraftsPage model =
     case RemoteData.append model.remote.user model.remote.publicDrafts of
@@ -147,7 +145,6 @@ publicDraftsPage model =
             layout model.menu (NavBar.dashboard model) <| Drafts.publicView True model
 
 
-
 userProfilePage : String -> Model -> Html Msg
 userProfilePage username model =
     case RemoteData.append model.remote.user model.remote.userProfile of
@@ -156,7 +153,6 @@ userProfilePage username model =
 
         _ ->
             layout model.menu (NavBar.dashboard model) <| UserProfile.view model
-
 
 
 view : Model -> Html Msg
@@ -185,7 +181,8 @@ view model =
                 PublicDraftsRoute ->
                     publicDraftsPage model
 
-                ProfileRoute username -> userProfilePage username model
+                ProfileRoute username ->
+                    userProfilePage username model
 
         Err oops ->
             Error.view <| Routing oops

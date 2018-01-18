@@ -125,8 +125,6 @@ userProfile =
         |> Pipeline.required "drafts" (Decoder.list draftObject)
 
 
-
-
 visibility : String -> Maybe Visibility
 visibility visibility =
     if visibility == "PRIVATE" then
@@ -135,7 +133,6 @@ visibility visibility =
         Just PUBLIC
     else
         Nothing
-
 
 
 dataField : Decoder.Decoder a -> Decoder.Decoder a
@@ -173,7 +170,6 @@ decodePublicDrafts =
         |> dataField
 
 
-
 decodeUserProfile : Decoder.Decoder UserProfile
 decodeUserProfile =
     userProfile
@@ -181,7 +177,7 @@ decodeUserProfile =
         |> dataField
 
 
-decodeUpdateProfile: Decoder.Decoder UserProfile
+decodeUpdateProfile : Decoder.Decoder UserProfile
 decodeUpdateProfile =
     userProfile
         |> Decoder.field "updateUser"

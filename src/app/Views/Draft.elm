@@ -1,6 +1,6 @@
 module Views.Draft exposing (..)
 
-import Components exposing (loader, withLoader)
+import Components exposing (loader, newLoader, withLoader)
 import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -13,61 +13,66 @@ import Time exposing (Time)
 
 view : Model -> Maybe Draft -> Html Msg
 view model draft =
-    div [ class "dg-editor " ]
-        <| case (model.remote.user, draft)of
-             (Success user, Just draft) -> display model draft
-             _ -> [loader]
+    div [ class "draft-editor " ] <|
+        case ( model.remote.user, draft ) of
+            ( Success user, Just draft ) ->
+                display model draft
+
+            _ ->
+                [div [class "loader-wrapper"] [ newLoader [] ]]
+
 
 
 display : Model -> Draft -> List (Html Msg)
 display model draft =
-        [div [ class "row draft-title" ]
-            [ input
-                [ class "col"
-                , placeholder "Enter new title..."
-                , value draft.title
-                , onInput (\title -> WhenDraftChanges { draft | title = title })
-                ]
-                []
+    [ div [ class "row reset-margin-bottom title" ]
+        [ input
+            [ class "col no-style"
+            , placeholder "Enter new title..."
+            , value draft.title
+            , onInput (\title -> WhenDraftChanges { draft | title = title })
             ]
-        , div [ class "row header-row " ]
-            [ div [ class "col s6 header-md " ]
-                [ small [] [ strong [] [ text "CREATED: " ], span [] [ text <| formatUpdated (Date.toTime draft.createdAt) model.now ] ]
-                , save model.remote.savedDraft draft
-                ]
-            , div
-                [ class "col s6 " ]
-                [ small [] [ text "HTML" ]
-                , a [ class "right not-implemented" ] [ small [] [ text "PREVIEW" ] ]
-                ]
+            []
+        ]
+    , div [ class "row header-row reset-margin-bottom" ]
+        [ div [ class "col s6 header-md " ]
+            [ small [] [ strong [] [ text "CREATED: " ], span [] [ text <| formatUpdated (Date.toTime draft.createdAt) model.now ] ]
+            , save model.remote.savedDraft draft
             ]
-        , div [ class "row editor-row" ]
-            [ div [ class "col s6 editor-ta" ]
-                [ textarea [ onInput (\content -> WhenDraftChanges { draft | content = content }) ] [ text draft.content ] ]
-            , div [ class "col s6 dg-preview" ]
-                [ Markdown.toHtml [] draft.content ]
+        , div
+            [ class "col s6 " ]
+            [ small [] [ text "HTML" ]
+            , a [ class "right " ] [ small [] [ text "PREVIEW" ] ]
             ]
         ]
+    , div [ class "row editor-row" ]
+        [ div [ class "col s6 editor-ta" ]
+            [ textarea [ onInput (\content -> WhenDraftChanges { draft | content = content }) ] [ text draft.content ] ]
+        , div [ class "col s6 dg-preview" ]
+            [ Markdown.toHtml [] draft.content ]
+        ]
+    ]
+
 
 save : WebData Draft -> Draft -> Html Msg
 save webDraft draft =
     case webDraft of
         NotAsked ->
-            a [ class "right dg-save-draft", onClick <| ClickUpdateDraft draft ] [ small [] [ text "SAVE" ] ]
+            a [ class "right clickable block", onClick <| ClickUpdateDraft draft ] [ small [] [ text "SAVE" ] ]
 
         Loading ->
-            div [ class "right draft-loader valign-wrapper" ] [ loader ]
+            div [ class "right" ] [ newLoader [class "tiny"]]
 
         Success savedDraft ->
             case savedDraft.content == draft.content && savedDraft.title == draft.title of
                 True ->
-                    div [ class "save" ] [ small [] [ text "Saved successfully!" ] ]
+                    div [ class "right" ] [ small [] [ text "Saved successfully!" ] ]
 
                 False ->
-                    a [ class "right dg-save-draft", onClick <| ClickUpdateDraft draft ] [ small [] [ text "SAVE" ] ]
+                    a [ class "right clickable block", onClick <| ClickUpdateDraft draft ] [ small [] [ text "SAVE" ] ]
 
         Failure err ->
-            div [ class "error-save save" ] [ small [] [ text "Can't save!" ] ]
+            div [ class "fg-error-color right" ] [ small [] [ text "Can't save!" ] ]
 
 
 formatCreated : Date -> String
@@ -93,5 +98,3 @@ formatUpdated created updated =
             (toString <| round (Time.inHours diff)) ++ " hours ago"
         else
             (toString <| (%) (round (Time.inHours diff)) 24) ++ " days ago"
-
-

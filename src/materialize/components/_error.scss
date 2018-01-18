@@ -1,7 +1,7 @@
 .dg-error-page {
-    min-height: 100%;
+    min-height: 100vh;
     background-color: $primary-color;
-    @extend .dg-text-grey;
+    color: $grey-color;
 
     span {
         font-weight: bold;
