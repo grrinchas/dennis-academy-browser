@@ -84,7 +84,7 @@ save : WebData UserProfile -> Form -> Html Msg
 save webDraft form =
     case webDraft of
         NotAsked ->
-            a [ class "right clickable block", onClick <| ClickUpdateProfile ] [ small [] [ text "SAVE " ] ]
+            a [ class "right btn pulse", onClick <| ClickUpdateProfile ] [ small [] [ text "SAVE " ] ]
 
         Loading ->
             div [ class "right " ] [ newLoader [class "tiny"]]
@@ -95,7 +95,7 @@ save webDraft form =
                     div [ class "right" ] [ small [] [ text "SAVED" ] ]
 
                 False ->
-                    a [ class "right clickable dg-save-draft", onClick <| ClickUpdateProfile ] [ small [] [ text "SAVE " ] ]
+                    a [ class "right btn pulse", onClick <| ClickUpdateProfile ] [ small [] [ text "SAVE " ] ]
 
         Failure err ->
             div [ class "right fg-error-color" ] [ small [] [ text "Can't save!" ] ]

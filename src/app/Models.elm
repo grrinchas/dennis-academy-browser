@@ -269,6 +269,50 @@ type SortDraftBy
     | Owner Direction
 
 
+flipDirection: SortDraftBy -> SortDraftBy
+flipDirection sort =
+    case sort of
+        CreatedAt Ascending -> CreatedAt Descending
+        CreatedAt Descending -> CreatedAt Ascending
+        UpdatedAt Ascending -> UpdatedAt Descending
+        UpdatedAt Descending -> UpdatedAt Ascending
+        Title Ascending -> Title Descending
+        Title Descending -> Title Ascending
+        Owner Ascending -> Owner Descending
+        Owner Descending -> Owner Ascending
+
+
+isCreated: SortDraftBy -> Bool
+isCreated sort =
+    case sort of
+        CreatedAt _ -> True
+        _ -> False
+
+isUpdated: SortDraftBy -> Bool
+isUpdated sort =
+    case sort of
+        UpdatedAt _ -> True
+        _ -> False
+
+isTitle: SortDraftBy -> Bool
+isTitle sort =
+    case sort of
+        Title _ -> True
+        _ -> False
+
+isOwner: SortDraftBy -> Bool
+isOwner sort =
+    case sort of
+        Owner _ -> True
+        _ -> False
+direction: SortDraftBy -> Direction
+direction sort =
+    case sort of
+    CreatedAt dir -> dir
+    UpdatedAt dir -> dir
+    Title dir -> dir
+    Owner dir -> dir
+
 type alias DisplayMenu =
     { user : Bool
     , publish : Bool
@@ -286,6 +330,10 @@ type alias DisplayMenu =
             { public: Bool
             , local: Bool
             }
+        }
+    , sortDraft:
+        { display: Bool
+        , sortBy: SortDraftBy
         }
     }
 
@@ -309,6 +357,10 @@ initialMenu =
            , local = True
            }
         }
+    , sortDraft=
+        { display= False
+        , sortBy = CreatedAt Descending
+        }
     }
 
 
@@ -330,24 +382,28 @@ menu menu model =
 
 reset: DisplayMenu -> DisplayMenu
 reset menu =
-        { user = False
-        , publish = False
-        , newDraft = False
-        , deleteDraft = { id = "", display = False }
-        , publicDraft = { id = "", display = False }
-        , displayDraft = False
-        , filterDraft =
-            { display = False
-            , publicDraftsPage =
-                { mine = menu.filterDraft.publicDraftsPage.mine
-                , others = menu.filterDraft.publicDraftsPage.others
-                }
-            , localDraftsPage =
-                { public = menu.filterDraft.localDraftsPage.public
-                , local = menu.filterDraft.localDraftsPage.local
-                }
+    { user = False
+    , publish = False
+    , newDraft = False
+    , deleteDraft = { id = "", display = False }
+    , publicDraft = { id = "", display = False }
+    , displayDraft = False
+    , filterDraft =
+        { display = False
+        , publicDraftsPage =
+            { mine = menu.filterDraft.publicDraftsPage.mine
+            , others = menu.filterDraft.publicDraftsPage.others
+            }
+        , localDraftsPage =
+            { public = menu.filterDraft.localDraftsPage.public
+            , local = menu.filterDraft.localDraftsPage.local
             }
         }
+    , sortDraft=
+        { display= False
+        , sortBy = menu.sortDraft.sortBy
+        }
+    }
 
 
 
@@ -417,6 +473,18 @@ menuFilterLocalDraftLocal bool menu =
 menuDisplayDraft : DisplayMenu
 menuDisplayDraft =
     { initialMenu | displayDraft = True }
+
+
+menuSortDraft : DisplayMenu -> DisplayMenu
+menuSortDraft menu =
+    case (reset menu, menu.sortDraft) of
+        (newMenu, sort) -> { newMenu | sortDraft = {sort | display = True}}
+
+
+menuSortedDraft : SortDraftBy -> DisplayMenu -> DisplayMenu
+menuSortedDraft sortBy menu =
+    case menu.sortDraft of
+        sort -> { menu | sortDraft = {display = True, sortBy= sortBy}}
 
 
 remote : Remote -> Model -> Model

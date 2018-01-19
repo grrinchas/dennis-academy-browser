@@ -124,7 +124,7 @@ draftCard menu user draft =
                     [ img [ class "circle medium", src draft.owner.picture ] []
                     , div []
                         [ a [ href <| path <| ProfileRoute draft.owner.username, class "fg-link-color no-transform " ] [ text draft.owner.username ]
-                        , small [ class "block fg-grey-color no-transform"] [ text <| formatDate draft.updatedAt ]
+                        , small [ class "block fg-grey-color no-transform"] [ text <| formatDate draft.createdAt ]
                         ]
                     ]
                 , ul [class "right inline reset-margin-top reset-margin-bottom"]
