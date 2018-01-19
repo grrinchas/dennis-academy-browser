@@ -1,7 +1,6 @@
 module Views.Drafts exposing (..)
 
 import Components exposing (draftCard, loader, newLoader)
-import Date exposing (Date)
 import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,21 +14,35 @@ import Routes exposing (Route(DraftRoute, DraftsRoute, HomeRoute, ProfileRoute, 
 view : Bool -> Model -> Html Msg
 view bool model =
     div [ class "" ]
-        [ ul [ class "tabs" ]
-            [ li [ class "tab" ] [ a [ href <| path DraftsRoute, classList [ ( "active", not bool ) ] ] [ text "Mine" ] ]
-            , li [ class "tab" ] [ a [ href <| path PublicDraftsRoute, classList [ ( "active", bool ) ] ] [ text "Community" ] ]
+        [div [ class "valign-wrapper" ]
+            [ ul [ class "tabs" ]
+                [ li [ class "tab" ] [ a [ href <| path DraftsRoute, classList [ ( "active", not bool ) ] ] [ text "Mine" ] ]
+                , li [ class "tab" ] [ a [ href <| path PublicDraftsRoute, classList [ ( "active", bool ) ] ] [ text "Community" ] ]
+                ]
+
+            , ul [ class "tabs right flex-flex-end" ]
+                [ li [class "left-padding tab"] [ filterLocal model.menu ]
+                ]
             ]
         , div [ class "divider"] []
         , div [ class "row section container " ] <|
             case model.remote.user of
-                Success user ->
-                    (List.sortBy (\date -> Date.toTime <| .createdAt date) (Dict.values user.drafts)
-                        |> List.reverse
-                        |> List.map (draftCard model.menu user)
-                    )
+                  Success user ->
+                    let drafts = Dict.values user.drafts in
+                      case (model.menu.filterDraft.localDraftsPage.local, model.menu.filterDraft.localDraftsPage.public) of
+                          (True,True) ->
+                              List.map (draftCard model.menu user) drafts
 
-                _ ->
-                    [div [class "loader-wrapper"] [ newLoader [] ]]
+                          (True, False) ->
+                              List.filter (\d-> d.visibility == PRIVATE) drafts
+                                  |> List.map (draftCard model.menu user)
+                          (False, True) ->
+                              List.filter (\d-> d.visibility == PUBLIC) drafts
+                                  |> List.map (draftCard model.menu user)
+
+                          (False, False)-> List.map (draftCard model.menu user) []
+
+                  _ -> [div [class "loader-wrapper"] [ newLoader [] ]]
         ]
 
 
@@ -43,8 +56,7 @@ publicView bool model =
                 ]
 
             , ul [ class "tabs right flex-flex-end" ]
-                [ li [class "left-padding tab"] [ display model.menu ]
-                , li [class "left-padding tab"] [ filterPublic model.menu ]
+                [ li [class "left-padding tab"] [ filterPublic model.menu ]
                 , li [class "left-padding tab"] [ refresh model.remote.refreshedPublicDrafts ]
                 ]
             ]
@@ -90,12 +102,6 @@ filterMenuEvent menu =
         Json.Decode.succeed <|
             WhenMenuChanges (menuFilterDraft menu)
 
-displayMenuEvent : Attribute Msg
-displayMenuEvent =
-    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
-        Json.Decode.succeed <|
-            WhenMenuChanges menuDisplayDraft
-
 
 filterPublicMineMenuEvent : Bool -> DisplayMenu -> Attribute Msg
 filterPublicMineMenuEvent bool menu =
@@ -110,6 +116,17 @@ filterPublicOthersMenuEvent bool menu =
             WhenMenuChanges (menuFilterPublicDraftOthers bool menu)
 
 
+filterLocalPublicMenuEvent : Bool -> DisplayMenu -> Attribute Msg
+filterLocalPublicMenuEvent bool menu =
+    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
+        Json.Decode.succeed <|
+            WhenMenuChanges (menuFilterLocalDraftPublic bool menu)
+
+filterLocalLocalMenuEvent : Bool -> DisplayMenu -> Attribute Msg
+filterLocalLocalMenuEvent bool menu =
+    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
+        Json.Decode.succeed <|
+            WhenMenuChanges (menuFilterLocalDraftLocal bool menu)
 
 
 filterPublicMenu : DisplayMenu -> Html Msg
@@ -135,6 +152,28 @@ filterPublicMenu menu =
         ]
 
 
+filterLocalMenu : DisplayMenu -> Html Msg
+filterLocalMenu menu =
+    ul [  class "dropdown-content top-55-right-0", classList [ ( "active", menu.filterDraft.display ) ] ]
+        [
+        case menu.filterDraft.localDraftsPage.public of
+            True ->
+                li [] [ a [ class "block", filterLocalPublicMenuEvent False menu]
+                 [ i [ class "material-icons", classList [("visible", True)] ] [ text "done" ], text "Public" ] ]
+            False ->
+                li [] [ a [ class "block", filterLocalPublicMenuEvent True menu]
+                 [ i [ class "material-icons",  classList [("not-visible", True)] ] [ text "done" ], text "Public" ] ]
+        ,
+        case menu.filterDraft.localDraftsPage.local of
+            True ->
+                li [] [ a [ class "block", filterLocalLocalMenuEvent False menu]
+                 [ i [ class "material-icons", classList [("visible", True)] ] [ text "done" ], text "Private" ] ]
+            False ->
+                li [] [ a [ class "block", filterLocalLocalMenuEvent True menu]
+                 [ i [ class "material-icons",  classList [("not-visible", True)] ] [ text "done" ], text "Private" ] ]
+
+        ]
+
 
 filterPublic : DisplayMenu -> Html Msg
 filterPublic menu =
@@ -145,24 +184,12 @@ filterPublic menu =
         ]
 
 
-
-
-
-
-display : DisplayMenu -> Html Msg
-display menu =
+filterLocal : DisplayMenu -> Html Msg
+filterLocal menu =
     div [ class "valign-wrapper dropdown-wrapper" ]
-        [ span [ class "clickable", displayMenuEvent ] [ text "DISPLAY" ]
-        , i [ class "material-icons clickable", displayMenuEvent ] [ text "arrow_drop_down" ]
-        , displayMenu menu
+        [ span [ class "clickable", filterMenuEvent menu] [ text "FILTER" ]
+        , i [ class "material-icons clickable", filterMenuEvent menu] [ text "arrow_drop_down" ]
+        , filterLocalMenu menu
         ]
 
-displayMenu : DisplayMenu -> Html Msg
-displayMenu menu =
-    ul [ displayMenuEvent, class "dropdown-content top-55-right-0", classList [ ( "active", menu.displayDraft ) ] ]
-        [ li [] [ a [ class "block" ] [ i [ class "material-icons" ] [ text "done" ], text "Show all" ] ]
-        , li [ class "divider" ] []
-        , li [] [ a [ class "block" ] [ i [ class "material-icons" ] [ text "done" ], text "Mine" ] ]
-        , li [] [ a [ class "block" ] [ i [ class "material-icons" ] [ text "done" ], text "Others" ] ]
-        ]
 

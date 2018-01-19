@@ -3,7 +3,6 @@ port module Main exposing (..)
 import Api
 import Commands exposing (removeTokens, reroute, saveTokens, updateTime)
 import Dict
-import Err exposing (..)
 import Mouse
 import Platform.Cmd exposing (batch)
 import Ports
@@ -12,7 +11,6 @@ import Navigation exposing (Location)
 import Pages
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData, succeed)
 import Routes exposing (..)
-import Task
 import Time exposing (Time)
 
 

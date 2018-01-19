@@ -7,8 +7,6 @@ import Err exposing (..)
 import Html exposing (Html, div, text)
 import Http exposing (Error(BadStatus))
 import Json.Decode
-import List
-import Views.Landing as Landing
 import Views.Error as Error
 import Views.Auth as Auth
 import Views.NavBar as NavBar

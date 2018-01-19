@@ -260,6 +260,14 @@ resetForm model =
     form initialForm model
 
 
+type Direction = Ascending | Descending
+
+type SortDraftBy
+    = CreatedAt Direction
+    | UpdatedAt Direction
+    | Title Direction
+    | Owner Direction
+
 
 type alias DisplayMenu =
     { user : Bool
@@ -273,6 +281,10 @@ type alias DisplayMenu =
          ,publicDraftsPage:
             { mine: Bool
             , others: Bool
+            }
+         ,localDraftsPage:
+            { public: Bool
+            , local: Bool
             }
         }
     }
@@ -292,6 +304,10 @@ initialMenu =
             { mine = True
             , others = True
             }
+        ,localDraftsPage=
+           { public = True
+           , local = True
+           }
         }
     }
 
@@ -325,6 +341,10 @@ reset menu =
             , publicDraftsPage =
                 { mine = menu.filterDraft.publicDraftsPage.mine
                 , others = menu.filterDraft.publicDraftsPage.others
+                }
+            , localDraftsPage =
+                { public = menu.filterDraft.localDraftsPage.public
+                , local = menu.filterDraft.localDraftsPage.local
                 }
             }
         }
@@ -381,6 +401,17 @@ menuFilterPublicDraftOthers : Bool -> DisplayMenu -> DisplayMenu
 menuFilterPublicDraftOthers bool menu =
     case ( menu.filterDraft, menu.filterDraft.publicDraftsPage) of
         ( filter, page) -> { menu | filterDraft = {filter | publicDraftsPage = {page | others = bool}}}
+
+menuFilterLocalDraftPublic : Bool -> DisplayMenu -> DisplayMenu
+menuFilterLocalDraftPublic bool menu =
+    case ( menu.filterDraft, menu.filterDraft.localDraftsPage) of
+        (filter, page) -> { menu | filterDraft = {filter | localDraftsPage = {page | public = bool}}}
+
+
+menuFilterLocalDraftLocal : Bool -> DisplayMenu -> DisplayMenu
+menuFilterLocalDraftLocal bool menu =
+    case ( menu.filterDraft, menu.filterDraft.localDraftsPage) of
+        ( filter, page) -> { menu | filterDraft = {filter | localDraftsPage = {page | local = bool}}}
 
 
 menuDisplayDraft : DisplayMenu
