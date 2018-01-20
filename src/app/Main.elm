@@ -87,7 +87,6 @@ update msg model =
                 |> withNoCommand
 
         WhenMenuChanges m ->
-            let _ = Debug.log "" m.filterDraft.publicDraftsPage.mine in
             menu m model
                 |> withNoCommand
 
@@ -98,6 +97,10 @@ update msg model =
         WhenDraftChanges draft ->
             updateDraft (succeed draft) model
                 |> withNoCommand
+
+        WhenSnackBarChanges bar ->
+
+            ({model | snackBar = bar}, Cmd.none)
 
         ClickUpdateRoute route ->
             ( model, Navigation.newUrl <| path route )
@@ -119,6 +122,7 @@ update msg model =
 
         ClickMouse _ ->
             resetMenu model
+                |> resetSnackBar
                 |> withNoCommand
 
         ClickCreateDraft draft ->
@@ -183,6 +187,15 @@ update msg model =
             updateDraft web model
                 |> resetForm
                 |> resetMenu
+                |> (\m -> RemoteData.map (\draft ->
+                    snackBar
+                        { message = "Draft has been created successfully."
+                        , display = True
+                        , action = Just {msg = ClickUpdateRoute <| DraftRoute draft.id, string = "EDIT"}
+                        } m
+                        ) web
+                        |> RemoteData.withDefault m
+                   )
                 |> reroute
                 |> andAlso
                     (\m ->
@@ -192,13 +205,6 @@ update msg model =
                                     |> RemoteData.map (\r -> [ Navigation.newUrl <| path r ])
                                     |> RemoteData.map (flip withCommands m)
                                     |> RemoteData.withDefault (withNoCommand m)
-
-                            Ok (ProfileRoute _) ->
-                                RemoteData.map (\d -> DraftRoute d.id) web
-                                    |> RemoteData.map (\r -> [ Navigation.newUrl <| path r ])
-                                    |> RemoteData.map (flip withCommands m)
-                                    |> RemoteData.withDefault (withNoCommand m)
-
                             _ ->
                                 withNoCommand m
                     )
@@ -206,6 +212,10 @@ update msg model =
         OnFetchDeletedDraft web ->
             removeDraft web model
                 |> resetMenu
+                |>
+                (\m -> if RemoteData.isSuccess web then
+                       snackBar { message = "Draft has been successfully deleted." , display = True, action = Nothing} m
+                  else  m )
                 |> (\m ->
                         case m.route of
                             Ok PublicDraftsRoute ->

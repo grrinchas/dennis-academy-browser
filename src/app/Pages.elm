@@ -91,7 +91,7 @@ draftPage id model =
         Success user ->
             case Dict.get id user.drafts of
                 Just draft ->
-                    layout model.menu (NavBar.draft model) <| Draft.view model (Just draft)
+                    layout model (NavBar.draft model) <| Draft.view model (Just draft)
 
                 Nothing ->
                     Error.view <| Routing NotFound
@@ -100,7 +100,7 @@ draftPage id model =
             Error.view <| Http err
 
         _ ->
-            layout model.menu (NavBar.draft model) <| Draft.view model Nothing
+            layout model (NavBar.draft model) <| Draft.view model Nothing
 
 
 dashboardPage : Model -> Html Msg
@@ -130,7 +130,7 @@ draftsPage model =
             Error.view <| Http err
 
         _ ->
-            layout model.menu (NavBar.drafts model) <| Drafts.view False model
+            layout model (NavBar.drafts model) <| Drafts.view False model
 
 
 publicDraftsPage : Model -> Html Msg
@@ -140,7 +140,7 @@ publicDraftsPage model =
             Error.view <| Http err
 
         _ ->
-            layout model.menu (NavBar.dashboard model) <| Drafts.publicView True model
+            layout model (NavBar.dashboard model) <| Drafts.publicView True model
 
 
 userProfilePage : String -> Model -> Html Msg
@@ -150,7 +150,8 @@ userProfilePage username model =
             Error.view <| Http err
 
         _ ->
-            layout model.menu (NavBar.dashboard model) <| UserProfile.view model
+            layout model (NavBar.dashboard model) <| UserProfile.view model
+
 
 
 view : Model -> Html Msg

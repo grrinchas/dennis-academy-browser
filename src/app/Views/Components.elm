@@ -20,12 +20,23 @@ empty =
     div [] []
 
 
-layout : DisplayMenu -> Html msg -> Html msg -> Html msg
-layout menu head main =
+layout : Model -> Html Msg -> Html Msg -> Html Msg
+layout model head main =
     div [ class "layout" ]
         [ header [] [ head ]
         , main_ [] [ main ]
+        , div [class "snackbar"
+            , classList [("show", model.snackBar.display), ("hide", model.snackBar.display == False)]
+            ] [ text model.snackBar.message
+             , case model.snackBar.action of
+                Just {msg, string} ->
+                    span [ class "toast-action", onClick msg] [text string]
+                Nothing ->
+                    div [] []
+
+            ]
         ]
+
 
 
 withLoader : Html msg -> Html msg

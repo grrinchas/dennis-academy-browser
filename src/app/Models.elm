@@ -3,6 +3,7 @@ module Models exposing (..)
 import Date exposing (Date)
 import Dict exposing (Dict)
 import Err exposing (InputError, Oops)
+import Html exposing (Attribute)
 import Http
 import Mouse
 import Navigation exposing (Location)
@@ -98,13 +99,6 @@ type alias Remote =
     }
 
 
-type alias Model =
-    { route : Result RouteError Route
-    , form : Form
-    , menu : DisplayMenu
-    , remote : Remote
-    , now : Time
-    }
 
 
 type alias Account =
@@ -127,6 +121,7 @@ type Msg
     | WhenMenuChanges DisplayMenu
     | WhenTimeChanges Time
     | WhenDraftChanges Draft
+    | WhenSnackBarChanges SnackBar
     | ClickMouse Mouse.Position
     | ClickUpdateRoute Route
     | ClickLogout
@@ -581,6 +576,36 @@ resetRemote model =
     remote initialRemote model
 
 
+type alias SnackBar =
+    { message: String
+    , display: Bool
+    , action: Maybe {msg : Msg, string: String}
+    }
+
+initialSnackBar : SnackBar
+initialSnackBar =
+    { message= ""
+    , display = False
+    , action = Nothing
+    }
+
+resetSnackBar : Model -> Model
+resetSnackBar model =
+    snackBar initialSnackBar model
+
+snackBar : SnackBar -> Model -> Model
+snackBar bar model =
+    {model| snackBar = bar}
+
+type alias Model =
+    { route : Result RouteError Route
+    , form : Form
+    , menu : DisplayMenu
+    , remote : Remote
+    , now : Time
+    , snackBar: SnackBar
+    }
+
 initialModel : Model
 initialModel =
     { route = initialRoute
@@ -588,6 +613,7 @@ initialModel =
     , menu = initialMenu
     , remote = initialRemote
     , now = Time.second
+    , snackBar = initialSnackBar
     }
 
 
