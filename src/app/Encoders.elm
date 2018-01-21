@@ -63,6 +63,8 @@ userInfo token =
                 , GraphQl.field "bio"
                 , GraphQl.field "drafts"
                     |> GraphQl.withSelectors draftSelector
+                , GraphQl.field "likedDrafts"
+                    |> GraphQl.withSelectors draftSelector
                 ]
         ]
         |> query
@@ -126,6 +128,31 @@ deleteDraft draft token =
         ]
         |> mutation
 
+likeDraft : Draft -> AuthGraphCool -> Http.Body
+likeDraft draft token =
+    GraphQl.named "likeDraft"
+        [ GraphQl.field "addToUserOnLikedDraft"
+            |> GraphQl.withArgument "draftFanUserId" (GraphQl.string token.id)
+            |> GraphQl.withArgument "likedDraftsDraftId" (GraphQl.string draft.id)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "likedDraftsDraft"
+                    |> GraphQl.withSelectors draftSelector
+                ]
+        ]
+        |> mutation
+
+unLikeDraft : Draft -> AuthGraphCool -> Http.Body
+unLikeDraft draft token =
+    GraphQl.named "unLikeDraft"
+        [ GraphQl.field "removeFromUserOnLikedDraft"
+            |> GraphQl.withArgument "draftFanUserId" (GraphQl.string token.id)
+            |> GraphQl.withArgument "likedDraftsDraftId" (GraphQl.string draft.id)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "likedDraftsDraft"
+                    |> GraphQl.withSelectors draftSelector
+                ]
+        ]
+        |> mutation
 
 updateProfile : Form -> AuthGraphCool -> Http.Body
 updateProfile form token =
@@ -155,7 +182,9 @@ profileSelector =
     , GraphQl.field "bio"
     , GraphQl.field "drafts"
         |> GraphQl.withArgument "filter" (GraphQl.input [ ( "visibility", GraphQl.type_ <| toString PUBLIC ) ])
-        |> GraphQl.withArgument "orderBy" (GraphQl.type_ "updatedAt_DESC")
+        |> GraphQl.withSelectors draftSelector
+    , GraphQl.field "likedDrafts"
+        |> GraphQl.withArgument "filter" (GraphQl.input [ ( "visibility", GraphQl.type_ <| toString PUBLIC ) ])
         |> GraphQl.withSelectors draftSelector
     ]
 
@@ -175,6 +204,9 @@ draftSelector =
             , GraphQl.field "picture"
             , GraphQl.field "bio"
             ]
+    , GraphQl.field "_draftFanMeta"
+        |> GraphQl.withSelectors
+            [GraphQl.field "count"]
     ]
 
 

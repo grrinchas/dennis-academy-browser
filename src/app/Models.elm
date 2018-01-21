@@ -41,6 +41,7 @@ type alias Draft =
     , title : String
     , visibility : Visibility
     , owner : DraftOwner
+    , likes: Int
     }
 
 
@@ -54,6 +55,7 @@ initialDraft =
     , title = "Very descriptive draft title..."
     , visibility = PRIVATE
     , owner = DraftOwner "" "" ""
+    , likes = 0
     }
 
 
@@ -64,6 +66,7 @@ type alias User =
     , picture : String
     , bio : String
     , drafts : Dict String Draft
+    , likedDrafts: Dict String Draft
     }
 
 
@@ -72,6 +75,7 @@ type alias UserProfile =
     , picture : String
     , bio : String
     , drafts : List Draft
+    , likedDrafts: List Draft
     }
 
 
@@ -93,7 +97,7 @@ type alias Remote =
     , account : WebData Account
     , user : WebData User
     , savedDraft : WebData Draft
-    , publicDrafts : WebData (List Draft)
+    , publicDrafts : WebData (Dict String Draft)
     , refreshedPublicDrafts : WebData ()
     , userProfile : WebData UserProfile
     }
@@ -122,6 +126,7 @@ type Msg
     | WhenTimeChanges Time
     | WhenDraftChanges Draft
     | WhenSnackBarChanges SnackBar
+
     | ClickMouse Mouse.Position
     | ClickUpdateRoute Route
     | ClickLogout
@@ -131,7 +136,10 @@ type Msg
     | ClickCreateDraft Draft
     | ClickDeleteDraft Draft
     | ClickRefreshPublicDrafts
+    | ClickLikeDraft Draft
+    | ClickUnLikeDraft Draft
     | ClickUpdateProfile
+
     | OnFetchCreatedAccount (WebData Account)
     | OnFetchAuth0Token (WebData Auth0Token)
     | OnFetchGraphCoolToken (WebData AuthGraphCool)
@@ -139,7 +147,9 @@ type Msg
     | OnFetchUpdatedDraft (WebData Draft)
     | OnFetchCreatedDraft (WebData Draft)
     | OnFetchDeletedDraft (WebData String)
-    | OnFetchPublicDrafts (WebData (List Draft))
+    | OnFetchPublicDrafts (WebData (Dict String Draft))
+    | OnFetchLikedDraft (WebData Draft)
+    | OnFetchUnLikedDraft (WebData Draft)
     | OnFetchUserProfile (WebData UserProfile)
 
 
@@ -262,6 +272,7 @@ type SortDraftBy
     | UpdatedAt Direction
     | Title Direction
     | Owner Direction
+    | Likes Direction
 
 
 flipDirection: SortDraftBy -> SortDraftBy
@@ -275,6 +286,8 @@ flipDirection sort =
         Title Descending -> Title Ascending
         Owner Ascending -> Owner Descending
         Owner Descending -> Owner Ascending
+        Likes Ascending -> Likes Descending
+        Likes Descending -> Likes Ascending
 
 
 isCreated: SortDraftBy -> Bool
@@ -300,6 +313,12 @@ isOwner sort =
     case sort of
         Owner _ -> True
         _ -> False
+isLikes: SortDraftBy -> Bool
+isLikes sort =
+    case sort of
+        Likes _ -> True
+        _ -> False
+
 direction: SortDraftBy -> Direction
 direction sort =
     case sort of
@@ -307,6 +326,7 @@ direction sort =
     UpdatedAt dir -> dir
     Title dir -> dir
     Owner dir -> dir
+    Likes dir -> dir
 
 type alias DisplayMenu =
     { user : Bool
@@ -318,8 +338,8 @@ type alias DisplayMenu =
     , filterDraft :
         { display: Bool
          ,publicDraftsPage:
-            { mine: Bool
-            , others: Bool
+            {liked: Bool
+            , notLiked: Bool
             }
          ,localDraftsPage:
             { public: Bool
@@ -344,8 +364,8 @@ initialMenu =
     , filterDraft =
         { display = False
         , publicDraftsPage =
-            { mine = True
-            , others = True
+            { liked= True
+            , notLiked = True
             }
         ,localDraftsPage=
            { public = True
@@ -386,8 +406,8 @@ reset menu =
     , filterDraft =
         { display = False
         , publicDraftsPage =
-            { mine = menu.filterDraft.publicDraftsPage.mine
-            , others = menu.filterDraft.publicDraftsPage.others
+            { liked = menu.filterDraft.publicDraftsPage.liked
+            , notLiked = menu.filterDraft.publicDraftsPage.notLiked
             }
         , localDraftsPage =
             { public = menu.filterDraft.localDraftsPage.public
@@ -399,6 +419,7 @@ reset menu =
         , sortBy = menu.sortDraft.sortBy
         }
     }
+
 
 
 
@@ -442,16 +463,15 @@ menuFilterDraft menu =
         (newMenu, filter) -> { newMenu | filterDraft = {filter | display = True}}
 
 
-menuFilterPublicDraftMine : Bool -> DisplayMenu -> DisplayMenu
-menuFilterPublicDraftMine bool menu =
+menuFilterPublicDraftLiked : Bool -> DisplayMenu -> DisplayMenu
+menuFilterPublicDraftLiked bool menu =
     case ( menu.filterDraft, menu.filterDraft.publicDraftsPage) of
-        (filter, page) -> { menu | filterDraft = {filter | publicDraftsPage = {page | mine = bool}}}
+        ( filter, page) -> { menu | filterDraft = {filter | publicDraftsPage = {page | liked = bool}}}
 
-
-menuFilterPublicDraftOthers : Bool -> DisplayMenu -> DisplayMenu
-menuFilterPublicDraftOthers bool menu =
+menuFilterPublicDraftNotLiked : Bool -> DisplayMenu -> DisplayMenu
+menuFilterPublicDraftNotLiked bool menu =
     case ( menu.filterDraft, menu.filterDraft.publicDraftsPage) of
-        ( filter, page) -> { menu | filterDraft = {filter | publicDraftsPage = {page | others = bool}}}
+        ( filter, page) -> { menu | filterDraft = {filter | publicDraftsPage = {page | notLiked = bool}}}
 
 menuFilterLocalDraftPublic : Bool -> DisplayMenu -> DisplayMenu
 menuFilterLocalDraftPublic bool menu =
@@ -522,7 +542,7 @@ remoteUpdatedDraft web model =
             { model | remote = { remote | savedDraft = web } }
 
 
-remotePublicDrafts : WebData (List Draft) -> Model -> Model
+remotePublicDrafts : WebData (Dict String Draft) -> Model -> Model
 remotePublicDrafts web model =
     case model.remote of
         remote ->
@@ -644,11 +664,38 @@ updateDraft web model =
         |> RemoteData.map (flip remoteUser model)
         |> withError model
 
+updateLikedDraft : WebData Draft -> Model -> Model
+updateLikedDraft web model =
+    RemoteData.append web model.remote.user
+        |> RemoteData.map (\( draft, user ) -> { user | likedDrafts = Dict.insert draft.id draft user.likedDrafts })
+        |> RemoteData.map RemoteData.succeed
+        |> RemoteData.map (flip remoteUser model)
+        |> withError model
+
+
+updatePublicDrafts : WebData Draft -> Model -> Model
+updatePublicDrafts web model =
+    RemoteData.append web model.remote.publicDrafts
+        |> RemoteData.map (\( draft, drafts ) -> Dict.insert draft.id draft drafts )
+        |> RemoteData.map RemoteData.succeed
+        |> RemoteData.map (flip remotePublicDrafts model)
+        |> withError model
+
 
 removeDraft : WebData String -> Model -> Model
 removeDraft web model =
     RemoteData.append web model.remote.user
         |> RemoteData.map (\( id, user ) -> { user | drafts = Dict.remove id user.drafts })
+        |> RemoteData.map RemoteData.succeed
+        |> RemoteData.map (flip remoteUser model)
+        |> withError model
+
+
+
+removeLikedDraft : WebData Draft -> Model -> Model
+removeLikedDraft web model =
+    RemoteData.append web model.remote.user
+        |> RemoteData.map (\( draft, user ) -> { user | likedDrafts = Dict.remove draft.id user.likedDrafts })
         |> RemoteData.map RemoteData.succeed
         |> RemoteData.map (flip remoteUser model)
         |> withError model

@@ -68,6 +68,10 @@ sortBy drafts sort =
            List.reverse <| List.sortBy (\d-> d.owner.username) drafts
         Owner Descending->
              List.sortBy (\d-> d.owner.username) drafts
+        Likes Ascending ->
+           List.sortBy (\d-> d.likes) drafts
+        Likes Descending->
+            List.reverse <|  List.sortBy (\d-> d.likes) drafts
 
 
 
@@ -90,22 +94,28 @@ publicView bool model =
         , div [ class "row container section" ] <|
             case RemoteData.append model.remote.publicDrafts model.remote.user of
                 Success ( drafts, user ) ->
-                    case (model.menu.filterDraft.publicDraftsPage.mine, model.menu.filterDraft.publicDraftsPage.others) of
-                        (True,True) ->
-                            List.map (draftCard model.menu user)(sortBy drafts model.menu.sortDraft.sortBy)
-
-                        (True, False) ->
-                            List.filter (\d-> d.owner.username == user.username) (sortBy drafts model.menu.sortDraft.sortBy)
-                                |> List.map (draftCard model.menu user)
-                        (False, True) ->
-                            List.filter (\d-> d.owner.username /= user.username) (sortBy drafts model.menu.sortDraft.sortBy)
-                                |> List.map (draftCard model.menu user)
-
-                        (False, False)-> List.map (draftCard model.menu user) []
-
+                    List.map (draftCard model.menu user)(sortBy (draftFilter model.menu user <| Dict.values drafts) model.menu.sortDraft.sortBy)
                 _ ->
                     [div [class "loader-wrapper"] [ newLoader [] ]]
         ]
+
+
+
+draftFilter : DisplayMenu -> User -> List Draft -> List Draft
+draftFilter menu user drafts =
+    case ( menu.filterDraft.publicDraftsPage.liked , menu.filterDraft.publicDraftsPage.notLiked ) of
+             (True, True) ->    drafts
+             (True, False) ->   List.filter (\d -> isLiked menu user d && isOthers menu user d) drafts
+             (False, True) ->   List.filter (\d -> not (isLiked menu user d) && isOthers menu user d) drafts
+             (False, False) ->   []
+
+isOthers : DisplayMenu -> User -> Draft -> Bool
+isOthers menu user draft=
+   draft.owner.username /= user.username
+
+isLiked : DisplayMenu -> User -> Draft -> Bool
+isLiked menu user draft=
+    List.member draft (Dict.values <| user.likedDrafts)
 
 
 refresh : WebData () -> Html Msg
@@ -128,19 +138,17 @@ filterMenuEvent menu =
         Json.Decode.succeed <|
             WhenMenuChanges (menuFilterDraft menu)
 
-
-filterPublicMineMenuEvent : Bool -> DisplayMenu -> Attribute Msg
-filterPublicMineMenuEvent bool menu =
+filterPublicLikedMenuEvent : Bool -> DisplayMenu -> Attribute Msg
+filterPublicLikedMenuEvent bool menu =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            WhenMenuChanges (menuFilterPublicDraftMine bool menu)
+            WhenMenuChanges (menuFilterPublicDraftLiked bool menu)
 
-filterPublicOthersMenuEvent : Bool -> DisplayMenu -> Attribute Msg
-filterPublicOthersMenuEvent bool menu =
+filterPublicNotLikedMenuEvent : Bool -> DisplayMenu -> Attribute Msg
+filterPublicNotLikedMenuEvent bool menu =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
         Json.Decode.succeed <|
-            WhenMenuChanges (menuFilterPublicDraftOthers bool menu)
-
+            WhenMenuChanges (menuFilterPublicDraftNotLiked bool menu)
 
 filterLocalPublicMenuEvent : Bool -> DisplayMenu -> Attribute Msg
 filterLocalPublicMenuEvent bool menu =
@@ -159,21 +167,21 @@ filterPublicMenu : DisplayMenu -> Html Msg
 filterPublicMenu menu =
     ul [  class "dropdown-content top-55-right-0", classList [ ( "active", menu.filterDraft.display ) ] ]
         [
-        case menu.filterDraft.publicDraftsPage.mine of
+        case menu.filterDraft.publicDraftsPage.liked of
             True ->
-                li [] [ a [ class "block", filterPublicMineMenuEvent False menu]
-                 [ i [ class "material-icons", classList [("visible", True)] ] [ text "done" ], text "Mine" ] ]
+                li [] [ a [ class "block", filterPublicLikedMenuEvent False menu]
+                 [ i [ class "material-icons", classList [("visible", True)] ] [ text "done" ], text "Liked" ] ]
             False ->
-                li [] [ a [ class "block", filterPublicMineMenuEvent True menu]
-                 [ i [ class "material-icons",  classList [("not-visible", True)] ] [ text "done" ], text "Mine" ] ]
-        ,
-        case menu.filterDraft.publicDraftsPage.others of
+                li [] [ a [ class "block", filterPublicLikedMenuEvent True menu]
+                 [ i [ class "material-icons",  classList [("not-visible", True)] ] [ text "done" ], text "Liked" ] ]
+
+        ,case menu.filterDraft.publicDraftsPage.notLiked of
             True ->
-                li [] [ a [ class "block", filterPublicOthersMenuEvent False menu]
-                 [ i [ class "material-icons", classList [("visible", True)] ] [ text "done" ], text "Others" ] ]
+                li [] [ a [ class "block", filterPublicNotLikedMenuEvent False menu]
+                 [ i [ class "material-icons", classList [("visible", True)] ] [ text "done" ], text "Not liked" ] ]
             False ->
-                li [] [ a [ class "block", filterPublicOthersMenuEvent True menu]
-                 [ i [ class "material-icons",  classList [("not-visible", True)] ] [ text "done" ], text "Others" ] ]
+                li [] [ a [ class "block", filterPublicNotLikedMenuEvent True menu]
+                 [ i [ class "material-icons",  classList [("not-visible", True)] ] [ text "done" ], text "Not liked" ] ]
 
         ]
 
@@ -257,6 +265,7 @@ getSortText sort =
         UpdatedAt _ -> text "Updated at"
         Title _ -> text "Ttitle"
         Owner _ -> text "Owner"
+        Likes _ -> text "Popularity"
 
 
 getSortTick: SortDraftBy -> DisplayMenu -> Html Msg
@@ -265,6 +274,7 @@ getSortTick sort menu =
        ||  (isUpdated sort && isUpdated menu.sortDraft.sortBy)
        ||  (isTitle sort && isTitle  menu.sortDraft.sortBy)
        ||  (isOwner sort && isOwner menu.sortDraft.sortBy)
+       ||  (isLikes sort && isLikes menu.sortDraft.sortBy)
     then
        i [ class "material-icons", classList [("visible", True)] ] [ text "done" ]
     else
@@ -276,6 +286,7 @@ getSortDirection sort menu =
        ||  (isUpdated sort && isUpdated menu.sortDraft.sortBy)
        ||  (isTitle sort && isTitle  menu.sortDraft.sortBy)
        ||  (isOwner sort && isOwner menu.sortDraft.sortBy)
+       ||  (isLikes sort && isLikes menu.sortDraft.sortBy)
     then
     case direction menu.sortDraft.sortBy of
       Ascending -> i [ class "material-icons right reset-margin-right", classList [("visible", True)] ] [ text "arrow_drop_up" ]
@@ -307,6 +318,11 @@ sortDraftMenu menu =
             [ getSortTick (Owner Descending) menu
             , getSortText (Owner Descending)
             , getSortDirection  (Owner Descending) menu
+            ] ]
+        , li [] [ a [ class "block", sortedMenuEvent (Likes Descending) menu]
+            [ getSortTick (Likes Descending) menu
+            , getSortText (Likes Descending)
+            , getSortDirection  (Likes Descending) menu
             ] ]
 
         ]

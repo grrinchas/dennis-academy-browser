@@ -1,6 +1,7 @@
 module Components exposing (..)
 
 import Date exposing (Date)
+import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onWithOptions)
@@ -117,14 +118,43 @@ formatDate date =
         |> (++) (toString <| Date.month date)
 
 
+getLikes : Draft -> User -> Html Msg
+getLikes draft user =
+    div [class "valign-wrapper"]
+        [ case (user.username /= draft.owner.username, Dict.member draft.id user.likedDrafts ) of
+               (True, False) ->
+                div [ class "tooltip-wrapper" ]
+                      [ i [ class "material-icons clickable fg-error-color", onClick <| ClickLikeDraft draft ] [ text "favorite_border" ]
+                      , small [ class "tooltip -top-35-right-0 " ] [ text "Like" ]
+                      ]
+
+               (True, True) ->
+                div [ class "tooltip-wrapper" ]
+                      [ i [ class "material-icons clickable fg-error-color", onClick <| ClickUnLikeDraft draft ] [ text "favorite" ]
+                      , small [ class "tooltip -top-35-right-0 " ] [ text "Unlike" ]
+                      ]
+
+               (False, _) ->
+                      i [ class "material-icons public opacity-quarter fg-error-color" ] [ text "favorite_border" ]
+
+        , if draft.likes == 0 then
+            span [][]
+          else
+            if user.username == draft.owner.username then
+                span [class "likes opacity-quarter"] [text <| toString draft.likes]
+            else
+                span [class "likes"] [text <| toString draft.likes]
+
+        ]
+
 draftCard : DisplayMenu -> User -> Draft -> Html Msg
 draftCard menu user draft =
     div [ class "col s12 m6 xl4" ]
         [ div [ class "card very-small" ]
-            [div [ class "card-content reset-top-bottom flex-flex-end" ]
-                [ ul [class "margin-half"] [ li [class ""] [ getVisibilityIcon user menu draft ] ] ]
-
-
+            [div [ class "card-content reset-top-bottom flex-space-between" ]
+                [ getLikes draft user
+                , getVisibilityIcon user menu draft
+                ]
             , div [ class "divider" ] []
             , div [ class "card-content hidden" ]
                 [ span [ class "card-title" ] [ text <| (String.left 50 draft.title) ++ "..." ]
@@ -152,8 +182,10 @@ draftCard menu user draft =
                             li [] []
                 , li []
                         [ a [ class "tooltip-wrapper", onClick <| ClickCreateDraft draft ]
-                            [ i [ class "material-icons clickable" ] [ text "content_copy" ]
-                            , small [ class "tooltip no-transform -top-50-right-0" ] [ text "Duplicate" ]
+                            [ i [ class "material-icons clickable" ]
+                                [text "content_copy" ]
+                            , small [ class "tooltip no-transform -top-50-right-0" ]
+                                [ text "Duplicate" ]
                             ]
                         ]
 

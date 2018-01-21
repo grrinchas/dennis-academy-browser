@@ -1,7 +1,7 @@
 module Decoders exposing (..)
 
 import Date exposing (Date)
-import Dict
+import Dict exposing (Dict)
 import Err exposing (InputError(..))
 import Json.Decode as Decoder
 import Json.Decode.Pipeline as Pipeline
@@ -76,16 +76,18 @@ userObject =
         |> Pipeline.required "bio" Decoder.string
         |> Pipeline.required "drafts"
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
+        |> Pipeline.required "likedDrafts"
+            (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
 
 
 draftObject : Decoder.Decoder Draft
 draftObject =
     let
         toDecoder =
-            \id created updated content type_ title visibility owner ->
+            \id created updated content type_ title visibility owner copies->
                 case ( created, updated, visibility ) of
                     ( Ok c, Ok u, Just v ) ->
-                        Decoder.succeed <| Draft id c u content type_ title v owner
+                        Decoder.succeed <| Draft id c u content type_ title v owner copies
 
                     ( Err err, _, _ ) ->
                         Decoder.fail err
@@ -105,7 +107,9 @@ draftObject =
             |> Pipeline.required "title" Decoder.string
             |> Pipeline.required "visibility" (Decoder.map visibility Decoder.string)
             |> Pipeline.required "owner" draftOwner
+            |> Pipeline.required "_draftFanMeta" (Decoder.field "count" Decoder.int)
             |> Pipeline.resolve
+
 
 
 draftOwner : Decoder.Decoder DraftOwner
@@ -123,6 +127,7 @@ userProfile =
         |> Pipeline.required "picture" Decoder.string
         |> Pipeline.required "bio" Decoder.string
         |> Pipeline.required "drafts" (Decoder.list draftObject)
+        |> Pipeline.required "likedDrafts" (Decoder.list draftObject)
 
 
 visibility : String -> Maybe Visibility
@@ -162,10 +167,10 @@ decodeDeleteDraft =
         |> dataField
 
 
-decodePublicDrafts : Decoder.Decoder (List Draft)
+decodePublicDrafts : Decoder.Decoder (Dict String Draft)
 decodePublicDrafts =
     draftObject
-        |> Decoder.list
+        |> (\object -> Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) object)
         |> Decoder.field "allDrafts"
         |> dataField
 
@@ -182,3 +187,20 @@ decodeUpdateProfile =
     userProfile
         |> Decoder.field "updateUser"
         |> dataField
+
+decodeLikedDraft : Decoder.Decoder Draft
+decodeLikedDraft =
+    draftObject
+        |> Decoder.field "likedDraftsDraft"
+        |> Decoder.field "addToUserOnLikedDraft"
+        |> dataField
+
+decodeUnlikedDraft : Decoder.Decoder Draft
+decodeUnlikedDraft =
+    draftObject
+        |> Decoder.field "likedDraftsDraft"
+        |> Decoder.field "removeFromUserOnLikedDraft"
+        |> dataField
+
+
+

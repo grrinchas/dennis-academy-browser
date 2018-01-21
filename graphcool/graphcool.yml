@@ -44,5 +44,12 @@ permissions:
     authenticated: true
     query: ./src/permissions/UserOnDraft.graphql:isOwner
 
+  - operation: UserOnLikedDraft.connect
+    authenticated: true
+    query: ./src/permissions/UserOnLikedDraft.graphql:isNotOwner
+
+  - operation: UserOnLikedDraft.disconnect
+    authenticated: true
+
 
 

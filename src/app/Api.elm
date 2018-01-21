@@ -13,10 +13,13 @@ domain =
     "https://nookit.eu.auth0.com"
 
 
-graphCool : String
-graphCool =
+graphCool1 : String
+graphCool1 =
     "https://api.graph.cool/simple/v1/cjb18c15f1csb0122a4ptkgnt"
 
+graphCool : String
+graphCool =
+    "https://api.graph.cool/simple/v1/cjcnkimc02rhy0177ejct2ika"
 
 authorised : (AuthGraphCool -> Http.Body) -> Json.Decode.Decoder a -> AuthGraphCool -> Http.Request a
 authorised body decoder token =
@@ -80,6 +83,19 @@ createDraft draft model =
         |> RemoteData.map (Cmd.map OnFetchCreatedDraft)
         |> withError model
 
+likeDraft : Draft -> Model -> ( Model, Cmd Msg )
+likeDraft draft model =
+    RemoteData.map (authorised (Encoders.likeDraft draft) Decoders.decodeLikedDraft) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map OnFetchLikedDraft)
+        |> withError model
+
+unLikeDraft : Draft -> Model -> ( Model, Cmd Msg )
+unLikeDraft draft model =
+    RemoteData.map (authorised (Encoders.unLikeDraft draft) Decoders.decodeUnlikedDraft) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map OnFetchUnLikedDraft)
+        |> withError model
 
 authGraphCool : Model -> ( Model, Cmd Msg )
 authGraphCool model =

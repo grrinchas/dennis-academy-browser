@@ -11,6 +11,7 @@ type User @model {
     picture: String! @isUnique
     bio: String! @defaultValue (value: "No bio provided...")
     drafts: [Draft!]! @relation(name: "UserOnDraft")
+    likedDrafts: [Draft!]! @relation (name: "UserOnLikedDraft")
 }
 
 type Draft @model {
@@ -24,6 +25,9 @@ type Draft @model {
     visibility: Visibility! @defaultValue(value: PRIVATE)
     content: String!
     owner: User! @relation(name: "UserOnDraft")
+
+    draftFan: [User!]! @relation(name: "UserOnLikedDraft")
+
 }
 
 enum Visibility {

@@ -99,7 +99,6 @@ update msg model =
                 |> withNoCommand
 
         WhenSnackBarChanges bar ->
-
             ({model | snackBar = bar}, Cmd.none)
 
         ClickUpdateRoute route ->
@@ -134,6 +133,12 @@ update msg model =
 
         ClickDeleteDraft draft ->
             Api.deleteDraft draft model
+
+        ClickLikeDraft draft ->
+            Api.likeDraft draft model
+
+        ClickUnLikeDraft draft ->
+            Api.unLikeDraft draft model
 
         ClickRefreshPublicDrafts ->
             remoteRefreshedPublicDrafts Loading model
@@ -189,7 +194,7 @@ update msg model =
                 |> resetMenu
                 |> (\m -> RemoteData.map (\draft ->
                     snackBar
-                        { message = "Draft has been created successfully."
+                        { message = "Draft has been successfully created."
                         , display = True
                         , action = Just {msg = ClickUpdateRoute <| DraftRoute draft.id, string = "EDIT"}
                         } m
@@ -197,17 +202,16 @@ update msg model =
                         |> RemoteData.withDefault m
                    )
                 |> reroute
-                |> andAlso
-                    (\m ->
-                        case m.route of
-                            Ok PublicDraftsRoute ->
-                                RemoteData.map (\d -> DraftRoute d.id) web
-                                    |> RemoteData.map (\r -> [ Navigation.newUrl <| path r ])
-                                    |> RemoteData.map (flip withCommands m)
-                                    |> RemoteData.withDefault (withNoCommand m)
-                            _ ->
-                                withNoCommand m
-                    )
+
+        OnFetchLikedDraft web ->
+            updatePublicDrafts web model
+                |> updateLikedDraft web
+                |> withNoCommand
+
+        OnFetchUnLikedDraft web ->
+            updatePublicDrafts web model
+                |> removeLikedDraft web
+                |> withNoCommand
 
         OnFetchDeletedDraft web ->
             removeDraft web model

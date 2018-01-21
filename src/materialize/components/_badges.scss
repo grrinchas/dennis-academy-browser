@@ -1,47 +1,82 @@
 // Badges
-span.badge {
-  min-width: 3rem;
-  padding: 0 6px;
-  margin-left: 14px;
-  text-align: center;
-  font-size: 1rem;
-  line-height: $badge-height;
-  height: $badge-height;
-  color: color('grey', 'darken-1');
-  float: right;
-  box-sizing: border-box;
+.mat {
 
-  &.new {
-    font-weight: 300;
-    font-size: 0.8rem;
-    color: #fff;
-    background-color: $badge-bg-color;
-    border-radius: 2px;
-  }
-  &.new:after {
-    content: " new";
-  }
+    span.badge {
+        min-width: 3rem;
+        padding: 0 6px;
+        margin-left: 14px;
+        text-align: center;
+        font-size: 1rem;
+        line-height: $badge-height;
+        height: $badge-height;
+        color: color('grey', 'darken-1');
+        float: right;
+        box-sizing: border-box;
 
-  &[data-badge-caption]::after {
-    content: " " attr(data-badge-caption);
-  }
-}
-nav ul a span.badge {
-  display: inline-block;
-  float: none;
-  margin-left: 4px;
-  line-height: $badge-height;
-  height: $badge-height;
-  -webkit-font-smoothing: auto;
+        &.new {
+            font-weight: 300;
+            font-size: 0.8rem;
+            color: #fff;
+            background-color: $badge-bg-color;
+            border-radius: 2px;
+        }
+        &.new:after {
+            content: " new";
+        }
+
+        &[data-badge-caption]::after {
+            content: " " attr(data-badge-caption);
+        }
+    }
+
+    nav ul a span.badge {
+        display: inline-block;
+        float: none;
+        margin-left: 4px;
+        line-height: $badge-height;
+        height: $badge-height;
+        -webkit-font-smoothing: auto;
+    }
+
+    // Line height centering
+    .collection-item span.badge {
+        margin-top: calc(#{$collection-line-height / 2} - #{$badge-height / 2});
+    }
+    .collapsible span.badge {
+        margin-left: auto;
+    }
+    .side-nav span.badge {
+        margin-top: calc(#{$sidenav-line-height / 2} - #{$badge-height / 2});
+    }
 }
 
-// Line height centering
-.collection-item span.badge {
-  margin-top: calc(#{$collection-line-height / 2} - #{$badge-height / 2});
+
+.badge-wrapper {
+    position: relative;
+    .badge {
+        position: absolute;
+        bottom: 15px;
+        right: -5px;
+        color: $text-color;
+        z-index: 1;
+        border-radius: 50px;
+        padding: 2px 5px;
+        background-color: lighten($primary-color, 20);
+        font-size: 0.65rem;
+    }
 }
-.collapsible span.badge {
-  margin-left: auto;
+
+.likes {
+    font-size: 18px;
+    margin-left: 5px  !important;
+    color: $error-color !important;
+
+
 }
-.side-nav span.badge {
-  margin-top: calc(#{$sidenav-line-height / 2} - #{$badge-height / 2});
-}
+
+
+
+
+
+
+

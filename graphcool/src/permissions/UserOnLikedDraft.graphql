@@ -1,0 +1,9 @@
+query isNotOwner($draftFanUser_id: ID!, $likedDraftsDraft_id: ID!) {
+    SomeDraftExists(filter: {
+        id: $likedDraftsDraft_id
+        owner: {
+            id_not: $draftFanUser_id
+        }
+    })
+}
+
