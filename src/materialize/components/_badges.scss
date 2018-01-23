@@ -48,31 +48,37 @@
     .side-nav span.badge {
         margin-top: calc(#{$sidenav-line-height / 2} - #{$badge-height / 2});
     }
+
 }
 
 
 .badge-wrapper {
+
     position: relative;
+
     .badge {
         position: absolute;
-        bottom: 15px;
-        right: -5px;
+        top: 15px;
+        left: 25px;
+        border-radius: 50%;
+        border: 1px solid darken($error-color, 10);
+        font-size: 0.7rem;
+        font-weight: bold;
+        height: 17px;
+        width: 17px;
+        line-height: initial;
+        background-color: $error-color;
         color: $text-color;
-        z-index: 1;
-        border-radius: 50px;
-        padding: 2px 5px;
-        background-color: lighten($primary-color, 20);
-        font-size: 0.65rem;
+
+
     }
 }
 
-.likes {
-    font-size: 18px;
-    margin-left: 5px  !important;
-    color: $error-color !important;
 
 
-}
+
+
+
 
 
 

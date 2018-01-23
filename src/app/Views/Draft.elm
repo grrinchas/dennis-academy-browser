@@ -9,6 +9,7 @@ import Markdown
 import Models exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
 import Time exposing (Time)
+import Views.Attributes exposing (..)
 
 
 view : Model -> Maybe Draft -> Html Msg
@@ -36,7 +37,8 @@ display model draft =
         ]
     , div [ class "row header-row reset-margin-bottom" ]
         [ div [ class "col s6 header-md " ]
-            [ small [] [ strong [] [ text "CREATED: " ], span [] [ text <| formatUpdated (Date.toTime draft.createdAt) model.now ] ]
+            [ small [] [ strong [] [ text "CREATED: " ]
+            , span [] [ text <| formatUpdated (Date.toTime draft.createdAt) model.now ] ]
             , save model.remote.savedDraft draft
             ]
         , div

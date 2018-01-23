@@ -1,6 +1,8 @@
 module Views.NavBar exposing (..)
 
-import Components exposing (loader, newLoader)
+import Components exposing (formatDate, loader, newLoader)
+import Date
+import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, onWithOptions)
@@ -8,6 +10,7 @@ import Json.Decode
 import Models exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
 import Routes exposing (..)
+import Views.Attributes exposing (onClickNotifications, onClickWithoutProp)
 
 
 logoImg : String
@@ -15,8 +18,8 @@ logoImg =
     "https://rawgit.com/grrinchas/c31f4363437c79172181ca944ed1c5d5/raw/4d19f3af564947d168a0ebfc15b3c013bd48e975/Logo.svg"
 
 
-wrapper : Html Msg -> Html Msg -> Html Msg
-wrapper start end =
+wrapper :  Html Msg -> Html Msg
+wrapper  end =
     div [ class "navbar-fixed" ]
         [ nav []
             [ div [ class "nav-wrapper" ]
@@ -32,16 +35,6 @@ withButtons list =
     ul [ class "right" ] <| List.map (\btn -> li [] [ btn ]) list
 
 
-logo : Html Msg
-logo =
-    div [] [ a [ href <| path HomeRoute ] [ img [ src logoImg ] [] ] ]
-
-
-dashboardBtn : Html msg
-dashboardBtn =
-    a [ class "btn z-depth-0", href <| path DashboardRoute ]
-        [ text "Dashboard" ]
-
 
 signUp : Html msg
 signUp =
@@ -53,49 +46,74 @@ login =
     a [ class "btn cyan darken-3", href <| path LoginRoute ] [ text "Login" ]
 
 
-or : Html Msg
-or =
-    span [] [ text "or" ]
+
+notifications : DisplayMenu -> Maybe User -> Html Msg
+notifications menu user =
+    div [class "dropdown-wrapper"]
+        [ a [ class "bg-transparent ", onClickNotifications menu]
+            [ case user of
+                Just u -> case Dict.isEmpty u.receivedNotifications of
+                    True -> i [ class "material-icons " ] [ text "notifications_none" ]
+                    False -> i [ class "material-icons " ] [ text "notifications_active" ]
+                Nothing->
+                    i [ class "material-icons " ] [ text "notifications_none" ]
+            ]
+        , notificationsMenu menu user
+        ]
 
 
-notifications : Html Msg
-notifications =
-    div [] [a [ class "bg-transparent"] [ i [ class "material-icons" ] [ text "notifications" ] ]]
+
+notificationsMenu: DisplayMenu -> Maybe User -> Html Msg
+notificationsMenu menu u =
+    case u of
+        Just user ->
+              let listItem =
+              \note -> case (note.notificationType, Dict.get note.message user.drafts) of
+                      (LIKED_DRAFT, Just draft) ->
+                          li [class "collection-item avatar"]
+                              [ img [src note.sender.picture,class "circle"] []
+                              , a [href <| path (ProfileRoute note.sender.username), class "title "] [text note.sender.username]
+                              , i [class "material-icons"] [text "favorite"]
+                              , span [class "title"] [text "your draft "]
+                              , div [class "subtitle"] [a [href <| path (DraftRoute draft.id)]
+                                [text <| if String.length draft.title <= 50 then draft.title else (String.left 50 draft.title) ++ "..."]
+                                ]
+                              , p [] [text <| formatDate note.createdAt]
+                              , i [onClick <| ClickDeleteNotification note,class "clickable secondary-content material-icons"] [text "clear"]
+                              ]
+
+                      (UNLIKED_DRAFT, Just draft) ->
+                          li [class "collection-item avatar"]
+                              [ img [src note.sender.picture,class "circle"] []
+                              , a [href <| path (ProfileRoute note.sender.username), class "title "] [text note.sender.username]
+                              , i [class "material-icons"] [text "favorite_border"]
+                              , span [class "title"] [text "your draft "]
+                              , div [class "subtitle"] [a [href <| path (DraftRoute draft.id)]
+                                [text <| if String.length draft.title <= 60 then draft.title else (String.left 60 draft.title) ++ "..."]
+                                ]
+                              , p [] [text <| formatDate note.createdAt]
+                              , i [onClick <| ClickDeleteNotification note,class "clickable secondary-content material-icons"] [text "clear"]
+                              ]
+                      _ -> li [] []
+                 in
+         ul [onClickNotifications menu, class "dropdown-content top-70-right-0 collection width-450", classList [ ( "active ", menu.notifications) ] ]
+       <| List.map listItem (List.reverse <| List.sortBy (\n -> Date.toTime n.createdAt) <| Dict.values user.receivedNotifications)
+        Nothing -> div [] []
+
 
 
 publish : DisplayMenu -> Html Msg
 publish menu =
     div [class "dropdown-wrapper"]
-        [ a [ class "btn z-depth-0  reset-margin-right", publishMenuEvent menu] [ text "publish" ]
+        [ a [ class "btn z-depth-0  reset-margin-right", onClickWithoutProp <|  WhenMenuChanges (menuPublish menu)] [ text "publish" ]
         , publishMenu menu
         ]
 
 
-publishMenuEvent : DisplayMenu -> Attribute Msg
-publishMenuEvent menu =
-    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
-        Json.Decode.succeed <|
-            WhenMenuChanges (menuPublish menu)
-
-
-userMenuEvent : DisplayMenu -> Attribute Msg
-userMenuEvent menu =
-    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
-        Json.Decode.succeed <|
-            WhenMenuChanges (menuUser menu)
-
-
-
-newDraftMenuEvent : DisplayMenu -> Attribute Msg
-newDraftMenuEvent menu =
-    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
-        Json.Decode.succeed <|
-            WhenMenuChanges (menuNewDraft menu)
-
 
 userMenu : User -> DisplayMenu -> Html Msg
 userMenu user menu =
-    ul [ userMenuEvent menu, class "dropdown-content top-70-right-0", classList [ ( "active ", menu.user) ] ]
+    ul [ onClickWithoutProp <|  WhenMenuChanges (menuUser menu), class "dropdown-content top-70-right-0", classList [ ( "active ", menu.user) ] ]
         [ li [] [ a [ href <| path DraftsRoute ] [ i [ class "material-icons" ] [ text "apps" ], text "Drafts" ] ]
         , li [ class "divider" ] []
         , li [] [ a [ href <| path <| ProfileRoute user.username, class "valign-wrapper fg-link-color" ]
@@ -111,7 +129,7 @@ userMenu user menu =
 
 publishMenu : DisplayMenu -> Html Msg
 publishMenu menu =
-    div [ publishMenuEvent menu, class "card  dropdown-content top-70-right-15", classList [ ( "active", menu.publish ) ] ]
+    div [onClickWithoutProp <|  WhenMenuChanges (menuPublish menu) , class "card  dropdown-content top-70-right-15", classList [ ( "active", menu.publish ) ] ]
         [ div [ class "card-content" ]
 
             [ span [ class "card-title" ] [ text "Ready to publish?" ]
@@ -149,7 +167,7 @@ publishMenu menu =
 newDraft : Form -> DisplayMenu -> Html Msg
 newDraft form menu =
     div [ class "dropdown-wrapper" ]
-        [ a [ class "btn z-depth-0 reset-margin-right", newDraftMenuEvent menu] [ text "New " ]
+        [ a [ class "btn z-depth-0 reset-margin-right", onClickWithoutProp <| WhenMenuChanges (menuNewDraft menu)] [ text "New " ]
         , newDraftMenu form menu
         ]
 
@@ -157,7 +175,7 @@ newDraft form menu =
 
 newDraftMenu : Form -> DisplayMenu -> Html Msg
 newDraftMenu form menu =
-    div [ newDraftMenuEvent menu, class "card dropdown-content top-70-right-0 width-350", classList [ ( "active", menu.newDraft) ] ]
+    div [onClickWithoutProp <| WhenMenuChanges (menuNewDraft menu), class "card dropdown-content top-70-right-0 width-350", classList [ ( "active", menu.newDraft) ] ]
         [ div [ class "card-content reset-bottom" ]
             [ p [] [ text "What is your draft about?" ]
             , input [ class "no-style", placeholder form.draftTitleNew, maxlength 100, onInput (\title -> WhenFormChanges { form | draftTitleNew = title }) ] []
@@ -172,48 +190,46 @@ draft : Model -> Html Msg
 draft model =
     case model.remote.user of
         Success user ->
-            withButtons [ publish model.menu, notifications, profile (Just user) model.menu ] |> wrapper logo
+            withButtons [ publish model.menu, notifications model.menu (Just user), profile (Just user) model.menu ] |> wrapper
 
         _ ->
-            withButtons [ publish model.menu, notifications, profile Nothing model.menu ] |> wrapper logo
-
-
+            withButtons [ publish model.menu, notifications model.menu Nothing, profile Nothing model.menu ] |> wrapper
 
 
 drafts : Model -> Html Msg
 drafts model =
     case model.remote.user of
         Success user ->
-            withButtons [ newDraft model.form model.menu, notifications, profile (Just user) model.menu ] |> wrapper logo
+            withButtons [ newDraft model.form model.menu, notifications model.menu (Just user), profile (Just user) model.menu ] |> wrapper
 
         _ ->
-            withButtons [ notifications, profile Nothing model.menu ] |> wrapper logo
+            withButtons [ notifications model.menu Nothing, profile Nothing model.menu ] |> wrapper
 
 
 landing : Model -> Html Msg
 landing model =
     case model.remote.user of
         Success _ ->
-            withButtons [ dashboardBtn ] |> wrapper logo
+            withButtons [ a [ class "btn z-depth-0", href <| path DashboardRoute ] [ text "Dashboard" ] ] |> wrapper
 
         _ ->
-            withButtons [ login, or, signUp ] |> wrapper logo
+            withButtons [ login, span [] [ text "or" ], signUp ] |> wrapper
 
 
 dashboard : Model -> Html Msg
 dashboard model =
     case model.remote.user of
         Success user ->
-            withButtons [ notifications, profile (Just user) model.menu ] |> wrapper logo
+            withButtons [ notifications model.menu (Just user), profile (Just user) model.menu ] |> wrapper
 
         _ ->
-            withButtons [ notifications, profile Nothing model.menu ] |> wrapper logo
+            withButtons [ notifications model.menu Nothing, profile Nothing model.menu ] |> wrapper
 
 
 
 profile : Maybe User -> DisplayMenu -> Html Msg
 profile user menu =
-    div [ class "valign-wrapper dropdown-wrapper clickable", userMenuEvent menu] <|
+    div [ class "valign-wrapper dropdown-wrapper clickable",  onClickWithoutProp <|  WhenMenuChanges (menuUser menu)] <|
         case user of
             Just u ->
                 [ img [class "medium", src u.picture, class "circle" ] []

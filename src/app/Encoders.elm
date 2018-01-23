@@ -3,7 +3,7 @@ module Encoders exposing (..)
 import GraphQl exposing (Mutation, Named, Operation, OperationType(OperationMutation, OperationQuery), Query, operationToBody)
 import Http
 import Json.Encode as Encoder
-import Models exposing (Auth0Token, AuthGraphCool, Draft, Form, User, ValidUser, Visibility(PUBLIC))
+import Models exposing (Auth0Token, AuthGraphCool, Draft, Form, Notification, NotificationType(LIKED_DRAFT), User, ValidUser, Visibility(PUBLIC))
 import Regex exposing (HowMany(All))
 import Validator
 
@@ -65,9 +65,15 @@ userInfo token =
                     |> GraphQl.withSelectors draftSelector
                 , GraphQl.field "likedDrafts"
                     |> GraphQl.withSelectors draftSelector
+                , GraphQl.field "sentNotifications"
+                    |> GraphQl.withSelectors notificationSelector
+                , GraphQl.field "receivedNotifications"
+                    |> GraphQl.withSelectors notificationSelector
                 ]
         ]
         |> query
+
+
 
 
 publicDrafts : AuthGraphCool -> Http.Body
@@ -128,6 +134,17 @@ deleteDraft draft token =
         ]
         |> mutation
 
+deleteNotification : Notification -> AuthGraphCool -> Http.Body
+deleteNotification note token =
+    GraphQl.named "deleteNotification"
+        [ GraphQl.field "deleteNotification"
+            |> GraphQl.withArgument "id" (GraphQl.string note.id)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "id"
+                ]
+        ]
+        |> mutation
+
 likeDraft : Draft -> AuthGraphCool -> Http.Body
 likeDraft draft token =
     GraphQl.named "likeDraft"
@@ -164,6 +181,23 @@ updateProfile form token =
         ]
         |> mutation
 
+createDraftNotification: Draft -> NotificationType -> AuthGraphCool -> Http.Body
+createDraftNotification draft notType token =
+    GraphQl.named "createNotification"
+        [GraphQl.field "createNotification"
+            |> GraphQl.withArgument "senderId" (GraphQl.string token.id)
+            |> GraphQl.withArgument "receiverId" (GraphQl.string draft.owner.id)
+            |> GraphQl.withArgument "type" (GraphQl.type_ <| toString notType)
+            |> GraphQl.withArgument "message" (GraphQl.string draft.id)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "sender"
+                    |> GraphQl.withSelectors
+                        [GraphQl.field "username"]
+                , GraphQl.field "receiver"
+                    |> GraphQl.withSelectors
+                        [GraphQl.field "username"]
+                ]
+        ] |> mutation
 
 userProfile : String -> AuthGraphCool -> Http.Body
 userProfile username _ =
@@ -189,6 +223,19 @@ profileSelector =
     ]
 
 
+notificationSelector : List (GraphQl.Value a)
+notificationSelector =
+    [ GraphQl.field "id"
+    , GraphQl.field "createdAt"
+    , GraphQl.field "updatedAt"
+    , GraphQl.field "type"
+    , GraphQl.field "message"
+    , GraphQl.field "sender"
+        |> GraphQl.withSelectors profileSelector
+    , GraphQl.field "receiver"
+        |> GraphQl.withSelectors profileSelector
+    ]
+
 draftSelector : List (GraphQl.Value a)
 draftSelector =
     [ GraphQl.field "id"
@@ -200,7 +247,8 @@ draftSelector =
     , GraphQl.field "visibility"
     , GraphQl.field "owner"
         |> GraphQl.withSelectors
-            [ GraphQl.field "username"
+            [ GraphQl.field "id"
+            , GraphQl.field "username"
             , GraphQl.field "picture"
             , GraphQl.field "bio"
             ]
@@ -208,6 +256,8 @@ draftSelector =
         |> GraphQl.withSelectors
             [GraphQl.field "count"]
     ]
+
+
 
 
 mutation : Operation Mutation a -> Http.Body

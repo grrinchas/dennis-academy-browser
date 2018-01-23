@@ -66,6 +66,39 @@ toError str =
         CatchAll
 
 
+notificationObject: Decoder.Decoder Notification
+notificationObject =
+    let
+        toDecoder =
+            \id created updated type_ sender receiver msg ->
+                case ( created, updated, type_ ) of
+                    ( Ok c, Ok u, Just t ) ->
+                        Decoder.succeed <| Notification id c u t sender receiver msg
+
+                    ( Err err, _, _ ) ->
+                        Decoder.fail err
+
+                    ( _, Err err, _ ) ->
+                        Decoder.fail err
+
+                    ( _, _, Nothing ) ->
+                        Decoder.fail "No such type"
+    in
+    Pipeline.decode toDecoder
+        |> Pipeline.required "id" Decoder.string
+        |> Pipeline.required "createdAt" (Decoder.map Date.fromString Decoder.string)
+        |> Pipeline.required "updatedAt" (Decoder.map Date.fromString Decoder.string)
+        |> Pipeline.required "type" (Decoder.map notificationType Decoder.string)
+        |> Pipeline.required "sender" userProfile
+        |> Pipeline.required "receiver" userProfile
+        |> Pipeline.required "message" Decoder.string
+        |> Pipeline.resolve
+
+
+
+
+
+
 userObject : Decoder.Decoder User
 userObject =
     Pipeline.decode User
@@ -78,6 +111,11 @@ userObject =
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
         |> Pipeline.required "likedDrafts"
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
+        |> Pipeline.required "sentNotifications"
+            (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\note -> ( note.id, note )) notificationObject)
+        |> Pipeline.required "receivedNotifications"
+            (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\note -> ( note.id, note )) notificationObject)
+
 
 
 draftObject : Decoder.Decoder Draft
@@ -115,6 +153,7 @@ draftObject =
 draftOwner : Decoder.Decoder DraftOwner
 draftOwner =
     Pipeline.decode DraftOwner
+        |> Pipeline.required "id" Decoder.string
         |> Pipeline.required "username" Decoder.string
         |> Pipeline.required "picture" Decoder.string
         |> Pipeline.required "bio" Decoder.string
@@ -130,6 +169,7 @@ userProfile =
         |> Pipeline.required "likedDrafts" (Decoder.list draftObject)
 
 
+
 visibility : String -> Maybe Visibility
 visibility visibility =
     if visibility == "PRIVATE" then
@@ -138,6 +178,15 @@ visibility visibility =
         Just PUBLIC
     else
         Nothing
+
+notificationType : String -> Maybe NotificationType
+notificationType n =
+    if n == "LIKED_DRAFT" then
+        Just LIKED_DRAFT
+    else if n == "UNLIKED_DRAFT" then
+        Just UNLIKED_DRAFT
+    else Nothing
+
 
 
 dataField : Decoder.Decoder a -> Decoder.Decoder a

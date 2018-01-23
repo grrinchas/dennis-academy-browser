@@ -51,5 +51,28 @@ permissions:
   - operation: UserOnLikedDraft.disconnect
     authenticated: true
 
+  - operation: Notification.create
+    authenticated: true
+    query: ./src/permissions/Notification.graphql:isSenderAndNotReceiver
+
+  - operation: Notification.read
+    authenticated: true
+    query: ./src/permissions/Notification.graphql:isSenderOrReceiver
+
+  - operation: Notification.delete
+    authenticated: true
+    query: ./src/permissions/Notification.graphql:isReceiver
+
+  - operation: ReceiverOnNotification.connect
+    authenticated: true
+
+  - operation: ReceiverOnNotification.disconnect
+    authenticated: true
+
+  - operation: SenderOnNotification.connect
+    authenticated: true
+
+  - operation: SenderOnNotification.disconnect
+    authenticated: true
 
 

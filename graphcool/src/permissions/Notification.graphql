@@ -1,0 +1,40 @@
+query isSenderOrReceiver($node_id: ID!, $user_id: ID!) {
+    SomeNotificationExists(filter: {
+        id: $node_id
+        OR: [{
+            receiver: {
+                id: $user_id
+            }
+        }, {
+            sender: {
+                id: $user_id
+            }
+        }
+        ]
+    })
+}
+
+query isReceiver($node_id: ID!, $user_id: ID!) {
+    SomeNotificationExists(filter: {
+        id: $node_id
+        receiver: {
+            id: $user_id
+        }
+    })
+}
+
+query isSenderAndNotReceiver($user_id: ID!, $input_receiverId: ID!, $input_senderId: ID!) {
+    SomeUserExists(filter: {
+        AND: [{
+            id: $user_id
+        }, {
+            id: $input_senderId
+        }, {
+            id_not: $input_receiverId
+        }
+        ]
+
+    })
+}
+
+

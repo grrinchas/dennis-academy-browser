@@ -2,7 +2,7 @@ module Views.Drafts exposing (..)
 
 import Components exposing (draftCard, loader, newLoader)
 import Date
-import Dict
+import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onWithOptions)
@@ -10,6 +10,8 @@ import Json.Decode
 import Models exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
 import Routes exposing (Route(DraftRoute, DraftsRoute, HomeRoute, ProfileRoute, PublicDraftsRoute), path)
+import Views.Attributes exposing (..)
+
 
 
 view : Bool -> Model -> Html Msg
@@ -75,6 +77,9 @@ sortBy drafts sort =
 
 
 
+
+
+
 publicView : Bool -> Model -> Html Msg
 publicView bool model =
     div [ class "" ]
@@ -104,7 +109,7 @@ publicView bool model =
 draftFilter : DisplayMenu -> User -> List Draft -> List Draft
 draftFilter menu user drafts =
     case ( menu.filterDraft.publicDraftsPage.liked , menu.filterDraft.publicDraftsPage.notLiked ) of
-             (True, True) ->    drafts
+             (True, True) ->    List.filter (\d -> isOthers menu user d) drafts
              (True, False) ->   List.filter (\d -> isLiked menu user d && isOthers menu user d) drafts
              (False, True) ->   List.filter (\d -> not (isLiked menu user d) && isOthers menu user d) drafts
              (False, False) ->   []
@@ -132,11 +137,6 @@ refresh web =
 
 
 
-filterMenuEvent : DisplayMenu -> Attribute Msg
-filterMenuEvent menu =
-    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
-        Json.Decode.succeed <|
-            WhenMenuChanges (menuFilterDraft menu)
 
 filterPublicLikedMenuEvent : Bool -> DisplayMenu -> Attribute Msg
 filterPublicLikedMenuEvent bool menu =
@@ -156,11 +156,7 @@ filterLocalPublicMenuEvent bool menu =
         Json.Decode.succeed <|
             WhenMenuChanges (menuFilterLocalDraftPublic bool menu)
 
-filterLocalLocalMenuEvent : Bool -> DisplayMenu -> Attribute Msg
-filterLocalLocalMenuEvent bool menu =
-    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
-        Json.Decode.succeed <|
-            WhenMenuChanges (menuFilterLocalDraftLocal bool menu)
+
 
 
 filterPublicMenu : DisplayMenu -> Html Msg
@@ -200,10 +196,10 @@ filterLocalMenu menu =
         ,
         case menu.filterDraft.localDraftsPage.local of
             True ->
-                li [] [ a [ class "block", filterLocalLocalMenuEvent False menu]
+                li [] [ a [ class "block", onClickFilterPrivateDrafts False menu]
                  [ i [ class "material-icons", classList [("visible", True)] ] [ text "done" ], text "Private" ] ]
             False ->
-                li [] [ a [ class "block", filterLocalLocalMenuEvent True menu]
+                li [] [ a [ class "block", onClickFilterPrivateDrafts True menu]
                  [ i [ class "material-icons",  classList [("not-visible", True)] ] [ text "done" ], text "Private" ] ]
 
         ]
@@ -212,8 +208,8 @@ filterLocalMenu menu =
 filterPublic : DisplayMenu -> Html Msg
 filterPublic menu =
     div [ class "valign-wrapper dropdown-wrapper" ]
-        [ span [ class "clickable", filterMenuEvent menu] [ text "FILTER" ]
-        , i [ class "material-icons clickable", filterMenuEvent menu] [ text "arrow_drop_down" ]
+        [ span [clickable, onClickFilterDrafts menu] [ text "FILTER" ]
+        , i [materialIcons, clickable, onClickFilterDrafts menu] [ text "arrow_drop_down" ]
         , filterPublicMenu menu
         ]
 
@@ -221,8 +217,8 @@ filterPublic menu =
 filterLocal : DisplayMenu -> Html Msg
 filterLocal menu =
     div [ class "valign-wrapper dropdown-wrapper" ]
-        [ span [ class "clickable", filterMenuEvent menu] [ text "FILTER" ]
-        , i [ class "material-icons clickable", filterMenuEvent menu] [ text "arrow_drop_down" ]
+        [ span [ class "clickable", onClickFilterDrafts menu] [ text "FILTER" ]
+        , i [ class "material-icons clickable", onClickFilterDrafts menu] [ text "arrow_drop_down" ]
         , filterLocalMenu menu
         ]
 

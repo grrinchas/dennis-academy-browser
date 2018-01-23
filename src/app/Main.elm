@@ -140,6 +140,7 @@ update msg model =
         ClickUnLikeDraft draft ->
             Api.unLikeDraft draft model
 
+
         ClickRefreshPublicDrafts ->
             remoteRefreshedPublicDrafts Loading model
                 |> Api.fetchPublicDrafts
@@ -147,6 +148,10 @@ update msg model =
         ClickUpdateProfile ->
             remoteUserProfile Loading model
                 |> Api.fetchUpdateProfile
+
+        ClickDeleteNotification note->
+            removeNotification note model
+                |> Api.fetchDeleteNotification note
 
         OnFetchCreatedAccount account ->
             remoteAccount account model
@@ -206,12 +211,12 @@ update msg model =
         OnFetchLikedDraft web ->
             updatePublicDrafts web model
                 |> updateLikedDraft web
-                |> withNoCommand
+                |> Api.fetchDraftNotification web LIKED_DRAFT
 
-        OnFetchUnLikedDraft web ->
+        OnFetchUnlikedDraft web ->
             updatePublicDrafts web model
                 |> removeLikedDraft web
-                |> withNoCommand
+                |> Api.fetchDraftNotification web UNLIKED_DRAFT
 
         OnFetchDeletedDraft web ->
             removeDraft web model

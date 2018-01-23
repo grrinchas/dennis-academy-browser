@@ -12,6 +12,22 @@ import Routes exposing (Route(HomeRoute), RouteError, parseLocation)
 import Time exposing (Time)
 
 
+type NotificationType
+    = LIKED_DRAFT
+    | UNLIKED_DRAFT
+
+
+type alias Notification =
+    { id : String
+    , createdAt : Date
+    , updatedAt : Date
+    , notificationType: NotificationType
+    , sender: UserProfile
+    , receiver: UserProfile
+    , message: String
+    }
+
+
 type alias Auth0Token =
     { accessToken : String
     , idToken : String
@@ -26,7 +42,8 @@ type Visibility
 
 
 type alias DraftOwner =
-    { username : String
+    { id: String
+    , username : String
     , picture : String
     , bio : String
     }
@@ -54,8 +71,20 @@ initialDraft =
     , draftType = "TUTORIAL"
     , title = "Very descriptive draft title..."
     , visibility = PRIVATE
-    , owner = DraftOwner "" "" ""
+    , owner = DraftOwner "" "" "" ""
     , likes = 0
+    }
+
+
+initialNotification: Notification
+initialNotification =
+    { id = ""
+    , createdAt = Date.fromTime <| Time.millisecond * 0
+    , updatedAt = Date.fromTime <| Time.millisecond * 0
+    , notificationType = LIKED_DRAFT
+    , sender = UserProfile "" "" "" [] []
+    , receiver = UserProfile "" "" "" [] []
+    , message = ""
     }
 
 
@@ -67,6 +96,8 @@ type alias User =
     , bio : String
     , drafts : Dict String Draft
     , likedDrafts: Dict String Draft
+    , sentNotifications: Dict String Notification
+    , receivedNotifications: Dict String Notification
     }
 
 
@@ -139,6 +170,7 @@ type Msg
     | ClickLikeDraft Draft
     | ClickUnLikeDraft Draft
     | ClickUpdateProfile
+    | ClickDeleteNotification Notification
 
     | OnFetchCreatedAccount (WebData Account)
     | OnFetchAuth0Token (WebData Auth0Token)
@@ -149,7 +181,7 @@ type Msg
     | OnFetchDeletedDraft (WebData String)
     | OnFetchPublicDrafts (WebData (Dict String Draft))
     | OnFetchLikedDraft (WebData Draft)
-    | OnFetchUnLikedDraft (WebData Draft)
+    | OnFetchUnlikedDraft (WebData Draft)
     | OnFetchUserProfile (WebData UserProfile)
 
 
@@ -233,6 +265,7 @@ formPasswordRepeat maybe model =
     case model.form of
         form ->
             { model | form = { form | repeatPass = maybe } }
+
 
 
 formDraftTitleNew : String -> Model -> Model
@@ -332,6 +365,7 @@ type alias DisplayMenu =
     { user : Bool
     , publish : Bool
     , newDraft : Bool
+    , notifications: Bool
     , deleteDraft : { id : String, display : Bool }
     , publicDraft : { id : String, display : Bool }
     , displayDraft : Bool
@@ -358,6 +392,7 @@ initialMenu =
     { user = False
     , publish = False
     , newDraft = False
+    , notifications = False
     , deleteDraft = { id = "", display = False }
     , publicDraft = { id = "", display = False }
     , displayDraft = False
@@ -400,6 +435,7 @@ reset menu =
     { user = False
     , publish = False
     , newDraft = False
+    , notifications = False
     , deleteDraft = { id = "", display = False }
     , publicDraft = { id = "", display = False }
     , displayDraft = False
@@ -445,22 +481,10 @@ menuNewDraft menu =
         newMenu -> { newMenu | newDraft = True }
 
 
-menuDeleteDraft : String -> DisplayMenu -> DisplayMenu
-menuDeleteDraft id menu =
-    case reset menu of
-        newMenu -> { newMenu | deleteDraft = { display = True, id = id }}
-
-
 menuPublicDraft : String -> DisplayMenu -> DisplayMenu
 menuPublicDraft id menu =
     case reset menu of
         newMenu -> { newMenu | publicDraft = { display = True, id = id }}
-
-
-menuFilterDraft : DisplayMenu -> DisplayMenu
-menuFilterDraft menu =
-    case (reset menu, menu.filterDraft) of
-        (newMenu, filter) -> { newMenu | filterDraft = {filter | display = True}}
 
 
 menuFilterPublicDraftLiked : Bool -> DisplayMenu -> DisplayMenu
@@ -478,11 +502,6 @@ menuFilterLocalDraftPublic bool menu =
     case ( menu.filterDraft, menu.filterDraft.localDraftsPage) of
         (filter, page) -> { menu | filterDraft = {filter | localDraftsPage = {page | public = bool}}}
 
-
-menuFilterLocalDraftLocal : Bool -> DisplayMenu -> DisplayMenu
-menuFilterLocalDraftLocal bool menu =
-    case ( menu.filterDraft, menu.filterDraft.localDraftsPage) of
-        ( filter, page) -> { menu | filterDraft = {filter | localDraftsPage = {page | local = bool}}}
 
 
 menuDisplayDraft : DisplayMenu
@@ -701,6 +720,15 @@ removeLikedDraft web model =
         |> withError model
 
 
+removeNotification : Notification -> Model -> Model
+removeNotification note model =
+    model.remote.user
+        |> RemoteData.map (\user  -> { user | receivedNotifications = Dict.remove note.id user.receivedNotifications })
+        |> RemoteData.map RemoteData.succeed
+        |> RemoteData.map (flip remoteUser model)
+        |> withError model
+
+
 withError : Model -> WebData Model -> Model
 withError model web =
     case web of
@@ -725,3 +753,7 @@ updateTokens tokens model =
         Nothing ->
             remoteAuth0 NotAsked model
                 |> remoteGraphCool NotAsked
+
+
+isUserDraftOwner: User -> Draft -> Bool
+isUserDraftOwner user draft = user.username == draft.owner.username

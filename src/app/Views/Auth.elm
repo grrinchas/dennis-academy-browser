@@ -1,6 +1,6 @@
 module Views.Auth exposing (..)
 
-import Components exposing (icon, loader, newLoader)
+import Components exposing (loader, newLoader)
 import Err exposing (InputError(DoNotMatch, Empty, WrongSize))
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -38,7 +38,7 @@ emailInput form =
     div [ class "input-field" ]
         [
         div [class "input"]
-        [ icon "email"
+        [ i [class "material-icons"] [text "email"]
         , input
             [ type_ "email"
             , placeholder "Email"
@@ -58,7 +58,7 @@ passwordInput form =
     div [ class "input-field" ]
         [ div [class "input"]
             [
-        icon "lock"
+        i [class "material-icons"] [text "lock"]
         , input
             [ type_ "password"
             , placeholder "Password"
@@ -76,7 +76,7 @@ usernameInput : Form -> Html Msg
 usernameInput form =
     div [ class "input-field" ]
         [ div [class "input"] [
-        icon "person"
+        i [class "material-icons"] [text "person"]
         , input
             [ type_ "text"
             , placeholder "Username"
@@ -95,7 +95,7 @@ repeatInput form =
     div [ class "input-field" ]
         [  div [class "input"]
             [
-        icon "lock"
+        i [class "material-icons"] [text "lock"]
         , input
             [ type_ "password"
             , placeholder "Password Repeat"

@@ -10,9 +10,36 @@ type User @model {
     email: String! @isUnique
     picture: String! @isUnique
     bio: String! @defaultValue (value: "No bio provided...")
+
     drafts: [Draft!]! @relation(name: "UserOnDraft")
     likedDrafts: [Draft!]! @relation (name: "UserOnLikedDraft")
+
+    receivedNotifications: [Notification!]! @relation (name: "ReceiverOnNotification")
+    sentNotifications: [Notification!]! @relation (name: "SenderOnNotification")
+
 }
+
+type Notification @model {
+    id: ID! @isUnique
+
+    createdAt: DateTime!
+    updatedAt: DateTime!
+
+    receiver: User! @relation (name: "ReceiverOnNotification")
+    sender: User! @relation (name: "SenderOnNotification")
+
+    type: NotificationType!
+
+    message: String!
+
+}
+
+
+enum NotificationType {
+    LIKED_DRAFT
+    UNLIKED_DRAFT
+}
+
 
 type Draft @model {
     id: ID! @isUnique
@@ -29,6 +56,8 @@ type Draft @model {
     draftFan: [User!]! @relation(name: "UserOnLikedDraft")
 
 }
+
+
 
 enum Visibility {
     PRIVATE

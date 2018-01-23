@@ -528,31 +528,35 @@ td, th {
 
 // Collections
 .collection {
-    margin: $element-top-margin 0 $element-bottom-margin 0;
-    border: 1px solid $collection-border-color;
-    border-radius: 2px;
+ //   margin: $element-top-margin 0 $element-bottom-margin 0;
+ //   border: 1px solid $collection-border-color;
+ //   border-radius: 2px;
     overflow: hidden;
     position: relative;
 
+
     .collection-item {
-        background-color: $collection-bg-color;
+        background-color: $primary-color;
+        color: $text-color;
         line-height: $collection-line-height;
         padding: 10px 20px;
         margin: 0;
-        border-bottom: 1px solid $collection-border-color;
+        border-bottom: 1px solid lighten($dropdown-hover-bg-color, 5%);;
+        cursor: default ;
+
 
         // Avatar Collection
         &.avatar {
-            min-height: 84px;
-            padding-left: 72px;
+            padding-left: 60px;
             position: relative;
+
 
             // Don't style circles inside preloader classes.
             &:not(.circle-clipper) > .circle,
             :not(.circle-clipper) > .circle {
                 position: absolute;
-                width: 42px;
-                height: 42px;
+                width: 30px;
+                height: 30px;
                 overflow: hidden;
                 left: 15px;
                 display: inline-block;
@@ -567,17 +571,57 @@ td, th {
             }
 
             .title {
-                font-size: 16px;
+            }
+
+
+            i {
+                display: initial;
+                font-size:18px;
+                margin: 0 5px;
+                color: $error-color;
+            }
+
+
+
+
+            .subtitle {
+                display: block;
+                a{
+
+                    color: $card-link-color;
+                }
+            }
+
+            a:hover {
+                background-color: transparent;
+            }
+
+            a{
+                padding: 0;
+                display: initial;
+                color: $link-color;
+            }
+
+
+
+            span {
+                padding-left: 0;
+                padding-right: 0;
             }
 
             p {
                 margin: 0;
+                @extend small;
+                color: $grey-color;
             }
 
             .secondary-content {
                 position: absolute;
                 top: 16px;
                 right: 16px;
+                font-size: 22px;
+                color: $text-color;
+                height: initial;
             }
 
         }
@@ -590,18 +634,15 @@ td, th {
             background-color: $collection-active-bg-color;
             color: $collection-active-color;
 
-            .secondary-content {
-                color: #fff;
-            }
         }
     }
     a.collection-item {
         display: block;
         transition: .25s;
-        color: $collection-link-color;
+      //  color: $collection-link-color;
         &:not(.active) {
             &:hover {
-                background-color: $collection-hover-bg-color;
+           //     background-color: $collection-hover-bg-color;
             }
         }
     }
@@ -618,6 +659,10 @@ td, th {
         .collection-item.avatar {
             padding-left: 72px;
         }
+    }
+
+    .collection-item:hover {
+        background-color: transparent;
     }
 
 }

@@ -94,7 +94,7 @@ unLikeDraft : Draft -> Model -> ( Model, Cmd Msg )
 unLikeDraft draft model =
     RemoteData.map (authorised (Encoders.unLikeDraft draft) Decoders.decodeUnlikedDraft) model.remote.graphCool
         |> RemoteData.map sendRequest
-        |> RemoteData.map (Cmd.map OnFetchUnLikedDraft)
+        |> RemoteData.map (Cmd.map OnFetchUnlikedDraft)
         |> withError model
 
 authGraphCool : Model -> ( Model, Cmd Msg )
@@ -135,6 +135,25 @@ fetchPublicDrafts model =
         |> RemoteData.map sendRequest
         |> RemoteData.map (Cmd.map OnFetchPublicDrafts)
         |> withError model
+
+
+fetchDraftNotification : WebData Draft -> NotificationType -> Model -> ( Model, Cmd Msg )
+fetchDraftNotification web noteType model =
+    RemoteData.map
+        (\(token, draft ) ->
+            authorised (Encoders.createDraftNotification draft noteType) (Json.Decode.succeed ()) token) (RemoteData.append model.remote.graphCool web)
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map <| always WhenNoOperation)
+        |> withError model
+
+fetchDeleteNotification : Notification -> Model -> ( Model, Cmd Msg )
+fetchDeleteNotification note model =
+    RemoteData.map (authorised (Encoders.deleteNotification note) (Json.Decode.succeed ()))  model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map <| always WhenNoOperation)
+        |> withError model
+
+
 
 
 withError : Model -> WebData (Cmd Msg) -> ( Model, Cmd Msg )

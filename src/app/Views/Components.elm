@@ -1,7 +1,7 @@
 module Components exposing (..)
 
 import Date exposing (Date)
-import Dict
+import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onWithOptions)
@@ -9,11 +9,7 @@ import Json.Decode
 import Models exposing (..)
 import RemoteData exposing (RemoteData(Loading), WebData)
 import Routes exposing (Route(DraftRoute, ProfileRoute), path)
-
-
-icon : String -> Html msg
-icon str =
-    i [ class "material-icons" ] [ text str ]
+import Views.Attributes exposing (..)
 
 
 empty : Html msg
@@ -76,20 +72,7 @@ newLoader attr = div (attr ++[ class "preloader-wrapper active" ]) <| List.map l
 
 
 
-deleteDraftMenuEvent : String -> DisplayMenu -> Attribute Msg
-deleteDraftMenuEvent id menu =
-    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
-        Json.Decode.succeed <|
-            WhenMenuChanges <|
-                menuDeleteDraft id menu
 
-
-publicDraftMenuEvent : String -> DisplayMenu -> Attribute Msg
-publicDraftMenuEvent id menu =
-    onWithOptions "click" { stopPropagation = True, preventDefault = False } <|
-        Json.Decode.succeed <|
-            WhenMenuChanges <|
-                menuPublicDraft id menu
 
 
 getVisibilityIcon : User -> DisplayMenu -> Draft -> Html Msg
@@ -144,6 +127,7 @@ getLikes draft user =
                 span [class "likes opacity-quarter"] [text <| toString draft.likes]
             else
                 span [class "likes"] [text <| toString draft.likes]
+
 
         ]
 
@@ -204,9 +188,9 @@ draftCard menu user draft =
 deleteDraft : DisplayMenu -> Draft -> Html Msg
 deleteDraft menu draft =
     div [ class "dropdown-wrapper" ]
-        [ a [ class "tooltip-wrapper", deleteDraftMenuEvent draft.id menu ]
-            [ i [ class "material-icons clickable" ] [ text "delete" ]
-            , small [ class "tooltip no-transform -top-50-right-0" ] [ text "Delete" ]
+        [ a [tooltipWrapper, onClickDeleteDraft draft menu]
+            [ i [ materialIcons, clickable ] [ text "delete" ]
+            , small [tooltip, class "no-transform -top-50-right-0" ] [ text "Delete" ]
             ]
         , deleteDraftMenu menu draft
         ]
@@ -216,7 +200,7 @@ publicDraft : User -> DisplayMenu -> Draft -> Html Msg
 publicDraft user menu draft =
     div [ class "dropdown-wrapper" ]
         [ div [ class "tooltip-wrapper" ]
-            [ i [ class "material-icons clickable opacity-quarter ", publicDraftMenuEvent draft.id menu ] [ text "public" ]
+            [ i [ class "material-icons clickable opacity-quarter ", onClickWithoutProp <| WhenMenuChanges (menuPublicDraft draft.id menu) ] [ text "public" ]
            , small [ class "tooltip -top-35-right-0 width-100" ] [ text "Make public" ]
             ]
         , publicDraftMenu menu user draft
@@ -225,7 +209,10 @@ publicDraft user menu draft =
 
 deleteDraftMenu : DisplayMenu -> Draft -> Html Msg
 deleteDraftMenu menu draft =
-    div [ class "card dropdown-content  width-200 top-40-right-0 ", deleteDraftMenuEvent draft.id menu , classList [ ( "active", menu.deleteDraft.display && menu.deleteDraft.id == draft.id ) ] ]
+    div [ class "card dropdown-content  width-200 top-40-right-0 "
+        , onClickDeleteDraft draft menu
+        , classList [ ( "active", menu.deleteDraft.display && menu.deleteDraft.id == draft.id ) ]
+        ]
         [ div [ class "card-content fg-text-color" ] [ p [] [ text "Are you sure you want to delete?" ] ]
         , div [ class "card-action" ] [ a [ class "right clickable", onClick <| ClickDeleteDraft draft ] [ text "delete" ] ]
         ]
@@ -234,15 +221,23 @@ deleteDraftMenu menu draft =
 
 publicDraftMenu : DisplayMenu -> User -> Draft -> Html Msg
 publicDraftMenu menu user draft =
-    div [ class "card dropdown-content width-200 top-40-right-0", publicDraftMenuEvent draft.id menu, classList [ ( "active", menu.publicDraft.display && menu.publicDraft.id == draft.id ) ] ]
+    div [ class "card dropdown-content width-200 top-40-right-0"
+        , onClickWithoutProp <| WhenMenuChanges ( menuPublicDraft draft.id menu)
+        , classList [ ( "active"
+        , menu.publicDraft.display && menu.publicDraft.id == draft.id ) ]
+        ]
         [ div [ class "card-content fg-text-color"] [ span [] [ text "Are you sure you want to make it public?" ] ]
         , div [ class "card-action" ]
-            [ case user.username == draft.owner.username of
+            [
+            case isUserDraftOwner user draft of
                 True ->
-                    a [ class "clickable right", onClick <| ClickUpdateDraft { draft | visibility = PUBLIC } ] [ text "Public" ]
+                    a [ clickable, floatRight, onClickMakeDraftPublic draft] [ text "Public" ]
 
                 False ->
-                    a [ class "clickable right" ] [ text "Public" ]
+                    a [clickable, floatRight] [text "Public"]
             ]
 
         ]
+
+
+
