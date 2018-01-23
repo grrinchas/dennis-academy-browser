@@ -68,6 +68,7 @@ init tokens loc =
         |> andAlso Api.fetchPublicDrafts
 
 
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -135,10 +136,17 @@ update msg model =
             Api.deleteDraft draft model
 
         ClickLikeDraft draft ->
-            Api.likeDraft draft model
+            updatePublicDrafts (RemoteData.succeed draft) model
+                |> updateLikedDraft draft
+                |> Api.likeDraft draft
+                |> andAlso (Api.fetchDraftNotification draft LIKED_DRAFT)
+
 
         ClickUnLikeDraft draft ->
-            Api.unLikeDraft draft model
+            updatePublicDrafts (RemoteData.succeed draft) model
+                |> removeLikedDraft draft
+                |> Api.unLikeDraft draft
+                |> andAlso (Api.fetchDraftNotification draft UNLIKED_DRAFT)
 
 
         ClickRefreshPublicDrafts ->
@@ -208,15 +216,7 @@ update msg model =
                    )
                 |> reroute
 
-        OnFetchLikedDraft web ->
-            updatePublicDrafts web model
-                |> updateLikedDraft web
-                |> Api.fetchDraftNotification web LIKED_DRAFT
 
-        OnFetchUnlikedDraft web ->
-            updatePublicDrafts web model
-                |> removeLikedDraft web
-                |> Api.fetchDraftNotification web UNLIKED_DRAFT
 
         OnFetchDeletedDraft web ->
             removeDraft web model
@@ -246,3 +246,4 @@ update msg model =
             remoteUserProfile web model
                 |> (\m -> RemoteData.map (\p -> formUserBio p.bio m) web |> RemoteData.withDefault m)
                 |> withNoCommand
+

@@ -180,9 +180,8 @@ type Msg
     | OnFetchCreatedDraft (WebData Draft)
     | OnFetchDeletedDraft (WebData String)
     | OnFetchPublicDrafts (WebData (Dict String Draft))
-    | OnFetchLikedDraft (WebData Draft)
-    | OnFetchUnlikedDraft (WebData Draft)
     | OnFetchUserProfile (WebData UserProfile)
+
 
 
 type Valid
@@ -683,13 +682,14 @@ updateDraft web model =
         |> RemoteData.map (flip remoteUser model)
         |> withError model
 
-updateLikedDraft : WebData Draft -> Model -> Model
-updateLikedDraft web model =
-    RemoteData.append web model.remote.user
-        |> RemoteData.map (\( draft, user ) -> { user | likedDrafts = Dict.insert draft.id draft user.likedDrafts })
+updateLikedDraft : Draft -> Model -> Model
+updateLikedDraft draft model =
+    model.remote.user
+        |> RemoteData.map (\user -> { user | likedDrafts = Dict.insert draft.id draft user.likedDrafts })
         |> RemoteData.map RemoteData.succeed
         |> RemoteData.map (flip remoteUser model)
         |> withError model
+
 
 
 updatePublicDrafts : WebData Draft -> Model -> Model
@@ -711,10 +711,10 @@ removeDraft web model =
 
 
 
-removeLikedDraft : WebData Draft -> Model -> Model
-removeLikedDraft web model =
-    RemoteData.append web model.remote.user
-        |> RemoteData.map (\( draft, user ) -> { user | likedDrafts = Dict.remove draft.id user.likedDrafts })
+removeLikedDraft : Draft -> Model -> Model
+removeLikedDraft draft model =
+    model.remote.user
+        |> RemoteData.map (\user -> { user | likedDrafts = Dict.remove draft.id user.likedDrafts })
         |> RemoteData.map RemoteData.succeed
         |> RemoteData.map (flip remoteUser model)
         |> withError model

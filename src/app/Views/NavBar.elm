@@ -94,7 +94,16 @@ notificationsMenu menu u =
                               , p [] [text <| formatDate note.createdAt]
                               , i [onClick <| ClickDeleteNotification note,class "clickable secondary-content material-icons"] [text "clear"]
                               ]
-                      _ -> li [] []
+                      _ -> li [class "collection-item avatar"]
+                              [ img [src note.sender.picture,class "circle"] []
+                              , a [href <| path (ProfileRoute note.sender.username), class "title "] [text note.sender.username]
+                              , i [class "material-icons"] [text "favorite_border"]
+                              , span [class "title"] [text "your draft "]
+                              , div [class "subtitle fg-error-color"] [ text "Draft has been deleted" ]
+                              , p [] [text <| formatDate note.createdAt]
+                              , i [onClick <| ClickDeleteNotification note,class "clickable secondary-content material-icons"] [text "clear"]
+
+                              ]
                  in
          ul [onClickNotifications menu, class "dropdown-content top-70-right-0 collection width-450", classList [ ( "active ", menu.notifications) ] ]
        <| List.map listItem (List.reverse <| List.sortBy (\n -> Date.toTime n.createdAt) <| Dict.values user.receivedNotifications)

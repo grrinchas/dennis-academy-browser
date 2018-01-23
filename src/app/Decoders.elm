@@ -237,19 +237,3 @@ decodeUpdateProfile =
         |> Decoder.field "updateUser"
         |> dataField
 
-decodeLikedDraft : Decoder.Decoder Draft
-decodeLikedDraft =
-    draftObject
-        |> Decoder.field "likedDraftsDraft"
-        |> Decoder.field "addToUserOnLikedDraft"
-        |> dataField
-
-decodeUnlikedDraft : Decoder.Decoder Draft
-decodeUnlikedDraft =
-    draftObject
-        |> Decoder.field "likedDraftsDraft"
-        |> Decoder.field "removeFromUserOnLikedDraft"
-        |> dataField
-
-
-
