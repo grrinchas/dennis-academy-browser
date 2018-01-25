@@ -1,6 +1,6 @@
 module Pages exposing (..)
 
-import Components exposing (empty, layout, withLoader)
+import Components exposing (empty, layout)
 import Decoders
 import Dict
 import Err exposing (..)
@@ -12,6 +12,7 @@ import Views.Auth as Auth
 import Views.NavBar as NavBar
 import Views.Draft as Draft
 import Views.Drafts as Drafts
+import Views.Dashboard as Dashboard
 import Views.UserProfile as UserProfile
 import Models exposing (..)
 import Routes exposing (..)
@@ -110,7 +111,7 @@ dashboardPage model =
             Error.view <| Http err
 
         _ ->
-            NavBar.dashboard model
+            layout model (NavBar.dashboard model) <| Dashboard.view model
 
 
 landingPage : Model -> Html Msg

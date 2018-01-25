@@ -1,6 +1,6 @@
 module Views.Auth exposing (..)
 
-import Components exposing (loader, newLoader)
+import Components exposing ( newLoader)
 import Err exposing (InputError(DoNotMatch, Empty, WrongSize))
 import Html exposing (..)
 import Html.Attributes exposing (..)

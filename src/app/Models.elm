@@ -480,10 +480,6 @@ menuNewDraft menu =
         newMenu -> { newMenu | newDraft = True }
 
 
-menuPublicDraft : String -> DisplayMenu -> DisplayMenu
-menuPublicDraft id menu =
-    case reset menu of
-        newMenu -> { newMenu | publicDraft = { display = True, id = id }}
 
 
 menuFilterPublicDraftLiked : Bool -> DisplayMenu -> DisplayMenu

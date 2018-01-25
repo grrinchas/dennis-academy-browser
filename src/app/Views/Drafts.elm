@@ -1,6 +1,6 @@
 module Views.Drafts exposing (..)
 
-import Components exposing (draftCard, loader, newLoader)
+import Components exposing (draftCard, newLoader)
 import Date
 import Dict exposing (Dict)
 import Html exposing (..)

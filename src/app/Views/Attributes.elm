@@ -1,11 +1,69 @@
 module Views.Attributes exposing (..)
 
 import Html exposing (Attribute, Html)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick, onWithOptions)
 import Json.Decode
 import Models exposing (..)
+import Routes exposing (Route(DraftRoute), path)
 
+
+---------------------------------------------------------------------------
+----------------------------------COLORS-----------------------------------
+---------------------------------------------------------------------------
+
+type Color
+    = PrimaryColor
+    | SecondaryColor
+    | ErrorColor
+    | TextColor
+    | GreyColor
+
+
+colorToString: Color -> String
+colorToString color =
+    case color of
+        PrimaryColor -> "primary"
+        SecondaryColor -> "secondary"
+        ErrorColor -> "error"
+        TextColor -> "text"
+        GreyColor -> "grey"
+
+
+background: Color -> Attribute msg
+background color = class ( "bg-" ++ (colorToString color) ++ "-color")
+
+foreground: Color -> Attribute msg
+foreground color = class ("fg-" ++ (colorToString color) ++ "-color")
+
+---------------------------------------------------------------------------
+---------------------------------OPACITY-----------------------------------
+---------------------------------------------------------------------------
+
+
+type Intensity
+    = Zero
+    | Quarter
+    | Half
+    | ThreeQuarters
+    | Full
+
+intensityToString: Intensity -> String
+intensityToString intensity =
+    case intensity of
+        Zero -> "zero"
+        Quarter -> "quarter"
+        Half -> "half"
+        ThreeQuarters -> "three-quarters"
+        Full -> "full"
+
+opacity: Intensity -> Attribute msg
+opacity intensity = class ("opacity-" ++ (intensityToString intensity ))
+
+
+---------------------------------------------------------------------------
+--------------------------------POSITION-----------------------------------
+---------------------------------------------------------------------------
 
 topLeft: Int -> Int -> Attribute msg
 topLeft top left = class <| "top-" ++ toString top ++ "-" ++ toString left
@@ -19,17 +77,18 @@ bottomLeft bottom left = class <| "top-" ++ toString bottom ++ "-" ++ toString l
 bottomRight: Int -> Int -> Attribute msg
 bottomRight bottom right = class <| "top-" ++ toString bottom ++ "-" ++ toString right
 
+
+---------------------------------------------------------------------------
+--------------------------------TOOLTIP------------------------------------
+---------------------------------------------------------------------------
+
+
+
 tooltipWrapper: Attribute msg
 tooltipWrapper  = class "tooltip-wrapper"
 
 tooltip: Attribute msg
 tooltip  = class "tooltip"
-
-onClickWithoutProp: Msg -> Attribute Msg
-onClickWithoutProp msg =
-        Json.Decode.succeed msg
-            |> onWithOptions "click" { stopPropagation = True, preventDefault = False }
-
 
 materialIcons : Attribute msg
 materialIcons = class "material-icons"
@@ -45,6 +104,31 @@ block: Attribute msg
 block = class "block"
 
 
+---------------------------------------------------------------------------
+--------------------------------ON-CLICK------------------------------------
+---------------------------------------------------------------------------
+
+
+--Routing
+
+toDraftPage: Draft -> Attribute Msg
+toDraftPage draft = href <| path <| DraftRoute draft.id
+
+
+-- Draft
+
+onClickCreateDraft: Draft -> Attribute Msg
+onClickCreateDraft draft = onClick <| ClickCreateDraft draft
+
+onClickDeleteDraft: Draft -> Attribute Msg
+onClickDeleteDraft draft = onClick <| ClickDeleteDraft draft
+
+onClickLikeDraft: Draft -> Attribute Msg
+onClickLikeDraft draft = onClick <| ClickLikeDraft draft
+
+onClickUnLikeDraft: Draft -> Attribute Msg
+onClickUnLikeDraft draft = onClick <| ClickUnLikeDraft draft
+
 onClickMakeDraftPublic: Draft -> Attribute Msg
 onClickMakeDraftPublic draft = onClick <| ClickUpdateDraft { draft | visibility = PUBLIC }
 
@@ -52,14 +136,33 @@ onClickMakeDraftPrivate: Draft -> Attribute Msg
 onClickMakeDraftPrivate draft = onClick <| ClickUpdateDraft { draft | visibility = PRIVATE }
 
 
+---------------------------------------------------------------------------
+---------------------------ON-CLICK-WITHOUT-PROP---------------------------
+---------------------------------------------------------------------------
+
+
+onClickWithoutProp: Msg -> Attribute Msg
+onClickWithoutProp msg =
+        Json.Decode.succeed msg
+            |> onWithOptions "click" { stopPropagation = True, preventDefault = False }
+
+
 onClickChangeMenu: DisplayMenu -> Attribute Msg
 onClickChangeMenu menu = onClickWithoutProp <| WhenMenuChanges menu
 
 
-onClickDeleteDraft: Draft -> DisplayMenu -> Attribute Msg
-onClickDeleteDraft draft menu =
+onClickDeleteDraftMenu: Draft -> DisplayMenu -> Attribute Msg
+onClickDeleteDraftMenu draft menu =
     case reset menu of
-        newMenu -> onClickChangeMenu { newMenu | deleteDraft = { display = True, id = draft.id }}
+        newMenu ->
+            onClickChangeMenu { newMenu | deleteDraft = { display = True, id = draft.id }}
+
+
+onClickPublicDraftMenu : Draft-> DisplayMenu -> Attribute Msg
+onClickPublicDraftMenu draft menu =
+    case reset menu of
+        newMenu ->
+            onClickChangeMenu { newMenu | publicDraft = { display = True, id = draft.id }}
 
 
 onClickFilterPrivateDrafts: Bool -> DisplayMenu -> Attribute Msg
@@ -72,7 +175,8 @@ onClickFilterPrivateDrafts bool menu =
 onClickFilterDrafts : DisplayMenu -> Attribute Msg
 onClickFilterDrafts menu =
     case (reset menu, menu.filterDraft) of
-        (newMenu, filter) -> onClickChangeMenu { newMenu | filterDraft = {filter | display = True}}
+        (newMenu, filter) ->
+            onClickChangeMenu { newMenu | filterDraft = {filter | display = True}}
 
 
 onClickNotifications: DisplayMenu -> Attribute Msg

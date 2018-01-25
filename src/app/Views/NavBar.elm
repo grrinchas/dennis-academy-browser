@@ -1,6 +1,6 @@
 module Views.NavBar exposing (..)
 
-import Components exposing (formatDate, loader, newLoader)
+import Components exposing (formatDate, newLoader)
 import Date
 import Dict
 import Html exposing (..)
@@ -124,6 +124,7 @@ userMenu : User -> DisplayMenu -> Html Msg
 userMenu user menu =
     ul [ onClickWithoutProp <|  WhenMenuChanges (menuUser menu), class "dropdown-content top-70-right-0", classList [ ( "active ", menu.user) ] ]
         [ li [] [ a [ href <| path DraftsRoute ] [ i [ class "material-icons" ] [ text "apps" ], text "Drafts" ] ]
+        , li [] [ a [ href <| path DashboardRoute ] [ i [ class "material-icons" ] [ text "dashboard" ], text "Dashboard" ] ]
         , li [ class "divider" ] []
         , li [] [ a [ href <| path <| ProfileRoute user.username, class "valign-wrapper fg-link-color" ]
                     [ img [ class "circle medium", src user.picture ] []

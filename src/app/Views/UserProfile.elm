@@ -1,6 +1,6 @@
 module Views.UserProfile exposing (..)
 
-import Components exposing (draftCard, loader, newLoader)
+import Components exposing (draftCard,  newLoader)
 import Date
 import Html exposing (..)
 import Html.Attributes exposing (..)

@@ -1,6 +1,6 @@
 module Views.Draft exposing (..)
 
-import Components exposing (loader, newLoader, withLoader)
+import Components exposing (newLoader)
 import Date exposing (Date)
 import Html exposing (..)
 import Html.Attributes exposing (..)

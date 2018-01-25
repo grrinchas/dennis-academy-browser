@@ -17,6 +17,11 @@ empty =
     div [] []
 
 
+divider: Html msg
+divider = div [class "divider"] []
+
+
+
 layout : Model -> Html Msg -> Html Msg -> Html Msg
 layout model head main =
     div [ class "layout" ]
@@ -35,12 +40,6 @@ layout model head main =
         ]
 
 
-
-withLoader : Html msg -> Html msg
-withLoader view =
-    div [ class "loader" ] [ view, loader ]
-
-
 loaderPart : String -> Html msg
 loaderPart color =
     div [ class ("spinner-layer spinner-" ++ color) ]
@@ -56,21 +55,8 @@ loaderPart color =
         ]
 
 
-loader : Html msg
-loader =
-    div [ class "dg-loading-wrapper" ]
-        [ div [ class "dg-loader" ]
-            [ div [ class "preloader-wrapper active" ] <|
-                List.map
-                    loaderPart
-                    [ "blue", "red", "yellow", "green" ]
-            ]
-        ]
-
 newLoader : List (Attribute msg)->Html msg
 newLoader attr = div (attr ++[ class "preloader-wrapper active" ]) <| List.map loaderPart [ "blue", "red", "yellow", "green" ]
-
-
 
 
 
@@ -83,13 +69,13 @@ getVisibilityIcon user menu draft =
 
         PUBLIC ->
             case user.username == draft.owner.username of
-                True -> div [ class "tooltip-wrapper" ]
-                        [ i [ class "material-icons clickable", onClick <| ClickUpdateDraft { draft | visibility = PRIVATE } ] [ text "public" ]
-                        , small [ class "tooltip -top-35-right-0 " ] [ text "Make private" ]
+                True -> div [ tooltipWrapper ]
+                        [ i [materialIcons, clickable, onClickMakeDraftPrivate draft] [ text "public" ]
+                        , small [tooltip, class "-top-35-right-0 " ] [ text "Make private" ]
                         ]
 
                 False ->
-                    i [ class "material-icons public " ] [ text "public" ]
+                    i [materialIcons] [ text "public" ]
 
 
 formatDate : Date -> String
@@ -106,30 +92,30 @@ getLikes draft user =
     div [class "valign-wrapper"]
         [ case (user.username /= draft.owner.username, Dict.member draft.id user.likedDrafts ) of
                (True, False) ->
-                div [ class "tooltip-wrapper" ]
-                      [ i [ class "material-icons clickable fg-error-color", onClick <| ClickLikeDraft draft ] [ text "favorite_border" ]
-                      , small [ class "tooltip -top-35-right-0 " ] [ text "Like" ]
+                div [ tooltipWrapper]
+                      [ i [materialIcons, clickable, foreground ErrorColor, onClickLikeDraft draft] [ text "favorite_border" ]
+                      , small [tooltip, class "-top-35-right-0 " ] [ text "Like" ]
                       ]
 
                (True, True) ->
-                div [ class "tooltip-wrapper" ]
-                      [ i [ class "material-icons clickable fg-error-color", onClick <| ClickUnLikeDraft draft ] [ text "favorite" ]
-                      , small [ class "tooltip -top-35-right-0 " ] [ text "Unlike" ]
+                div [ tooltipWrapper]
+                      [ i [materialIcons, clickable, foreground ErrorColor, onClickUnLikeDraft draft] [ text "favorite" ]
+                      , small [tooltip, class "-top-35-right-0 " ] [ text "Unlike" ]
                       ]
 
                (False, _) ->
-                      i [ class "material-icons public opacity-quarter fg-error-color" ] [ text "favorite_border" ]
+                      i [ materialIcons, foreground ErrorColor, opacity Quarter ] [ text "favorite_border" ]
 
         , if draft.likes == 0 then
             span [][]
           else
             if user.username == draft.owner.username then
-                span [class "likes opacity-quarter"] [text <| toString draft.likes]
+                span [opacity Quarter, foreground ErrorColor, class "likes "] [text <| toString draft.likes]
             else
-                span [class "likes"] [text <| toString draft.likes]
-
-
+                span [ foreground ErrorColor,class "likes"] [text <| toString draft.likes]
         ]
+
+
 
 draftCard : DisplayMenu -> User -> Draft -> Html Msg
 draftCard menu user draft =
@@ -139,7 +125,7 @@ draftCard menu user draft =
                 [ getLikes draft user
                 , getVisibilityIcon user menu draft
                 ]
-            , div [ class "divider" ] []
+            , divider
             , div [ class "card-content hidden" ]
                 [ span [ class "card-title" ] [ text <| (String.left 50 draft.title) ++ "..." ]
                 , p [ class "text-black" ] [ text <| (String.left 150 draft.content) ++ "..." ]
@@ -156,19 +142,19 @@ draftCard menu user draft =
                  [
                     case user.username == draft.owner.username of
                         True -> li []
-                                [ a [ class "tooltip-wrapper", href <| path <| DraftRoute draft.id ]
-                                    [ i [ class "material-icons clickable" ] [ text "create" ]
-                                    , small [ class "tooltip  no-transform -top-50-right-0" ] [ text "Edit" ]
+                                [ a [tooltipWrapper, toDraftPage draft ]
+                                    [ i [ materialIcons, clickable] [ text "create" ]
+                                    , small [tooltip, class "no-transform -top-50-right-0" ] [ text "Edit" ]
                                     ]
                                 ]
 
                         False ->
                             li [] []
                 , li []
-                        [ a [ class "tooltip-wrapper", onClick <| ClickCreateDraft draft ]
-                            [ i [ class "material-icons clickable" ]
+                        [ a [ tooltipWrapper, onClickCreateDraft draft]
+                            [ i [materialIcons, clickable]
                                 [text "content_copy" ]
-                            , small [ class "tooltip no-transform -top-50-right-0" ]
+                            , small [tooltip, class "no-transform -top-50-right-0" ]
                                 [ text "Duplicate" ]
                             ]
                         ]
@@ -188,11 +174,17 @@ draftCard menu user draft =
 deleteDraft : DisplayMenu -> Draft -> Html Msg
 deleteDraft menu draft =
     div [ class "dropdown-wrapper" ]
-        [ a [tooltipWrapper, onClickDeleteDraft draft menu]
-            [ i [ materialIcons, clickable ] [ text "delete" ]
+        [ a [tooltipWrapper, onClickDeleteDraftMenu draft menu]
+            [ i [clickable, materialIcons][text "delete"]
             , small [tooltip, class "no-transform -top-50-right-0" ] [ text "Delete" ]
             ]
-        , deleteDraftMenu menu draft
+        , div [ class "card dropdown-content  width-200 top-40-right-0 "
+            , onClickDeleteDraftMenu draft menu
+            , classList [ ( "active", menu.deleteDraft.display && menu.deleteDraft.id == draft.id ) ]
+            ]
+            [ div [ class "card-content fg-text-color" ] [ p [] [ text "Are you sure you want to delete?" ] ]
+            , div [ class "card-action" ] [ a [clickable, floatRight, onClickDeleteDraft draft ] [ text "delete" ] ]
+            ]
         ]
 
 
@@ -200,44 +192,25 @@ publicDraft : User -> DisplayMenu -> Draft -> Html Msg
 publicDraft user menu draft =
     div [ class "dropdown-wrapper" ]
         [ div [ class "tooltip-wrapper" ]
-            [ i [ class "material-icons clickable opacity-quarter ", onClickWithoutProp <| WhenMenuChanges (menuPublicDraft draft.id menu) ] [ text "public" ]
-           , small [ class "tooltip -top-35-right-0 width-100" ] [ text "Make public" ]
+            [ i [ class "material-icons clickable opacity-quarter ", onClickPublicDraftMenu draft menu] [ text "public" ]
+            , small [ class "tooltip -top-35-right-0 width-100" ] [ text "Make public" ]
             ]
-        , publicDraftMenu menu user draft
-        ]
+        , div [ class "card dropdown-content width-200 top-40-right-0"
+              , onClickPublicDraftMenu draft menu
+              , classList [ ( "active" , menu.publicDraft.display && menu.publicDraft.id == draft.id ) ]
+              ]
+         [ div [ class "card-content fg-text-color"] [ span [] [ text "Are you sure you want to make it public?" ] ]
+       , div [ class "card-action" ]
+           [
+           case isUserDraftOwner user draft of
+               True ->
+                   a [ clickable, floatRight, onClickMakeDraftPublic draft] [ text "Public" ]
 
-
-deleteDraftMenu : DisplayMenu -> Draft -> Html Msg
-deleteDraftMenu menu draft =
-    div [ class "card dropdown-content  width-200 top-40-right-0 "
-        , onClickDeleteDraft draft menu
-        , classList [ ( "active", menu.deleteDraft.display && menu.deleteDraft.id == draft.id ) ]
-        ]
-        [ div [ class "card-content fg-text-color" ] [ p [] [ text "Are you sure you want to delete?" ] ]
-        , div [ class "card-action" ] [ a [ class "right clickable", onClick <| ClickDeleteDraft draft ] [ text "delete" ] ]
-        ]
-
-
-
-publicDraftMenu : DisplayMenu -> User -> Draft -> Html Msg
-publicDraftMenu menu user draft =
-    div [ class "card dropdown-content width-200 top-40-right-0"
-        , onClickWithoutProp <| WhenMenuChanges ( menuPublicDraft draft.id menu)
-        , classList [ ( "active"
-        , menu.publicDraft.display && menu.publicDraft.id == draft.id ) ]
-        ]
-        [ div [ class "card-content fg-text-color"] [ span [] [ text "Are you sure you want to make it public?" ] ]
-        , div [ class "card-action" ]
-            [
-            case isUserDraftOwner user draft of
-                True ->
-                    a [ clickable, floatRight, onClickMakeDraftPublic draft] [ text "Public" ]
-
-                False ->
-                    a [clickable, floatRight] [text "Public"]
-            ]
+               False ->
+                   a [clickable, floatRight] [text "Public"]
+           ]
+       ]
 
         ]
-
 
 
