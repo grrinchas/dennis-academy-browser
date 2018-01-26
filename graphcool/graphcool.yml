@@ -15,7 +15,6 @@ functions:
 
 permissions:
   - operation: User.read
-    authenticated: true
     fields: [username, email, picture, id, bio]
 
   - operation: User.update
@@ -75,4 +74,20 @@ permissions:
   - operation: SenderOnNotification.disconnect
     authenticated: true
 
+  - operation: Publication.create
+    authenticated: true
+    query: ./src/permissions/Publication.graphql:isOwnerCreate
 
+  - operation: Publication.read
+
+  - operation: Publication.update
+    authenticated: true
+    query: ./src/permissions/Publication.graphql:isOwner
+
+  - operation: Publication.delete
+    authenticated: true
+    query: ./src/permissions/Publication.graphql:isOwner
+
+  - operation: UserOnPublication.connect
+    authenticated: true
+    query: ./src/permissions/UserOnPublication.graphql:isOwner

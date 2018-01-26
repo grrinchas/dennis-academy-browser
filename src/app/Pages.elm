@@ -14,6 +14,7 @@ import Views.Draft as Draft
 import Views.Drafts as Drafts
 import Views.Dashboard as Dashboard
 import Views.UserProfile as UserProfile
+import Views.Landing as Landing
 import Models exposing (..)
 import Routes exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
@@ -92,7 +93,7 @@ draftPage id model =
         Success user ->
             case Dict.get id user.drafts of
                 Just draft ->
-                    layout model (NavBar.draft model) <| Draft.view model (Just draft)
+                    layout model (NavBar.draft (Just draft) model) <| Draft.view model (Just draft)
 
                 Nothing ->
                     Error.view <| Routing NotFound
@@ -101,7 +102,7 @@ draftPage id model =
             Error.view <| Http err
 
         _ ->
-            layout model (NavBar.draft model) <| Draft.view model Nothing
+            layout model (NavBar.draft Nothing model) <| Draft.view model Nothing
 
 
 dashboardPage : Model -> Html Msg
@@ -116,12 +117,12 @@ dashboardPage model =
 
 landingPage : Model -> Html Msg
 landingPage model =
-    case model.remote.user of
+    case model.remote.publications of
         Failure err ->
             Error.view <| Http err
 
         _ ->
-            NavBar.landing model
+            layout model (NavBar.landing model) <| Landing.view model
 
 
 draftsPage : Model -> Html Msg

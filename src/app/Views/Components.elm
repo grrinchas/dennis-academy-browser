@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onWithOptions)
 import Json.Decode
+import Markdown
 import Models exposing (..)
 import RemoteData exposing (RemoteData(Loading), WebData)
 import Routes exposing (Route(DraftRoute, ProfileRoute), path)
@@ -214,3 +215,26 @@ publicDraft user menu draft =
         ]
 
 
+
+
+publicationCard : DisplayMenu -> Publication -> Html Msg
+publicationCard menu pub =
+    div [ class "col s12 m6 xl4" ]
+        [ div [ class "card small" ]
+            [ div [class "card-image"]
+                [img [src pub.image] []
+                ]
+            , div [ class "card-content hidden" ]
+                [ span [ class "card-title" ] [text pub.title]
+                ]
+            , div [ class "card-action flex-space-between" ]
+                [ div [ class "valign-wrapper" ]
+                    [ img [ class "circle medium", src pub.owner.picture ] []
+                    , div []
+                        [ a [ href <| path <| ProfileRoute pub.owner.username, class "fg-link-color no-transform " ] [ text pub.owner.username ]
+                        , small [ class "block fg-grey-color no-transform"] [ text <| formatDate pub.createdAt ]
+                        ]
+                    ]
+                ]
+            ]
+        ]

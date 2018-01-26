@@ -62,6 +62,18 @@ type alias Draft =
     }
 
 
+type alias Publication =
+    { id : String
+    , createdAt : Date
+    , updatedAt : Date
+    , content : String
+    , title : String
+    , owner : DraftOwner
+    , image: String
+    }
+
+
+
 initialDraft : Draft
 initialDraft =
     { id = ""
@@ -74,6 +86,8 @@ initialDraft =
     , owner = DraftOwner "" "" "" ""
     , likes = 0
     }
+
+
 
 
 initialNotification: Notification
@@ -96,6 +110,7 @@ type alias User =
     , bio : String
     , drafts : Dict String Draft
     , likedDrafts: Dict String Draft
+    , publications : Dict String Publication
     , sentNotifications: Dict String Notification
     , receivedNotifications: Dict String Notification
     }
@@ -129,6 +144,7 @@ type alias Remote =
     , user : WebData User
     , savedDraft : WebData Draft
     , publicDrafts : WebData (Dict String Draft)
+    , publications: WebData (Dict String Publication)
     , refreshedPublicDrafts : WebData ()
     , userProfile : WebData UserProfile
     }
@@ -169,6 +185,7 @@ type Msg
     | ClickRefreshPublicDrafts
     | ClickLikeDraft Draft
     | ClickUnLikeDraft Draft
+    | ClickCreatePublication Publication
     | ClickUpdateProfile
     | ClickDeleteNotification Notification
 
@@ -180,7 +197,9 @@ type Msg
     | OnFetchCreatedDraft (WebData Draft)
     | OnFetchDeletedDraft (WebData String)
     | OnFetchPublicDrafts (WebData (Dict String Draft))
+    | OnFetchPublications (WebData (Dict String Publication))
     | OnFetchUserProfile (WebData UserProfile)
+    | OnFetchCreatePublication (WebData Publication)
 
 
 
@@ -230,6 +249,7 @@ type alias Form =
     , repeatPass : Maybe String
     , draftTitleNew : String
     , userBio : String
+    , publishUrl : String
     }
 
 
@@ -280,6 +300,12 @@ formUserBio string model =
         form ->
             { model | form = { form | userBio = string } }
 
+formPublishUrl: String -> Model -> Model
+formPublishUrl string model =
+    case model.form of
+        form ->
+            { model | form = { form | publishUrl = string } }
+
 
 initialForm : Form
 initialForm =
@@ -289,6 +315,7 @@ initialForm =
     , repeatPass = Just "admin1"
     , draftTitleNew = "Very descriptive draft title..."
     , userBio = ""
+    , publishUrl = ""
     }
 
 
@@ -562,6 +589,11 @@ remotePublicDrafts web model =
         remote ->
             { model | remote = { remote | publicDrafts = web } }
 
+remotePublications : WebData (Dict String Publication) -> Model -> Model
+remotePublications web model =
+    case model.remote of
+        remote ->
+            { model | remote = { remote | publications = web } }
 
 remoteRefreshedPublicDrafts : WebData () -> Model -> Model
 remoteRefreshedPublicDrafts web model =
@@ -600,6 +632,7 @@ initialRemote =
     , user = RemoteData.NotAsked
     , savedDraft = RemoteData.NotAsked
     , publicDrafts = RemoteData.NotAsked
+    , publications = RemoteData.NotAsked
     , refreshedPublicDrafts = RemoteData.NotAsked
     , userProfile = RemoteData.NotAsked
     }

@@ -35,6 +35,10 @@ reroute model =
     case model.route of
         Ok route ->
             case ( route, isLoggedIn model ) of
+                ( HomeRoute, _) ->
+                    remoteUserProfile Loading model
+                        |> Api.fetchPublications
+
                 ( LoginRoute, True ) ->
                     ( model, Navigation.modifyUrl <| path DashboardRoute )
 

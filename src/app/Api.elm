@@ -83,6 +83,15 @@ createDraft draft model =
         |> RemoteData.map (Cmd.map OnFetchCreatedDraft)
         |> withError model
 
+
+createPublication : Publication -> Model -> ( Model, Cmd Msg )
+createPublication draft model =
+    RemoteData.map (authorised (Encoders.createPublication draft) (Decoders.decodeCreatePublication)) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map OnFetchCreatePublication)
+        |> withError model
+
+
 likeDraft : Draft -> Model -> ( Model, Cmd Msg )
 likeDraft draft model =
     RemoteData.map (authorised (Encoders.likeDraft draft) (Json.Decode.succeed ())) model.remote.graphCool
@@ -135,6 +144,13 @@ fetchPublicDrafts model =
         |> RemoteData.map sendRequest
         |> RemoteData.map (Cmd.map OnFetchPublicDrafts)
         |> withError model
+
+fetchPublications : Model -> ( Model, Cmd Msg )
+fetchPublications model =
+    Http.post graphCool Encoders.publications Decoders.decodePublications
+        |> RemoteData.sendRequest
+        |> Cmd.map OnFetchPublications
+        |> (\cmd ->(model, cmd))
 
 
 fetchDraftNotification : Draft -> NotificationType -> Model -> ( Model, Cmd Msg )

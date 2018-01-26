@@ -3,7 +3,7 @@ module Encoders exposing (..)
 import GraphQl exposing (Mutation, Named, Operation, OperationType(OperationMutation, OperationQuery), Query, operationToBody)
 import Http
 import Json.Encode as Encoder
-import Models exposing (Auth0Token, AuthGraphCool, Draft, Form, Notification, NotificationType(LIKED_DRAFT), User, ValidUser, Visibility(PUBLIC))
+import Models exposing (Auth0Token, AuthGraphCool, Draft, Form, Notification, NotificationType(LIKED_DRAFT), Publication, User, ValidUser, Visibility(PUBLIC))
 import Regex exposing (HowMany(All))
 import Validator
 
@@ -65,6 +65,8 @@ userInfo token =
                     |> GraphQl.withSelectors draftSelector
                 , GraphQl.field "likedDrafts"
                     |> GraphQl.withSelectors draftSelector
+                , GraphQl.field "publications"
+                    |> GraphQl.withSelectors publicationSelector
                 , GraphQl.field "sentNotifications"
                     |> GraphQl.withSelectors notificationSelector
                 , GraphQl.field "receivedNotifications"
@@ -89,6 +91,14 @@ publicDrafts _ =
         ]
         |> query
 
+publications :  Http.Body
+publications  =
+    GraphQl.named "allPublications"
+        [ GraphQl.field "allPublications"
+            |> GraphQl.withSelectors publicationSelector
+        ] |> query
+
+
 
 sanitize : String -> String
 sanitize string =
@@ -109,6 +119,18 @@ createDraft draft token =
         ]
         |> mutation
 
+
+createPublication : Publication -> AuthGraphCool -> Http.Body
+createPublication pub token =
+    GraphQl.named "createPublication"
+        [ GraphQl.field "createPublication"
+            |> GraphQl.withArgument "ownerId" (GraphQl.string token.id)
+            |> GraphQl.withArgument "content" (GraphQl.string <| sanitize pub.content)
+            |> GraphQl.withArgument "title" (GraphQl.string <| sanitize pub.title)
+            |> GraphQl.withArgument "image" (GraphQl.string <| sanitize pub.image)
+            |> GraphQl.withSelectors publicationSelector
+        ]
+        |> mutation
 
 updateDraft : Draft -> AuthGraphCool -> Http.Body
 updateDraft draft _ =
@@ -257,7 +279,22 @@ draftSelector =
             [GraphQl.field "count"]
     ]
 
-
+publicationSelector: List (GraphQl.Value a)
+publicationSelector =
+    [ GraphQl.field "id"
+    , GraphQl.field "content"
+    , GraphQl.field "title"
+    , GraphQl.field "createdAt"
+    , GraphQl.field "updatedAt"
+    , GraphQl.field "image"
+    , GraphQl.field "owner"
+        |> GraphQl.withSelectors
+            [ GraphQl.field "id"
+            , GraphQl.field "username"
+            , GraphQl.field "picture"
+            , GraphQl.field "bio"
+            ]
+    ]
 
 
 mutation : Operation Mutation a -> Http.Body
@@ -268,3 +305,4 @@ mutation operation =
 query : Operation Query a -> Http.Body
 query operation =
     operationToBody OperationQuery operation Nothing
+

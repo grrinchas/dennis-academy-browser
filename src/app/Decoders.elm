@@ -111,6 +111,8 @@ userObject =
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
         |> Pipeline.required "likedDrafts"
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
+        |> Pipeline.required "publications"
+            (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) publicationObject)
         |> Pipeline.required "sentNotifications"
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\note -> ( note.id, note )) notificationObject)
         |> Pipeline.required "receivedNotifications"
@@ -148,6 +150,32 @@ draftObject =
             |> Pipeline.required "_draftFanMeta" (Decoder.field "count" Decoder.int)
             |> Pipeline.resolve
 
+
+publicationObject : Decoder.Decoder Publication
+publicationObject =
+    let
+        toDecoder =
+            \id created updated content title  owner image ->
+                case ( created, updated) of
+                    ( Ok c, Ok u ) ->
+                        Decoder.succeed <| Publication id c u content title owner image
+
+                    ( Err err, _) ->
+                        Decoder.fail err
+
+                    ( _, Err err) ->
+                        Decoder.fail err
+
+    in
+        Pipeline.decode toDecoder
+            |> Pipeline.required "id" Decoder.string
+            |> Pipeline.required "createdAt" (Decoder.map Date.fromString Decoder.string)
+            |> Pipeline.required "updatedAt" (Decoder.map Date.fromString Decoder.string)
+            |> Pipeline.required "content" Decoder.string
+            |> Pipeline.required "title" Decoder.string
+            |> Pipeline.required "owner" draftOwner
+            |> Pipeline.required "image" Decoder.string
+            |> Pipeline.resolve
 
 
 draftOwner : Decoder.Decoder DraftOwner
@@ -207,6 +235,12 @@ decodeCreateDraft =
         |> Decoder.field "createDraft"
         |> dataField
 
+decodeCreatePublication : Decoder.Decoder Publication
+decodeCreatePublication =
+    publicationObject
+        |> Decoder.field "createPublication"
+        |> dataField
+
 
 decodeDeleteDraft : Decoder.Decoder String
 decodeDeleteDraft =
@@ -221,6 +255,13 @@ decodePublicDrafts =
     draftObject
         |> (\object -> Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) object)
         |> Decoder.field "allDrafts"
+        |> dataField
+
+decodePublications : Decoder.Decoder (Dict String Publication)
+decodePublications =
+    publicationObject
+        |> (\object -> Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) object)
+        |> Decoder.field "allPublications"
         |> dataField
 
 

@@ -128,6 +128,9 @@ update msg model =
         ClickCreateDraft draft ->
             Api.createDraft draft model
 
+        ClickCreatePublication pub ->
+            Api.createPublication pub model
+
         ClickUpdateDraft draft ->
             remoteUpdatedDraft Loading model
                 |> Api.updateDraft draft
@@ -242,8 +245,17 @@ update msg model =
                 |> remoteRefreshedPublicDrafts (succeed ())
                 |> withNoCommand
 
+        OnFetchPublications web ->
+            remotePublications web model
+                |> withNoCommand
+
         OnFetchUserProfile web ->
             remoteUserProfile web model
                 |> (\m -> RemoteData.map (\p -> formUserBio p.bio m) web |> RemoteData.withDefault m)
                 |> withNoCommand
+
+        OnFetchCreatePublication web ->
+            let _ = Debug.log "" web in
+            (model, Cmd.none)
+
 

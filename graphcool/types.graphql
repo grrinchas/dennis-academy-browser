@@ -12,6 +12,7 @@ type User @model {
     bio: String! @defaultValue (value: "No bio provided...")
 
     drafts: [Draft!]! @relation(name: "UserOnDraft")
+    publications: [Publication!]! @relation(name: "UserOnPublication")
     likedDrafts: [Draft!]! @relation (name: "UserOnLikedDraft")
 
     receivedNotifications: [Notification!]! @relation (name: "ReceiverOnNotification")
@@ -57,6 +58,19 @@ type Draft @model {
 
 }
 
+type Publication @model {
+    id: ID! @isUnique
+
+    createdAt: DateTime!
+    updatedAt: DateTime!
+
+    title: String!
+    image: String!
+    content: String!
+
+    owner: User! @relation(name: "UserOnPublication")
+
+}
 
 
 enum Visibility {
