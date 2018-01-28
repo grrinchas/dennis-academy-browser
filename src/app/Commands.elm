@@ -35,15 +35,17 @@ reroute model =
     case model.route of
         Ok route ->
             case ( route, isLoggedIn model ) of
-                ( HomeRoute, _) ->
-                    remoteUserProfile Loading model
-                        |> Api.fetchPublications
-
                 ( LoginRoute, True ) ->
                     ( model, Navigation.modifyUrl <| path DashboardRoute )
 
                 ( SignUpRoute, True ) ->
                     ( model, Navigation.modifyUrl <| path DashboardRoute )
+
+                ( PublicationsRoute, True) ->
+                    Api.fetchPublications model
+
+                ( PublicationsRoute , False ) ->
+                    ( { model | route = Err NotFound }, Cmd.none )
 
                 ( DashboardRoute, False ) ->
                     ( { model | route = Err NotFound }, Cmd.none )
@@ -66,6 +68,7 @@ reroute model =
                 ( ProfileRoute id, True ) ->
                     remoteUserProfile Loading model
                         |> Api.fetchUserProfile id
+
 
                 _ ->
                     withNoCommand model

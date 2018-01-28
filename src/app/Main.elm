@@ -255,7 +255,7 @@ update msg model =
                 |> withNoCommand
 
         OnFetchCreatePublication web ->
-            let _ = Debug.log "" web in
-            (model, Cmd.none)
+            resetMenu model |>
+                withNoCommand
 
 

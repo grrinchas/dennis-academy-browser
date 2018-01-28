@@ -1,6 +1,6 @@
 module Views.Landing exposing (..)
 
-import Components exposing (newLoader, publicationCard)
+import Components exposing (newLoader)
 import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -11,11 +11,12 @@ import RemoteData exposing (RemoteData(Loading, Success))
 
 
 view : Model -> Html Msg
-view model =
+view model = div [] []
+ {-
     div [ class "" ]
         [
 
-       {-  div [ class "valign-wrapper" ]
+       div [ class "valign-wrapper" ]
             [ ul [ class "tabs" ]
                 [ li [ class "tab" ] [ a [ href <| path DraftsRoute, classList [ ( "active", not bool ) ] ] [ text "Mine" ] ]
                 , li [ class "tab" ] [ a [ href <| path PublicDraftsRoute, classList [ ( "active", bool ) ] ] [ text "Community" ] ]
@@ -29,7 +30,6 @@ view model =
             ]
         , div [ class "divider" ] []
 
-        -}
 
          div [ class "row container section" ] <|
             case model.remote.publications of
@@ -39,3 +39,4 @@ view model =
                 _ ->
                     [div [class "loader-wrapper"] [ newLoader [] ]]
         ]
+        -}

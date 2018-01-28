@@ -15,6 +15,8 @@ import Views.Drafts as Drafts
 import Views.Dashboard as Dashboard
 import Views.UserProfile as UserProfile
 import Views.Landing as Landing
+import Views.Publications as Publications
+import Views.Publication as Publication
 import Models exposing (..)
 import Routes exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success))
@@ -144,6 +146,33 @@ publicDraftsPage model =
         _ ->
             layout model (NavBar.dashboard model) <| Drafts.publicView True model
 
+publicationsPage : Model -> Html Msg
+publicationsPage model =
+    case RemoteData.append model.remote.user model.remote.publications of
+        Failure err ->
+            Error.view <| Http err
+
+        _ ->
+            layout model (NavBar.dashboard model) <| Publications.view model
+
+
+publicationPage : String -> Model -> Html Msg
+publicationPage id model =
+    case RemoteData.append model.remote.user model.remote.publications of
+        Success (user, publications) ->
+            case Dict.get id publications of
+                Just pub ->
+                    layout model (NavBar.dashboard model) <| Publication.view model (Just pub)
+
+                Nothing ->
+                    Error.view <| Routing NotFound
+
+        Failure err ->
+            Error.view <| Http err
+
+        _ ->
+            layout model (NavBar.dashboard model) <| Publication.view model Nothing
+
 
 userProfilePage : String -> Model -> Html Msg
 userProfilePage username model =
@@ -184,6 +213,12 @@ view model =
 
                 ProfileRoute username ->
                     userProfilePage username model
+
+                PublicationsRoute ->
+                    publicationsPage model
+
+                PublicationRoute id ->
+                    publicationPage id model
 
         Err oops ->
             Error.view <| Routing oops

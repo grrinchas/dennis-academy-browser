@@ -38,12 +38,15 @@
         position: relative;
 
         .card-image {
-
-            max-height: 60%;
+            display: flex;
+            max-height: 55%;
+            min-height: 55%;
             overflow: hidden;
+            background-color: $primary-color;
+
         }
         .card-image + .card-content {
-            max-height: 40%;
+            min-height: 45%;
         }
 
         > .card-content .hidden {

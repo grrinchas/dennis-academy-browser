@@ -16,6 +16,8 @@ type Route
     | PublicDraftsRoute
     | DashboardRoute
     | ProfileRoute String
+    | PublicationsRoute
+    | PublicationRoute String
 
 
 type RouteError
@@ -43,6 +45,8 @@ matchers =
         , map DashboardRoute (s "dashboard")
         , map DraftsRoute (s "drafts")
         , map PublicDraftsRoute (s "drafts" </> s "public")
+        , map PublicationsRoute (s "publications")
+        , map PublicationRoute (s "publications"</> string)
         , map ProfileRoute profileMatcher
         ]
 
@@ -97,3 +101,9 @@ path route =
 
         ProfileRoute username ->
             "#/@" ++ username
+
+        PublicationsRoute ->
+            "#publications"
+
+        PublicationRoute id ->
+            "#publications/" ++ id
