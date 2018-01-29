@@ -8,6 +8,7 @@ import Html.Events exposing (onClick, onInput)
 import Markdown
 import Models exposing (..)
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData)
+import Routes exposing (path)
 import Time exposing (Time)
 import Views.Attributes exposing (..)
 
@@ -44,7 +45,6 @@ display model draft =
         , div
             [ class "col s6 " ]
             [ small [] [ text "HTML" ]
-            , a [ class "right " ] [ small [] [ text "PREVIEW" ] ]
             ]
         ]
     , div [ class "row editor-row" ]

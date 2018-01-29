@@ -147,10 +147,8 @@ $offsets: 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 
 
         margin-right: 15px;
     }
+
     .bio {
-        h1 {
-            font-weight: bold;
-        }
         width: 1200px;
         min-width: 400px;
 
@@ -158,10 +156,29 @@ $offsets: 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 
             font-weight: bold;
             font-size: 20px ;
             color: $input-disabled-color ;
-
         }
 
     }
 
+}
+
+
+.publication {
+    margin: 0 auto;
+    max-width: 800px;
+    font-family: Arimo, sans-serif;
+    font-size: 16px;
+
+    ul {
+        padding-left: 40px;
+        li {
+            list-style-type: disc !important;
+        }
+    }
+
+    blockquote {
+        border-left: 4px solid $secondary-color;
+        font-style: italic;
+    }
 }
 

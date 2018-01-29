@@ -39,6 +39,9 @@
         height: calc(100vh - 64px - 80px);
 
         font-family: 'Arimo', sans-serif;
+        font-size: 16px;
+
+
 
         ul {
             padding-left: 40px;
@@ -62,4 +65,25 @@
         height: calc(100vh - 64px - 80px);
     }
 
+}
+
+strong {
+    font-weight: bold;
+}
+
+code {
+    background-color: darken($text-color, 5);
+    border-radius: 2px;
+    padding: 0 5px;
+    font-size: 0.95rem;
+}
+
+pre {
+    code {
+        background-color: transparent;
+    }
+    color: $text-color;
+    background-color: darken($primary-color, 5);
+    padding: 10px 20px;
+    border-radius: 2px;
 }

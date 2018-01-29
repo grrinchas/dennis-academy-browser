@@ -66,6 +66,7 @@ init tokens loc =
             [ updateTime ]
         |> andAlso Api.fetchUser
         |> andAlso Api.fetchPublicDrafts
+        |> andAlso Api.fetchPublications
 
 
 
