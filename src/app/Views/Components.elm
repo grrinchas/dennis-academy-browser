@@ -122,7 +122,8 @@ draftCard : DisplayMenu -> User -> Draft -> Html Msg
 draftCard menu user draft =
     div [ class "col s12 m6 xl4" ]
         [ div [ class "card very-small" ]
-            [div [ class "card-content reset-top-bottom flex-space-between" ]
+            [
+            div [ class "card-content reset-top-bottom flex-space-between" ]
                 [ getLikes draft user
                 , getVisibilityIcon user menu draft
                 ]

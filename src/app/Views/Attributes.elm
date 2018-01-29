@@ -126,8 +126,14 @@ onClickDeleteDraft draft = onClick <| ClickDeleteDraft draft
 onClickLikeDraft: Draft -> Attribute Msg
 onClickLikeDraft draft = onClick <| ClickLikeDraft draft
 
+onClickLikePublication: Publication -> Attribute Msg
+onClickLikePublication pub = onClick <| ClickLikePublication pub
+
 onClickUnLikeDraft: Draft -> Attribute Msg
 onClickUnLikeDraft draft = onClick <| ClickUnLikeDraft draft
+
+onClickUnLikePublication: Publication -> Attribute Msg
+onClickUnLikePublication pub = onClick <| ClickUnLikePublication pub
 
 onClickMakeDraftPublic: Draft -> Attribute Msg
 onClickMakeDraftPublic draft = onClick <| ClickUpdateDraft { draft | visibility = PUBLIC }

@@ -39,14 +39,14 @@
 
         .card-image {
             display: flex;
-            max-height: 55%;
-            min-height: 55%;
+            max-height: 47%;
+            min-height: 47%;
             overflow: hidden;
             background-color: $primary-color;
 
         }
         .card-image + .card-content {
-            min-height: 45%;
+            min-height: 53%;
         }
 
         > .card-content .hidden {

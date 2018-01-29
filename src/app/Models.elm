@@ -15,6 +15,8 @@ import Time exposing (Time)
 type NotificationType
     = LIKED_DRAFT
     | UNLIKED_DRAFT
+    | LIKED_PUBLICATION
+    | UNLIKED_PUBLICATION
 
 
 type alias Notification =
@@ -70,6 +72,7 @@ type alias Publication =
     , title : String
     , owner : DraftOwner
     , image: String
+    , likes: Int
     }
 
 
@@ -110,6 +113,7 @@ type alias User =
     , bio : String
     , drafts : Dict String Draft
     , likedDrafts: Dict String Draft
+    , likedPublications: Dict String Publication
     , publications : Dict String Publication
     , sentNotifications: Dict String Notification
     , receivedNotifications: Dict String Notification
@@ -186,6 +190,8 @@ type Msg
     | ClickLikeDraft Draft
     | ClickUnLikeDraft Draft
     | ClickCreatePublication Publication
+    | ClickLikePublication Publication
+    | ClickUnLikePublication Publication
     | ClickUpdateProfile
     | ClickDeleteNotification Notification
 
@@ -719,6 +725,13 @@ updateLikedDraft draft model =
         |> RemoteData.map (flip remoteUser model)
         |> withError model
 
+updateLikedPublication : Publication -> Model -> Model
+updateLikedPublication pub model =
+    model.remote.user
+        |> RemoteData.map (\user -> { user | likedPublications = Dict.insert pub.id pub user.likedPublications })
+        |> RemoteData.map RemoteData.succeed
+        |> RemoteData.map (flip remoteUser model)
+        |> withError model
 
 
 updatePublicDrafts : WebData Draft -> Model -> Model
@@ -727,6 +740,15 @@ updatePublicDrafts web model =
         |> RemoteData.map (\( draft, drafts ) -> Dict.insert draft.id draft drafts )
         |> RemoteData.map RemoteData.succeed
         |> RemoteData.map (flip remotePublicDrafts model)
+        |> withError model
+
+
+updatePublications : WebData Publication -> Model -> Model
+updatePublications web model =
+    RemoteData.append web model.remote.publications
+        |> RemoteData.map (\( pub, publications) -> Dict.insert pub.id pub publications )
+        |> RemoteData.map RemoteData.succeed
+        |> RemoteData.map (flip remotePublications model)
         |> withError model
 
 
@@ -739,7 +761,6 @@ removeDraft web model =
         |> withError model
 
 
-
 removeLikedDraft : Draft -> Model -> Model
 removeLikedDraft draft model =
     model.remote.user
@@ -748,6 +769,14 @@ removeLikedDraft draft model =
         |> RemoteData.map (flip remoteUser model)
         |> withError model
 
+
+removeLikedPublication : Publication-> Model -> Model
+removeLikedPublication pub model =
+    model.remote.user
+        |> RemoteData.map (\user -> { user | likedPublications = Dict.remove pub.id user.likedPublications })
+        |> RemoteData.map RemoteData.succeed
+        |> RemoteData.map (flip remoteUser model)
+        |> withError model
 
 removeNotification : Notification -> Model -> Model
 removeNotification note model =

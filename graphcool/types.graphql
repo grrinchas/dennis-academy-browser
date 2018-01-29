@@ -13,7 +13,9 @@ type User @model {
 
     drafts: [Draft!]! @relation(name: "UserOnDraft")
     publications: [Publication!]! @relation(name: "UserOnPublication")
+
     likedDrafts: [Draft!]! @relation (name: "UserOnLikedDraft")
+    likedPublications: [Publication!]! @relation (name: "UserOnLikedPublication")
 
     receivedNotifications: [Notification!]! @relation (name: "ReceiverOnNotification")
     sentNotifications: [Notification!]! @relation (name: "SenderOnNotification")
@@ -39,6 +41,8 @@ type Notification @model {
 enum NotificationType {
     LIKED_DRAFT
     UNLIKED_DRAFT
+    LIKED_PUBLICATION
+    UNLIKED_PUBLICATION
 }
 
 
@@ -69,6 +73,7 @@ type Publication @model {
     content: String!
 
     owner: User! @relation(name: "UserOnPublication")
+    publicationFan: [User!]! @relation(name: "UserOnLikedPublication")
 
 }
 

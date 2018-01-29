@@ -99,9 +99,23 @@ likeDraft draft model =
         |> RemoteData.map (Cmd.map <| always WhenNoOperation)
         |> withError model
 
+likePublication : Publication -> Model -> ( Model, Cmd Msg )
+likePublication pub model =
+    RemoteData.map (authorised (Encoders.likePublication pub) (Json.Decode.succeed ())) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map <| always WhenNoOperation)
+        |> withError model
+
 unLikeDraft : Draft -> Model -> ( Model, Cmd Msg )
 unLikeDraft draft model =
     RemoteData.map (authorised (Encoders.unLikeDraft draft) (Json.Decode.succeed ())) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map <| always WhenNoOperation)
+        |> withError model
+
+unLikePublication : Publication -> Model -> ( Model, Cmd Msg )
+unLikePublication pub model =
+    RemoteData.map (authorised (Encoders.unLikePublication pub) (Json.Decode.succeed ())) model.remote.graphCool
         |> RemoteData.map sendRequest
         |> RemoteData.map (Cmd.map <| always WhenNoOperation)
         |> withError model
@@ -153,9 +167,9 @@ fetchPublications model =
         |> (\cmd ->(model, cmd))
 
 
-fetchDraftNotification : Draft -> NotificationType -> Model -> ( Model, Cmd Msg )
-fetchDraftNotification draft noteType model =
-    RemoteData.map (authorised (Encoders.createDraftNotification draft noteType) (Json.Decode.succeed ())) model.remote.graphCool
+fetchDraftNotification : String -> DraftOwner -> NotificationType -> Model -> ( Model, Cmd Msg )
+fetchDraftNotification id owner noteType model =
+    RemoteData.map (authorised (Encoders.createDraftNotification id owner noteType) (Json.Decode.succeed ())) model.remote.graphCool
         |> RemoteData.map sendRequest
         |> RemoteData.map (Cmd.map <| always WhenNoOperation)
         |> withError model

@@ -91,3 +91,10 @@ permissions:
   - operation: UserOnPublication.connect
     authenticated: true
     query: ./src/permissions/UserOnPublication.graphql:isOwner
+
+  - operation: UserOnLikedPublication.connect
+    authenticated: true
+    query: ./src/permissions/UserOnLikedPublication.graphql:isNotOwner
+
+  - operation: UserOnLikedPublication.disconnect
+    authenticated: true

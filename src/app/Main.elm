@@ -143,15 +143,26 @@ update msg model =
             updatePublicDrafts (RemoteData.succeed draft) model
                 |> updateLikedDraft draft
                 |> Api.likeDraft draft
-                |> andAlso (Api.fetchDraftNotification draft LIKED_DRAFT)
+                |> andAlso (Api.fetchDraftNotification draft.id draft.owner LIKED_DRAFT)
 
 
         ClickUnLikeDraft draft ->
             updatePublicDrafts (RemoteData.succeed draft) model
                 |> removeLikedDraft draft
                 |> Api.unLikeDraft draft
-                |> andAlso (Api.fetchDraftNotification draft UNLIKED_DRAFT)
+                |> andAlso (Api.fetchDraftNotification draft.id draft.owner UNLIKED_DRAFT)
 
+        ClickLikePublication pub ->
+            updatePublications (RemoteData.succeed pub) model
+                |> updateLikedPublication pub
+                |> Api.likePublication pub
+                |> andAlso (Api.fetchDraftNotification pub.id pub.owner LIKED_PUBLICATION)
+
+        ClickUnLikePublication pub ->
+            updatePublications (RemoteData.succeed pub) model
+                |> removeLikedPublication pub
+                |> Api.unLikePublication pub
+                |> andAlso (Api.fetchDraftNotification pub.id pub.owner UNLIKED_PUBLICATION)
 
         ClickRefreshPublicDrafts ->
             remoteRefreshedPublicDrafts Loading model

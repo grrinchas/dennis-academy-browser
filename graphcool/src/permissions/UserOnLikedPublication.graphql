@@ -1,0 +1,8 @@
+query isNotOwner($publicationFanUser_id: ID!, $likedPublicationsPublication_id: ID!) {
+    SomePublicationExists(filter: {
+        id: $likedPublicationsPublication_id
+        owner: {
+            id_not: $publicationFanUser_id
+        }
+    })
+}

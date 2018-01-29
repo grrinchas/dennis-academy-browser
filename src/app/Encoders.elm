@@ -3,7 +3,7 @@ module Encoders exposing (..)
 import GraphQl exposing (Mutation, Named, Operation, OperationType(OperationMutation, OperationQuery), Query, operationToBody)
 import Http
 import Json.Encode as Encoder
-import Models exposing (Auth0Token, AuthGraphCool, Draft, Form, Notification, NotificationType(LIKED_DRAFT), Publication, User, ValidUser, Visibility(PUBLIC))
+import Models exposing (Auth0Token, AuthGraphCool, Draft, DraftOwner, Form, Notification, NotificationType(LIKED_DRAFT), Publication, User, ValidUser, Visibility(PUBLIC))
 import Regex exposing (HowMany(All))
 import Validator
 
@@ -65,6 +65,8 @@ userInfo token =
                     |> GraphQl.withSelectors draftSelector
                 , GraphQl.field "likedDrafts"
                     |> GraphQl.withSelectors draftSelector
+                , GraphQl.field "likedPublications"
+                    |> GraphQl.withSelectors publicationSelector
                 , GraphQl.field "publications"
                     |> GraphQl.withSelectors publicationSelector
                 , GraphQl.field "sentNotifications"
@@ -74,6 +76,7 @@ userInfo token =
                 ]
         ]
         |> query
+
 
 
 
@@ -180,6 +183,21 @@ likeDraft draft token =
         ]
         |> mutation
 
+
+likePublication : Publication -> AuthGraphCool -> Http.Body
+likePublication pub token =
+    GraphQl.named "likePublication"
+        [ GraphQl.field "addToUserOnLikedPublication"
+            |> GraphQl.withArgument "publicationFanUserId" (GraphQl.string token.id)
+            |> GraphQl.withArgument "likedPublicationsPublicationId" (GraphQl.string pub.id)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "likedPublicationsPublication"
+                    |> GraphQl.withSelectors publicationSelector
+                ]
+        ]
+        |> mutation
+
+
 unLikeDraft : Draft -> AuthGraphCool -> Http.Body
 unLikeDraft draft token =
     GraphQl.named "unLikeDraft"
@@ -189,6 +207,20 @@ unLikeDraft draft token =
             |> GraphQl.withSelectors
                 [ GraphQl.field "likedDraftsDraft"
                     |> GraphQl.withSelectors draftSelector
+                ]
+        ]
+        |> mutation
+
+
+unLikePublication : Publication -> AuthGraphCool -> Http.Body
+unLikePublication pub token =
+    GraphQl.named "unLikePublication"
+        [ GraphQl.field "removeFromUserOnLikedPublication"
+            |> GraphQl.withArgument "publicationFanUserId" (GraphQl.string token.id)
+            |> GraphQl.withArgument "likedPublicationsPublicationId" (GraphQl.string pub.id)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "likedPublicationsPublication"
+                    |> GraphQl.withSelectors publicationSelector
                 ]
         ]
         |> mutation
@@ -203,14 +235,14 @@ updateProfile form token =
         ]
         |> mutation
 
-createDraftNotification: Draft -> NotificationType -> AuthGraphCool -> Http.Body
-createDraftNotification draft notType token =
+createDraftNotification: String -> DraftOwner -> NotificationType -> AuthGraphCool -> Http.Body
+createDraftNotification id owner notType token =
     GraphQl.named "createNotification"
         [GraphQl.field "createNotification"
             |> GraphQl.withArgument "senderId" (GraphQl.string token.id)
-            |> GraphQl.withArgument "receiverId" (GraphQl.string draft.owner.id)
+            |> GraphQl.withArgument "receiverId" (GraphQl.string owner.id)
             |> GraphQl.withArgument "type" (GraphQl.type_ <| toString notType)
-            |> GraphQl.withArgument "message" (GraphQl.string draft.id)
+            |> GraphQl.withArgument "message" (GraphQl.string id)
             |> GraphQl.withSelectors
                 [ GraphQl.field "sender"
                     |> GraphQl.withSelectors
@@ -220,6 +252,8 @@ createDraftNotification draft notType token =
                         [GraphQl.field "username"]
                 ]
         ] |> mutation
+
+
 
 userProfile : String -> AuthGraphCool -> Http.Body
 userProfile username _ =
@@ -294,6 +328,9 @@ publicationSelector =
             , GraphQl.field "picture"
             , GraphQl.field "bio"
             ]
+    , GraphQl.field "_publicationFanMeta"
+        |> GraphQl.withSelectors
+            [GraphQl.field "count"]
     ]
 
 

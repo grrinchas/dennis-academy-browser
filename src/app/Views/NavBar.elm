@@ -62,48 +62,83 @@ notifications menu user =
         ]
 
 
+getIcon : NotificationType -> Html msg
+getIcon note =
+    case note of
+        LIKED_DRAFT ->
+            i [class "material-icons"] [text "favorite"]
+        LIKED_PUBLICATION ->
+            i [class "material-icons"] [text "favorite"]
+        UNLIKED_DRAFT ->
+            i [class "material-icons"] [text "favorite_border"]
+        UNLIKED_PUBLICATION ->
+            i [class "material-icons"] [text "favorite_border"]
+
+getTitle: NotificationType -> Html msg
+getTitle note =
+    case note of
+        LIKED_DRAFT ->
+            span [class "title"] [text "your draft "]
+        UNLIKED_DRAFT ->
+            span [class "title"] [text "your draft "]
+        LIKED_PUBLICATION ->
+            span [class "title"] [text "your publication "]
+        UNLIKED_PUBLICATION ->
+            span [class "title"] [text "your publication "]
+
+
+
+getLink: Notification -> User -> Html msg
+getLink  note user =
+    case (note.notificationType, Dict.get note.message user.drafts, Dict.get note.message user.publications) of
+        (LIKED_DRAFT, Just draft, _) ->
+             div [class "subtitle"]
+                [ a [href <| path (DraftRoute draft.id)]
+                    [text <| if String.length draft.title <= 50 then draft.title else (String.left 50 draft.title) ++ "..."]
+                ]
+        (UNLIKED_DRAFT, Just draft, _) ->
+             div [class "subtitle"]
+                [ a [href <| path (DraftRoute draft.id)]
+                    [text <| if String.length draft.title <= 50 then draft.title else (String.left 50 draft.title) ++ "..."]
+                ]
+
+        (LIKED_DRAFT, Nothing, _) ->
+               div [class "subtitle fg-error-color"] [ text "Draft has been deleted" ]
+        (UNLIKED_DRAFT, Nothing, _) ->
+               div [class "subtitle fg-error-color"] [ text "Draft has been deleted" ]
+
+        (LIKED_PUBLICATION, _, Just pub) ->
+             div [class "subtitle"]
+                [ a [href <| path (PublicationRoute pub.id)]
+                    [text <| if String.length pub.title <= 50 then pub.title else (String.left 50 pub.title) ++ "..."]
+                ]
+        (UNLIKED_PUBLICATION, _, Just pub) ->
+             div [class "subtitle"]
+                [ a [href <| path (PublicationRoute pub.id)]
+                    [text <| if String.length pub.title <= 50 then pub.title else (String.left 50 pub.title) ++ "..."]
+                ]
+
+        (LIKED_PUBLICATION, _, Nothing) ->
+               div [class "subtitle fg-error-color"] [ text "Publication has been deleted" ]
+        (UNLIKED_PUBLICATION, _, Nothing) ->
+               div [class "subtitle fg-error-color"] [ text "Publication has been deleted" ]
+
 
 notificationsMenu: DisplayMenu -> Maybe User -> Html Msg
 notificationsMenu menu u =
     case u of
         Just user ->
-              let listItem =
-              \note -> case (note.notificationType, Dict.get note.message user.drafts) of
-                      (LIKED_DRAFT, Just draft) ->
-                          li [class "collection-item avatar"]
-                              [ img [src note.sender.picture,class "circle"] []
-                              , a [href <| path (ProfileRoute note.sender.username), class "title "] [text note.sender.username]
-                              , i [class "material-icons"] [text "favorite"]
-                              , span [class "title"] [text "your draft "]
-                              , div [class "subtitle"] [a [href <| path (DraftRoute draft.id)]
-                                [text <| if String.length draft.title <= 50 then draft.title else (String.left 50 draft.title) ++ "..."]
-                                ]
-                              , p [] [text <| formatDate note.createdAt]
-                              , i [onClick <| ClickDeleteNotification note,class "clickable secondary-content material-icons"] [text "clear"]
-                              ]
+              let listItem = \note ->
+                   li [class "collection-item avatar"]
+                       [ img [src note.sender.picture,class "circle"] []
+                       , a [href <| path (ProfileRoute note.sender.username), class "title "] [text note.sender.username]
+                       , getIcon note.notificationType
+                       , getTitle note.notificationType
+                       , getLink note user
+                       , p [] [text <| formatDate note.createdAt]
+                       , i [onClick <| ClickDeleteNotification note,class "clickable secondary-content material-icons"] [text "clear"]
+                       ]
 
-                      (UNLIKED_DRAFT, Just draft) ->
-                          li [class "collection-item avatar"]
-                              [ img [src note.sender.picture,class "circle"] []
-                              , a [href <| path (ProfileRoute note.sender.username), class "title "] [text note.sender.username]
-                              , i [class "material-icons"] [text "favorite_border"]
-                              , span [class "title"] [text "your draft "]
-                              , div [class "subtitle"] [a [href <| path (DraftRoute draft.id)]
-                                [text <| if String.length draft.title <= 60 then draft.title else (String.left 60 draft.title) ++ "..."]
-                                ]
-                              , p [] [text <| formatDate note.createdAt]
-                              , i [onClick <| ClickDeleteNotification note,class "clickable secondary-content material-icons"] [text "clear"]
-                              ]
-                      _ -> li [class "collection-item avatar"]
-                              [ img [src note.sender.picture,class "circle"] []
-                              , a [href <| path (ProfileRoute note.sender.username), class "title "] [text note.sender.username]
-                              , i [class "material-icons"] [text "favorite_border"]
-                              , span [class "title"] [text "your draft "]
-                              , div [class "subtitle fg-error-color"] [ text "Draft has been deleted" ]
-                              , p [] [text <| formatDate note.createdAt]
-                              , i [onClick <| ClickDeleteNotification note,class "clickable secondary-content material-icons"] [text "clear"]
-
-                              ]
                  in
          ul [onClickNotifications menu, class "dropdown-content top-70-right-0 collection width-450", classList [ ( "active ", menu.notifications) ] ]
        <| List.map listItem (List.reverse <| List.sortBy (\n -> Date.toTime n.createdAt) <| Dict.values user.receivedNotifications)
@@ -163,6 +198,7 @@ fromDraft form draft =
     , title = draft.title
     , owner= draft.owner
     , image = form.publishUrl
+    , likes = 0
     }
 
 newDraft : Form -> DisplayMenu -> Html Msg

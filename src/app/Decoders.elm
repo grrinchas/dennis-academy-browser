@@ -111,6 +111,8 @@ userObject =
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
         |> Pipeline.required "likedDrafts"
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) draftObject)
+        |> Pipeline.required "likedPublications"
+            (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) publicationObject)
         |> Pipeline.required "publications"
             (Decoder.map Dict.fromList <| Decoder.list <| Decoder.map (\draft -> ( draft.id, draft )) publicationObject)
         |> Pipeline.required "sentNotifications"
@@ -155,10 +157,10 @@ publicationObject : Decoder.Decoder Publication
 publicationObject =
     let
         toDecoder =
-            \id created updated content title  owner image ->
+            \id created updated content title  owner image likes ->
                 case ( created, updated) of
                     ( Ok c, Ok u ) ->
-                        Decoder.succeed <| Publication id c u content title owner image
+                        Decoder.succeed <| Publication id c u content title owner image likes
 
                     ( Err err, _) ->
                         Decoder.fail err
@@ -175,6 +177,7 @@ publicationObject =
             |> Pipeline.required "title" Decoder.string
             |> Pipeline.required "owner" draftOwner
             |> Pipeline.required "image" Decoder.string
+            |> Pipeline.required "_publicationFanMeta" (Decoder.field "count" Decoder.int)
             |> Pipeline.resolve
 
 
@@ -213,6 +216,10 @@ notificationType n =
         Just LIKED_DRAFT
     else if n == "UNLIKED_DRAFT" then
         Just UNLIKED_DRAFT
+    else if n == "LIKED_PUBLICATION" then
+        Just LIKED_PUBLICATION
+    else if n == "UNLIKED_PUBLICATION" then
+        Just UNLIKED_PUBLICATION
     else Nothing
 
 
