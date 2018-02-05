@@ -3,8 +3,9 @@ module Views.Publications exposing (..)
 import Components exposing (formatDate, newLoader)
 import Dict
 import Html exposing (..)
-import Html.Attributes exposing (class, href, src, style)
-import Models exposing (DisplayMenu, Model, Msg, Publication, User)
+import Html.Attributes exposing (class, classList, href, src, style)
+import Html.Events exposing (onClick)
+import Models exposing (DisplayMenu, Model, Msg(ClickDeletePublication), Publication, User)
 import RemoteData exposing (RemoteData(Success))
 import Routes exposing (Route(ProfileRoute, PublicationRoute), path)
 import Views.Attributes exposing (..)
@@ -25,7 +26,7 @@ view model =
 
 publicationCard : DisplayMenu -> User -> Publication -> Html Msg
 publicationCard menu user pub =
-    div [ class "col s12 m6 xl4" ]
+    div [ class "col s12 m6 xl4 pub-card" ]
         [ div [ class "card small" ]
             [ div [ class "card-content reset-top-bottom flex-space-between" ]
                 [ getLikes pub user
@@ -34,7 +35,7 @@ publicationCard menu user pub =
                 [img [src pub.image] []
                 ]]
             , div [ class "card-content hidden" ]
-                [ span [ class "card-title" ] [text <| if String.length pub.title >= 35 then String.left 35 pub.title ++ "..." else pub.title]
+                [ span [ class "card-title" ] [text <| if String.length pub.title >= 75 then String.left 75 pub.title ++ "..." else pub.title]
                 ]
 
             , div [ class "card-action flex-space-between" ]
@@ -45,6 +46,29 @@ publicationCard menu user pub =
                         , small [ class "block fg-grey-color no-transform"] [ text <| formatDate pub.createdAt ]
                         ]
                     ]
+                    , ul [class "right inline reset-margin-top reset-margin-bottom"]
+                      [ case user.username == pub.owner.username of
+                             True ->
+                                 li []
+                                    [ div [ class "dropdown-wrapper" ]
+                                          [ a [tooltipWrapper, onClickDeleteMenu pub.id menu ]
+                                              [ i [clickable, materialIcons][text "delete"]
+                                              , small [tooltip, class "no-transform -top-50-right-0" ] [ text "Delete" ]
+                                              ]
+                                          , div [ class "card dropdown-content  width-200 top-40-right-0 "
+                                               , onClickDeleteMenu pub.id menu
+                                              , classList [ ( "active", menu.delete.display && menu.delete.id == pub.id ) ]
+                                              ]
+                                              [ div [ class "card-content fg-text-color" ] [ p [] [ text "Are you sure you want to delete?" ] ]
+                                              , div [ class "card-action" ] [ a [clickable, floatRight, onClick <| ClickDeletePublication pub] [ text "delete" ] ]
+                                              ]
+                                          ]
+
+                                   ]
+
+                             False ->
+                                 li [] []
+                                ]
                 ]
             ]
         ]

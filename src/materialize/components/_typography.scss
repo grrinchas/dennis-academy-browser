@@ -38,6 +38,11 @@ h5 {font-weight: bold; font-size: $h5-fontsize; line-height: 110%; margin: ($h5-
 h6 {font-weight: bold; font-size: $h6-fontsize; line-height: 110%; margin: ($h6-fontsize * 2) 0 ($h6-fontsize / 2.5) 0;}
 
 
+p, ul, ol, pre {
+    margin-top: $h6-fontsize * 1.618;
+}
+
+
 
 // Text Styles
 em { font-style: italic; }

@@ -147,6 +147,17 @@ updateDraft draft _ =
         ]
         |> mutation
 
+updatePublication : Publication -> AuthGraphCool -> Http.Body
+updatePublication pub _ =
+    GraphQl.named "updatePublication"
+        [ GraphQl.field "updatePublication"
+            |> GraphQl.withArgument "id" (GraphQl.string pub.id)
+            |> GraphQl.withArgument "content" (GraphQl.string <| sanitize pub.content)
+            |> GraphQl.withArgument "title" (GraphQl.string <| sanitize pub.title)
+            |> GraphQl.withArgument "image" (GraphQl.string pub.image)
+            |> GraphQl.withSelectors publicationSelector
+        ]
+        |> mutation
 
 deleteDraft : Draft -> AuthGraphCool -> Http.Body
 deleteDraft draft token =
@@ -158,6 +169,18 @@ deleteDraft draft token =
                 ]
         ]
         |> mutation
+
+deletePublication : Publication -> AuthGraphCool -> Http.Body
+deletePublication pub token =
+    GraphQl.named "deletePublication"
+        [ GraphQl.field "deletePublication"
+            |> GraphQl.withArgument "id" (GraphQl.string pub.id)
+            |> GraphQl.withSelectors
+                [ GraphQl.field "id"
+                ]
+        ]
+        |> mutation
+
 
 deleteNotification : Notification -> AuthGraphCool -> Http.Body
 deleteNotification note token =

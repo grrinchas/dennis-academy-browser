@@ -157,11 +157,11 @@ onClickChangeMenu: DisplayMenu -> Attribute Msg
 onClickChangeMenu menu = onClickWithoutProp <| WhenMenuChanges menu
 
 
-onClickDeleteDraftMenu: Draft -> DisplayMenu -> Attribute Msg
-onClickDeleteDraftMenu draft menu =
+onClickDeleteMenu: String -> DisplayMenu -> Attribute Msg
+onClickDeleteMenu id menu =
     case reset menu of
         newMenu ->
-            onClickChangeMenu { newMenu | deleteDraft = { display = True, id = draft.id }}
+            onClickChangeMenu { newMenu | delete = { display = True, id = id }}
 
 
 onClickPublicDraftMenu : Draft-> DisplayMenu -> Attribute Msg

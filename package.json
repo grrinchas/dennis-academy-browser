@@ -6,8 +6,9 @@
     "author": "Dennis Grinch <dg4675dg@gmail.com>",
     "license": "MIT",
     "scripts": {
+        "graphcool": "get-graphql-schema \"https://api.graph.cool/simple/v1/cjcnkimc02rhy0177ejct2ika\" > schema.graphql",
         "start:dev": "babel-node build_scripts/devServer.js",
-        "start": "npm-run-all --parallel start:dev",
+        "start": "npm-run-all --parallel start:dev graphcool",
         "build": "babel-node build_scripts/build.js",
         "postbuild": "babel-node build_scripts/prodServer.js",
         "format": "elm-format --yes"
@@ -43,6 +44,7 @@
         "webpack-merge": "^4.1.0"
     },
     "dependencies": {
+        "get-graphql-schema": "^2.1.1",
         "global": "^4.3.2"
     }
 }

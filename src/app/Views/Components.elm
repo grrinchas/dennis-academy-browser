@@ -176,13 +176,13 @@ draftCard menu user draft =
 deleteDraft : DisplayMenu -> Draft -> Html Msg
 deleteDraft menu draft =
     div [ class "dropdown-wrapper" ]
-        [ a [tooltipWrapper, onClickDeleteDraftMenu draft menu]
+        [ a [tooltipWrapper, onClickDeleteMenu draft.id menu]
             [ i [clickable, materialIcons][text "delete"]
             , small [tooltip, class "no-transform -top-50-right-0" ] [ text "Delete" ]
             ]
         , div [ class "card dropdown-content  width-200 top-40-right-0 "
-            , onClickDeleteDraftMenu draft menu
-            , classList [ ( "active", menu.deleteDraft.display && menu.deleteDraft.id == draft.id ) ]
+            , onClickDeleteMenu draft.id menu
+            , classList [ ( "active", menu.delete.display && menu.delete.id == draft.id ) ]
             ]
             [ div [ class "card-content fg-text-color" ] [ p [] [ text "Are you sure you want to delete?" ] ]
             , div [ class "card-action" ] [ a [clickable, floatRight, onClickDeleteDraft draft ] [ text "delete" ] ]

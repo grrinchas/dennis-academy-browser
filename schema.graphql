@@ -1,0 +1,2416 @@
+enum _ModelMutationType {
+  CREATED
+  UPDATED
+  DELETED
+}
+
+# Meta information about the query.
+type _QueryMeta {
+  count: Int!
+}
+
+type AddToReceiverOnNotificationPayload {
+  receiverUser: User
+  receivedNotificationsNotification: Notification
+}
+
+type AddToSenderOnNotificationPayload {
+  senderUser: User
+  sentNotificationsNotification: Notification
+}
+
+type AddToUserOnDraftPayload {
+  ownerUser: User
+  draftsDraft: Draft
+}
+
+type AddToUserOnLikedDraftPayload {
+  draftFanUser: User
+  likedDraftsDraft: Draft
+}
+
+type AddToUserOnLikedPublicationPayload {
+  publicationFanUser: User
+  likedPublicationsPublication: Publication
+}
+
+type AddToUserOnPublicationPayload {
+  ownerUser: User
+  publicationsPublication: Publication
+}
+
+# AuthenticationPayload
+type AuthenticationPayload {
+  id: String!
+  token: String!
+}
+
+input CreateDraft {
+  content: String!
+  title: String!
+  type: DraftType!
+  visibility: Visibility
+  ownerId: ID
+  owner: DraftownerUser
+  draftFanIds: [ID!]
+  draftFan: [DraftdraftFanUser!]
+}
+
+input CreateNotification {
+  message: String!
+  type: NotificationType!
+  receiverId: ID
+  receiver: NotificationreceiverUser
+  senderId: ID
+  sender: NotificationsenderUser
+}
+
+input CreatePublication {
+  content: String!
+  image: String!
+  title: String!
+  ownerId: ID
+  owner: PublicationownerUser
+  publicationFanIds: [ID!]
+  publicationFan: [PublicationpublicationFanUser!]
+}
+
+input CreateUser {
+  auth0UserId: String!
+  bio: String
+  email: String!
+  picture: String!
+  username: String!
+  draftsIds: [ID!]
+  drafts: [UserdraftsDraft!]
+  likedDraftsIds: [ID!]
+  likedDrafts: [UserlikedDraftsDraft!]
+  likedPublicationsIds: [ID!]
+  likedPublications: [UserlikedPublicationsPublication!]
+  publicationsIds: [ID!]
+  publications: [UserpublicationsPublication!]
+  receivedNotificationsIds: [ID!]
+  receivedNotifications: [UserreceivedNotificationsNotification!]
+  sentNotificationsIds: [ID!]
+  sentNotifications: [UsersentNotificationsNotification!]
+}
+
+scalar DateTime
+
+type Draft implements Node {
+  content: String!
+  createdAt: DateTime!
+  draftFan(filter: UserFilter, orderBy: UserOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [User!]
+  id: ID!
+  owner(filter: UserFilter): User!
+  title: String!
+  type: DraftType!
+  updatedAt: DateTime!
+  visibility: Visibility!
+
+  # Meta information about the query.
+  _draftFanMeta(filter: UserFilter, orderBy: UserOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+}
+
+input DraftdraftFanUser {
+  auth0UserId: String!
+  bio: String
+  email: String!
+  picture: String!
+  username: String!
+  draftsIds: [ID!]
+  drafts: [UserdraftsDraft!]
+  likedDraftsIds: [ID!]
+  likedDrafts: [UserlikedDraftsDraft!]
+  likedPublicationsIds: [ID!]
+  likedPublications: [UserlikedPublicationsPublication!]
+  publicationsIds: [ID!]
+  publications: [UserpublicationsPublication!]
+  receivedNotificationsIds: [ID!]
+  receivedNotifications: [UserreceivedNotificationsNotification!]
+  sentNotificationsIds: [ID!]
+  sentNotifications: [UsersentNotificationsNotification!]
+}
+
+input DraftFilter {
+  # Logical AND on all given filters.
+  AND: [DraftFilter!]
+
+  # Logical OR on all given filters.
+  OR: [DraftFilter!]
+  content: String
+
+  # All values that are not equal to given value.
+  content_not: String
+
+  # All values that are contained in given list.
+  content_in: [String!]
+
+  # All values that are not contained in given list.
+  content_not_in: [String!]
+
+  # All values less than the given value.
+  content_lt: String
+
+  # All values less than or equal the given value.
+  content_lte: String
+
+  # All values greater than the given value.
+  content_gt: String
+
+  # All values greater than or equal the given value.
+  content_gte: String
+
+  # All values containing the given string.
+  content_contains: String
+
+  # All values not containing the given string.
+  content_not_contains: String
+
+  # All values starting with the given string.
+  content_starts_with: String
+
+  # All values not starting with the given string.
+  content_not_starts_with: String
+
+  # All values ending with the given string.
+  content_ends_with: String
+
+  # All values not ending with the given string.
+  content_not_ends_with: String
+  createdAt: DateTime
+
+  # All values that are not equal to given value.
+  createdAt_not: DateTime
+
+  # All values that are contained in given list.
+  createdAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  createdAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  createdAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  createdAt_lte: DateTime
+
+  # All values greater than the given value.
+  createdAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  createdAt_gte: DateTime
+  id: ID
+
+  # All values that are not equal to given value.
+  id_not: ID
+
+  # All values that are contained in given list.
+  id_in: [ID!]
+
+  # All values that are not contained in given list.
+  id_not_in: [ID!]
+
+  # All values less than the given value.
+  id_lt: ID
+
+  # All values less than or equal the given value.
+  id_lte: ID
+
+  # All values greater than the given value.
+  id_gt: ID
+
+  # All values greater than or equal the given value.
+  id_gte: ID
+
+  # All values containing the given string.
+  id_contains: ID
+
+  # All values not containing the given string.
+  id_not_contains: ID
+
+  # All values starting with the given string.
+  id_starts_with: ID
+
+  # All values not starting with the given string.
+  id_not_starts_with: ID
+
+  # All values ending with the given string.
+  id_ends_with: ID
+
+  # All values not ending with the given string.
+  id_not_ends_with: ID
+  title: String
+
+  # All values that are not equal to given value.
+  title_not: String
+
+  # All values that are contained in given list.
+  title_in: [String!]
+
+  # All values that are not contained in given list.
+  title_not_in: [String!]
+
+  # All values less than the given value.
+  title_lt: String
+
+  # All values less than or equal the given value.
+  title_lte: String
+
+  # All values greater than the given value.
+  title_gt: String
+
+  # All values greater than or equal the given value.
+  title_gte: String
+
+  # All values containing the given string.
+  title_contains: String
+
+  # All values not containing the given string.
+  title_not_contains: String
+
+  # All values starting with the given string.
+  title_starts_with: String
+
+  # All values not starting with the given string.
+  title_not_starts_with: String
+
+  # All values ending with the given string.
+  title_ends_with: String
+
+  # All values not ending with the given string.
+  title_not_ends_with: String
+  type: DraftType
+
+  # All values that are not equal to given value.
+  type_not: DraftType
+
+  # All values that are contained in given list.
+  type_in: [DraftType!]
+
+  # All values that are not contained in given list.
+  type_not_in: [DraftType!]
+  updatedAt: DateTime
+
+  # All values that are not equal to given value.
+  updatedAt_not: DateTime
+
+  # All values that are contained in given list.
+  updatedAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  updatedAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  updatedAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  updatedAt_lte: DateTime
+
+  # All values greater than the given value.
+  updatedAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  updatedAt_gte: DateTime
+  visibility: Visibility
+
+  # All values that are not equal to given value.
+  visibility_not: Visibility
+
+  # All values that are contained in given list.
+  visibility_in: [Visibility!]
+
+  # All values that are not contained in given list.
+  visibility_not_in: [Visibility!]
+  draftFan_every: UserFilter
+  draftFan_some: UserFilter
+  draftFan_none: UserFilter
+  owner: UserFilter
+}
+
+enum DraftOrderBy {
+  content_ASC
+  content_DESC
+  createdAt_ASC
+  createdAt_DESC
+  id_ASC
+  id_DESC
+  title_ASC
+  title_DESC
+  type_ASC
+  type_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  visibility_ASC
+  visibility_DESC
+}
+
+input DraftownerUser {
+  auth0UserId: String!
+  bio: String
+  email: String!
+  picture: String!
+  username: String!
+  draftsIds: [ID!]
+  drafts: [UserdraftsDraft!]
+  likedDraftsIds: [ID!]
+  likedDrafts: [UserlikedDraftsDraft!]
+  likedPublicationsIds: [ID!]
+  likedPublications: [UserlikedPublicationsPublication!]
+  publicationsIds: [ID!]
+  publications: [UserpublicationsPublication!]
+  receivedNotificationsIds: [ID!]
+  receivedNotifications: [UserreceivedNotificationsNotification!]
+  sentNotificationsIds: [ID!]
+  sentNotifications: [UsersentNotificationsNotification!]
+}
+
+type DraftPreviousValues {
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  title: String!
+  type: DraftType!
+  updatedAt: DateTime!
+  visibility: Visibility!
+}
+
+input DraftSubscriptionFilter {
+  # Logical AND on all given filters.
+  AND: [DraftSubscriptionFilter!]
+
+  # Logical OR on all given filters.
+  OR: [DraftSubscriptionFilter!]
+
+  # The subscription event gets dispatched when it's listed in mutation_in
+  mutation_in: [_ModelMutationType!]
+
+  # The subscription event gets only dispatched when one of the updated fields names is included in this list
+  updatedFields_contains: String
+
+  # The subscription event gets only dispatched when all of the field names included in this list have been updated
+  updatedFields_contains_every: [String!]
+
+  # The subscription event gets only dispatched when some of the field names included in this list have been updated
+  updatedFields_contains_some: [String!]
+  node: DraftSubscriptionFilterNode
+}
+
+input DraftSubscriptionFilterNode {
+  content: String
+
+  # All values that are not equal to given value.
+  content_not: String
+
+  # All values that are contained in given list.
+  content_in: [String!]
+
+  # All values that are not contained in given list.
+  content_not_in: [String!]
+
+  # All values less than the given value.
+  content_lt: String
+
+  # All values less than or equal the given value.
+  content_lte: String
+
+  # All values greater than the given value.
+  content_gt: String
+
+  # All values greater than or equal the given value.
+  content_gte: String
+
+  # All values containing the given string.
+  content_contains: String
+
+  # All values not containing the given string.
+  content_not_contains: String
+
+  # All values starting with the given string.
+  content_starts_with: String
+
+  # All values not starting with the given string.
+  content_not_starts_with: String
+
+  # All values ending with the given string.
+  content_ends_with: String
+
+  # All values not ending with the given string.
+  content_not_ends_with: String
+  createdAt: DateTime
+
+  # All values that are not equal to given value.
+  createdAt_not: DateTime
+
+  # All values that are contained in given list.
+  createdAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  createdAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  createdAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  createdAt_lte: DateTime
+
+  # All values greater than the given value.
+  createdAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  createdAt_gte: DateTime
+  id: ID
+
+  # All values that are not equal to given value.
+  id_not: ID
+
+  # All values that are contained in given list.
+  id_in: [ID!]
+
+  # All values that are not contained in given list.
+  id_not_in: [ID!]
+
+  # All values less than the given value.
+  id_lt: ID
+
+  # All values less than or equal the given value.
+  id_lte: ID
+
+  # All values greater than the given value.
+  id_gt: ID
+
+  # All values greater than or equal the given value.
+  id_gte: ID
+
+  # All values containing the given string.
+  id_contains: ID
+
+  # All values not containing the given string.
+  id_not_contains: ID
+
+  # All values starting with the given string.
+  id_starts_with: ID
+
+  # All values not starting with the given string.
+  id_not_starts_with: ID
+
+  # All values ending with the given string.
+  id_ends_with: ID
+
+  # All values not ending with the given string.
+  id_not_ends_with: ID
+  title: String
+
+  # All values that are not equal to given value.
+  title_not: String
+
+  # All values that are contained in given list.
+  title_in: [String!]
+
+  # All values that are not contained in given list.
+  title_not_in: [String!]
+
+  # All values less than the given value.
+  title_lt: String
+
+  # All values less than or equal the given value.
+  title_lte: String
+
+  # All values greater than the given value.
+  title_gt: String
+
+  # All values greater than or equal the given value.
+  title_gte: String
+
+  # All values containing the given string.
+  title_contains: String
+
+  # All values not containing the given string.
+  title_not_contains: String
+
+  # All values starting with the given string.
+  title_starts_with: String
+
+  # All values not starting with the given string.
+  title_not_starts_with: String
+
+  # All values ending with the given string.
+  title_ends_with: String
+
+  # All values not ending with the given string.
+  title_not_ends_with: String
+  type: DraftType
+
+  # All values that are not equal to given value.
+  type_not: DraftType
+
+  # All values that are contained in given list.
+  type_in: [DraftType!]
+
+  # All values that are not contained in given list.
+  type_not_in: [DraftType!]
+  updatedAt: DateTime
+
+  # All values that are not equal to given value.
+  updatedAt_not: DateTime
+
+  # All values that are contained in given list.
+  updatedAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  updatedAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  updatedAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  updatedAt_lte: DateTime
+
+  # All values greater than the given value.
+  updatedAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  updatedAt_gte: DateTime
+  visibility: Visibility
+
+  # All values that are not equal to given value.
+  visibility_not: Visibility
+
+  # All values that are contained in given list.
+  visibility_in: [Visibility!]
+
+  # All values that are not contained in given list.
+  visibility_not_in: [Visibility!]
+  draftFan_every: UserFilter
+  draftFan_some: UserFilter
+  draftFan_none: UserFilter
+  owner: UserFilter
+}
+
+type DraftSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Draft
+  updatedFields: [String!]
+  previousValues: DraftPreviousValues
+}
+
+enum DraftType {
+  TUTORIAL
+}
+
+type Mutation {
+  createDraft(content: String!, title: String!, type: DraftType!, visibility: Visibility, ownerId: ID, owner: DraftownerUser, draftFanIds: [ID!], draftFan: [DraftdraftFanUser!]): Draft
+  createNotification(message: String!, type: NotificationType!, receiverId: ID, receiver: NotificationreceiverUser, senderId: ID, sender: NotificationsenderUser): Notification
+  createPublication(content: String!, image: String!, title: String!, ownerId: ID, owner: PublicationownerUser, publicationFanIds: [ID!], publicationFan: [PublicationpublicationFanUser!]): Publication
+  updateDraft(content: String, id: ID!, title: String, type: DraftType, visibility: Visibility, ownerId: ID, owner: DraftownerUser, draftFanIds: [ID!], draftFan: [DraftdraftFanUser!]): Draft
+  updateNotification(id: ID!, message: String, type: NotificationType, receiverId: ID, receiver: NotificationreceiverUser, senderId: ID, sender: NotificationsenderUser): Notification
+  updatePublication(content: String, id: ID!, image: String, title: String, ownerId: ID, owner: PublicationownerUser, publicationFanIds: [ID!], publicationFan: [PublicationpublicationFanUser!]): Publication
+  updateUser(auth0UserId: String, bio: String, email: String, id: ID!, picture: String, username: String, draftsIds: [ID!], drafts: [UserdraftsDraft!], likedDraftsIds: [ID!], likedDrafts: [UserlikedDraftsDraft!], likedPublicationsIds: [ID!], likedPublications: [UserlikedPublicationsPublication!], publicationsIds: [ID!], publications: [UserpublicationsPublication!], receivedNotificationsIds: [ID!], receivedNotifications: [UserreceivedNotificationsNotification!], sentNotificationsIds: [ID!], sentNotifications: [UsersentNotificationsNotification!]): User
+  updateOrCreateDraft(update: UpdateDraft!, create: CreateDraft!): Draft
+  updateOrCreateNotification(update: UpdateNotification!, create: CreateNotification!): Notification
+  updateOrCreatePublication(update: UpdatePublication!, create: CreatePublication!): Publication
+  updateOrCreateUser(update: UpdateUser!, create: CreateUser!): User
+  deleteDraft(id: ID!): Draft
+  deleteNotification(id: ID!): Notification
+  deletePublication(id: ID!): Publication
+  deleteUser(id: ID!): User
+  addToReceiverOnNotification(receivedNotificationsNotificationId: ID!, receiverUserId: ID!): AddToReceiverOnNotificationPayload
+  addToSenderOnNotification(sentNotificationsNotificationId: ID!, senderUserId: ID!): AddToSenderOnNotificationPayload
+  addToUserOnDraft(draftsDraftId: ID!, ownerUserId: ID!): AddToUserOnDraftPayload
+  addToUserOnLikedDraft(likedDraftsDraftId: ID!, draftFanUserId: ID!): AddToUserOnLikedDraftPayload
+  addToUserOnLikedPublication(likedPublicationsPublicationId: ID!, publicationFanUserId: ID!): AddToUserOnLikedPublicationPayload
+  addToUserOnPublication(publicationsPublicationId: ID!, ownerUserId: ID!): AddToUserOnPublicationPayload
+  removeFromUserOnLikedDraft(likedDraftsDraftId: ID!, draftFanUserId: ID!): RemoveFromUserOnLikedDraftPayload
+  removeFromUserOnLikedPublication(likedPublicationsPublicationId: ID!, publicationFanUserId: ID!): RemoveFromUserOnLikedPublicationPayload
+  createUser(auth0UserId: String!, bio: String, email: String!, picture: String!, username: String!, draftsIds: [ID!], drafts: [UserdraftsDraft!], likedDraftsIds: [ID!], likedDrafts: [UserlikedDraftsDraft!], likedPublicationsIds: [ID!], likedPublications: [UserlikedPublicationsPublication!], publicationsIds: [ID!], publications: [UserpublicationsPublication!], receivedNotificationsIds: [ID!], receivedNotifications: [UserreceivedNotificationsNotification!], sentNotificationsIds: [ID!], sentNotifications: [UsersentNotificationsNotification!]): User
+
+  # authenticate
+  authenticate(accessToken: String!): AuthenticationPayload
+}
+
+# An object with an ID
+interface Node {
+  # The id of the object.
+  id: ID!
+}
+
+type Notification implements Node {
+  createdAt: DateTime!
+  id: ID!
+  message: String!
+  receiver(filter: UserFilter): User!
+  sender(filter: UserFilter): User!
+  type: NotificationType!
+  updatedAt: DateTime!
+}
+
+input NotificationFilter {
+  # Logical AND on all given filters.
+  AND: [NotificationFilter!]
+
+  # Logical OR on all given filters.
+  OR: [NotificationFilter!]
+  createdAt: DateTime
+
+  # All values that are not equal to given value.
+  createdAt_not: DateTime
+
+  # All values that are contained in given list.
+  createdAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  createdAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  createdAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  createdAt_lte: DateTime
+
+  # All values greater than the given value.
+  createdAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  createdAt_gte: DateTime
+  id: ID
+
+  # All values that are not equal to given value.
+  id_not: ID
+
+  # All values that are contained in given list.
+  id_in: [ID!]
+
+  # All values that are not contained in given list.
+  id_not_in: [ID!]
+
+  # All values less than the given value.
+  id_lt: ID
+
+  # All values less than or equal the given value.
+  id_lte: ID
+
+  # All values greater than the given value.
+  id_gt: ID
+
+  # All values greater than or equal the given value.
+  id_gte: ID
+
+  # All values containing the given string.
+  id_contains: ID
+
+  # All values not containing the given string.
+  id_not_contains: ID
+
+  # All values starting with the given string.
+  id_starts_with: ID
+
+  # All values not starting with the given string.
+  id_not_starts_with: ID
+
+  # All values ending with the given string.
+  id_ends_with: ID
+
+  # All values not ending with the given string.
+  id_not_ends_with: ID
+  message: String
+
+  # All values that are not equal to given value.
+  message_not: String
+
+  # All values that are contained in given list.
+  message_in: [String!]
+
+  # All values that are not contained in given list.
+  message_not_in: [String!]
+
+  # All values less than the given value.
+  message_lt: String
+
+  # All values less than or equal the given value.
+  message_lte: String
+
+  # All values greater than the given value.
+  message_gt: String
+
+  # All values greater than or equal the given value.
+  message_gte: String
+
+  # All values containing the given string.
+  message_contains: String
+
+  # All values not containing the given string.
+  message_not_contains: String
+
+  # All values starting with the given string.
+  message_starts_with: String
+
+  # All values not starting with the given string.
+  message_not_starts_with: String
+
+  # All values ending with the given string.
+  message_ends_with: String
+
+  # All values not ending with the given string.
+  message_not_ends_with: String
+  type: NotificationType
+
+  # All values that are not equal to given value.
+  type_not: NotificationType
+
+  # All values that are contained in given list.
+  type_in: [NotificationType!]
+
+  # All values that are not contained in given list.
+  type_not_in: [NotificationType!]
+  updatedAt: DateTime
+
+  # All values that are not equal to given value.
+  updatedAt_not: DateTime
+
+  # All values that are contained in given list.
+  updatedAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  updatedAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  updatedAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  updatedAt_lte: DateTime
+
+  # All values greater than the given value.
+  updatedAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  updatedAt_gte: DateTime
+  receiver: UserFilter
+  sender: UserFilter
+}
+
+enum NotificationOrderBy {
+  createdAt_ASC
+  createdAt_DESC
+  id_ASC
+  id_DESC
+  message_ASC
+  message_DESC
+  type_ASC
+  type_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+}
+
+type NotificationPreviousValues {
+  createdAt: DateTime!
+  id: ID!
+  message: String!
+  type: NotificationType!
+  updatedAt: DateTime!
+}
+
+input NotificationreceiverUser {
+  auth0UserId: String!
+  bio: String
+  email: String!
+  picture: String!
+  username: String!
+  draftsIds: [ID!]
+  drafts: [UserdraftsDraft!]
+  likedDraftsIds: [ID!]
+  likedDrafts: [UserlikedDraftsDraft!]
+  likedPublicationsIds: [ID!]
+  likedPublications: [UserlikedPublicationsPublication!]
+  publicationsIds: [ID!]
+  publications: [UserpublicationsPublication!]
+  receivedNotificationsIds: [ID!]
+  receivedNotifications: [UserreceivedNotificationsNotification!]
+  sentNotificationsIds: [ID!]
+  sentNotifications: [UsersentNotificationsNotification!]
+}
+
+input NotificationsenderUser {
+  auth0UserId: String!
+  bio: String
+  email: String!
+  picture: String!
+  username: String!
+  draftsIds: [ID!]
+  drafts: [UserdraftsDraft!]
+  likedDraftsIds: [ID!]
+  likedDrafts: [UserlikedDraftsDraft!]
+  likedPublicationsIds: [ID!]
+  likedPublications: [UserlikedPublicationsPublication!]
+  publicationsIds: [ID!]
+  publications: [UserpublicationsPublication!]
+  receivedNotificationsIds: [ID!]
+  receivedNotifications: [UserreceivedNotificationsNotification!]
+  sentNotificationsIds: [ID!]
+  sentNotifications: [UsersentNotificationsNotification!]
+}
+
+input NotificationSubscriptionFilter {
+  # Logical AND on all given filters.
+  AND: [NotificationSubscriptionFilter!]
+
+  # Logical OR on all given filters.
+  OR: [NotificationSubscriptionFilter!]
+
+  # The subscription event gets dispatched when it's listed in mutation_in
+  mutation_in: [_ModelMutationType!]
+
+  # The subscription event gets only dispatched when one of the updated fields names is included in this list
+  updatedFields_contains: String
+
+  # The subscription event gets only dispatched when all of the field names included in this list have been updated
+  updatedFields_contains_every: [String!]
+
+  # The subscription event gets only dispatched when some of the field names included in this list have been updated
+  updatedFields_contains_some: [String!]
+  node: NotificationSubscriptionFilterNode
+}
+
+input NotificationSubscriptionFilterNode {
+  createdAt: DateTime
+
+  # All values that are not equal to given value.
+  createdAt_not: DateTime
+
+  # All values that are contained in given list.
+  createdAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  createdAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  createdAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  createdAt_lte: DateTime
+
+  # All values greater than the given value.
+  createdAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  createdAt_gte: DateTime
+  id: ID
+
+  # All values that are not equal to given value.
+  id_not: ID
+
+  # All values that are contained in given list.
+  id_in: [ID!]
+
+  # All values that are not contained in given list.
+  id_not_in: [ID!]
+
+  # All values less than the given value.
+  id_lt: ID
+
+  # All values less than or equal the given value.
+  id_lte: ID
+
+  # All values greater than the given value.
+  id_gt: ID
+
+  # All values greater than or equal the given value.
+  id_gte: ID
+
+  # All values containing the given string.
+  id_contains: ID
+
+  # All values not containing the given string.
+  id_not_contains: ID
+
+  # All values starting with the given string.
+  id_starts_with: ID
+
+  # All values not starting with the given string.
+  id_not_starts_with: ID
+
+  # All values ending with the given string.
+  id_ends_with: ID
+
+  # All values not ending with the given string.
+  id_not_ends_with: ID
+  message: String
+
+  # All values that are not equal to given value.
+  message_not: String
+
+  # All values that are contained in given list.
+  message_in: [String!]
+
+  # All values that are not contained in given list.
+  message_not_in: [String!]
+
+  # All values less than the given value.
+  message_lt: String
+
+  # All values less than or equal the given value.
+  message_lte: String
+
+  # All values greater than the given value.
+  message_gt: String
+
+  # All values greater than or equal the given value.
+  message_gte: String
+
+  # All values containing the given string.
+  message_contains: String
+
+  # All values not containing the given string.
+  message_not_contains: String
+
+  # All values starting with the given string.
+  message_starts_with: String
+
+  # All values not starting with the given string.
+  message_not_starts_with: String
+
+  # All values ending with the given string.
+  message_ends_with: String
+
+  # All values not ending with the given string.
+  message_not_ends_with: String
+  type: NotificationType
+
+  # All values that are not equal to given value.
+  type_not: NotificationType
+
+  # All values that are contained in given list.
+  type_in: [NotificationType!]
+
+  # All values that are not contained in given list.
+  type_not_in: [NotificationType!]
+  updatedAt: DateTime
+
+  # All values that are not equal to given value.
+  updatedAt_not: DateTime
+
+  # All values that are contained in given list.
+  updatedAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  updatedAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  updatedAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  updatedAt_lte: DateTime
+
+  # All values greater than the given value.
+  updatedAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  updatedAt_gte: DateTime
+  receiver: UserFilter
+  sender: UserFilter
+}
+
+type NotificationSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Notification
+  updatedFields: [String!]
+  previousValues: NotificationPreviousValues
+}
+
+enum NotificationType {
+  LIKED_DRAFT
+  UNLIKED_DRAFT
+  LIKED_PUBLICATION
+  UNLIKED_PUBLICATION
+}
+
+type Publication implements Node {
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  image: String!
+  owner(filter: UserFilter): User!
+  publicationFan(filter: UserFilter, orderBy: UserOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [User!]
+  title: String!
+  updatedAt: DateTime!
+
+  # Meta information about the query.
+  _publicationFanMeta(filter: UserFilter, orderBy: UserOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+}
+
+input PublicationFilter {
+  # Logical AND on all given filters.
+  AND: [PublicationFilter!]
+
+  # Logical OR on all given filters.
+  OR: [PublicationFilter!]
+  content: String
+
+  # All values that are not equal to given value.
+  content_not: String
+
+  # All values that are contained in given list.
+  content_in: [String!]
+
+  # All values that are not contained in given list.
+  content_not_in: [String!]
+
+  # All values less than the given value.
+  content_lt: String
+
+  # All values less than or equal the given value.
+  content_lte: String
+
+  # All values greater than the given value.
+  content_gt: String
+
+  # All values greater than or equal the given value.
+  content_gte: String
+
+  # All values containing the given string.
+  content_contains: String
+
+  # All values not containing the given string.
+  content_not_contains: String
+
+  # All values starting with the given string.
+  content_starts_with: String
+
+  # All values not starting with the given string.
+  content_not_starts_with: String
+
+  # All values ending with the given string.
+  content_ends_with: String
+
+  # All values not ending with the given string.
+  content_not_ends_with: String
+  createdAt: DateTime
+
+  # All values that are not equal to given value.
+  createdAt_not: DateTime
+
+  # All values that are contained in given list.
+  createdAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  createdAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  createdAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  createdAt_lte: DateTime
+
+  # All values greater than the given value.
+  createdAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  createdAt_gte: DateTime
+  id: ID
+
+  # All values that are not equal to given value.
+  id_not: ID
+
+  # All values that are contained in given list.
+  id_in: [ID!]
+
+  # All values that are not contained in given list.
+  id_not_in: [ID!]
+
+  # All values less than the given value.
+  id_lt: ID
+
+  # All values less than or equal the given value.
+  id_lte: ID
+
+  # All values greater than the given value.
+  id_gt: ID
+
+  # All values greater than or equal the given value.
+  id_gte: ID
+
+  # All values containing the given string.
+  id_contains: ID
+
+  # All values not containing the given string.
+  id_not_contains: ID
+
+  # All values starting with the given string.
+  id_starts_with: ID
+
+  # All values not starting with the given string.
+  id_not_starts_with: ID
+
+  # All values ending with the given string.
+  id_ends_with: ID
+
+  # All values not ending with the given string.
+  id_not_ends_with: ID
+  image: String
+
+  # All values that are not equal to given value.
+  image_not: String
+
+  # All values that are contained in given list.
+  image_in: [String!]
+
+  # All values that are not contained in given list.
+  image_not_in: [String!]
+
+  # All values less than the given value.
+  image_lt: String
+
+  # All values less than or equal the given value.
+  image_lte: String
+
+  # All values greater than the given value.
+  image_gt: String
+
+  # All values greater than or equal the given value.
+  image_gte: String
+
+  # All values containing the given string.
+  image_contains: String
+
+  # All values not containing the given string.
+  image_not_contains: String
+
+  # All values starting with the given string.
+  image_starts_with: String
+
+  # All values not starting with the given string.
+  image_not_starts_with: String
+
+  # All values ending with the given string.
+  image_ends_with: String
+
+  # All values not ending with the given string.
+  image_not_ends_with: String
+  title: String
+
+  # All values that are not equal to given value.
+  title_not: String
+
+  # All values that are contained in given list.
+  title_in: [String!]
+
+  # All values that are not contained in given list.
+  title_not_in: [String!]
+
+  # All values less than the given value.
+  title_lt: String
+
+  # All values less than or equal the given value.
+  title_lte: String
+
+  # All values greater than the given value.
+  title_gt: String
+
+  # All values greater than or equal the given value.
+  title_gte: String
+
+  # All values containing the given string.
+  title_contains: String
+
+  # All values not containing the given string.
+  title_not_contains: String
+
+  # All values starting with the given string.
+  title_starts_with: String
+
+  # All values not starting with the given string.
+  title_not_starts_with: String
+
+  # All values ending with the given string.
+  title_ends_with: String
+
+  # All values not ending with the given string.
+  title_not_ends_with: String
+  updatedAt: DateTime
+
+  # All values that are not equal to given value.
+  updatedAt_not: DateTime
+
+  # All values that are contained in given list.
+  updatedAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  updatedAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  updatedAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  updatedAt_lte: DateTime
+
+  # All values greater than the given value.
+  updatedAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  updatedAt_gte: DateTime
+  owner: UserFilter
+  publicationFan_every: UserFilter
+  publicationFan_some: UserFilter
+  publicationFan_none: UserFilter
+}
+
+enum PublicationOrderBy {
+  content_ASC
+  content_DESC
+  createdAt_ASC
+  createdAt_DESC
+  id_ASC
+  id_DESC
+  image_ASC
+  image_DESC
+  title_ASC
+  title_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+}
+
+input PublicationownerUser {
+  auth0UserId: String!
+  bio: String
+  email: String!
+  picture: String!
+  username: String!
+  draftsIds: [ID!]
+  drafts: [UserdraftsDraft!]
+  likedDraftsIds: [ID!]
+  likedDrafts: [UserlikedDraftsDraft!]
+  likedPublicationsIds: [ID!]
+  likedPublications: [UserlikedPublicationsPublication!]
+  publicationsIds: [ID!]
+  publications: [UserpublicationsPublication!]
+  receivedNotificationsIds: [ID!]
+  receivedNotifications: [UserreceivedNotificationsNotification!]
+  sentNotificationsIds: [ID!]
+  sentNotifications: [UsersentNotificationsNotification!]
+}
+
+type PublicationPreviousValues {
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  image: String!
+  title: String!
+  updatedAt: DateTime!
+}
+
+input PublicationpublicationFanUser {
+  auth0UserId: String!
+  bio: String
+  email: String!
+  picture: String!
+  username: String!
+  draftsIds: [ID!]
+  drafts: [UserdraftsDraft!]
+  likedDraftsIds: [ID!]
+  likedDrafts: [UserlikedDraftsDraft!]
+  likedPublicationsIds: [ID!]
+  likedPublications: [UserlikedPublicationsPublication!]
+  publicationsIds: [ID!]
+  publications: [UserpublicationsPublication!]
+  receivedNotificationsIds: [ID!]
+  receivedNotifications: [UserreceivedNotificationsNotification!]
+  sentNotificationsIds: [ID!]
+  sentNotifications: [UsersentNotificationsNotification!]
+}
+
+input PublicationSubscriptionFilter {
+  # Logical AND on all given filters.
+  AND: [PublicationSubscriptionFilter!]
+
+  # Logical OR on all given filters.
+  OR: [PublicationSubscriptionFilter!]
+
+  # The subscription event gets dispatched when it's listed in mutation_in
+  mutation_in: [_ModelMutationType!]
+
+  # The subscription event gets only dispatched when one of the updated fields names is included in this list
+  updatedFields_contains: String
+
+  # The subscription event gets only dispatched when all of the field names included in this list have been updated
+  updatedFields_contains_every: [String!]
+
+  # The subscription event gets only dispatched when some of the field names included in this list have been updated
+  updatedFields_contains_some: [String!]
+  node: PublicationSubscriptionFilterNode
+}
+
+input PublicationSubscriptionFilterNode {
+  content: String
+
+  # All values that are not equal to given value.
+  content_not: String
+
+  # All values that are contained in given list.
+  content_in: [String!]
+
+  # All values that are not contained in given list.
+  content_not_in: [String!]
+
+  # All values less than the given value.
+  content_lt: String
+
+  # All values less than or equal the given value.
+  content_lte: String
+
+  # All values greater than the given value.
+  content_gt: String
+
+  # All values greater than or equal the given value.
+  content_gte: String
+
+  # All values containing the given string.
+  content_contains: String
+
+  # All values not containing the given string.
+  content_not_contains: String
+
+  # All values starting with the given string.
+  content_starts_with: String
+
+  # All values not starting with the given string.
+  content_not_starts_with: String
+
+  # All values ending with the given string.
+  content_ends_with: String
+
+  # All values not ending with the given string.
+  content_not_ends_with: String
+  createdAt: DateTime
+
+  # All values that are not equal to given value.
+  createdAt_not: DateTime
+
+  # All values that are contained in given list.
+  createdAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  createdAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  createdAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  createdAt_lte: DateTime
+
+  # All values greater than the given value.
+  createdAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  createdAt_gte: DateTime
+  id: ID
+
+  # All values that are not equal to given value.
+  id_not: ID
+
+  # All values that are contained in given list.
+  id_in: [ID!]
+
+  # All values that are not contained in given list.
+  id_not_in: [ID!]
+
+  # All values less than the given value.
+  id_lt: ID
+
+  # All values less than or equal the given value.
+  id_lte: ID
+
+  # All values greater than the given value.
+  id_gt: ID
+
+  # All values greater than or equal the given value.
+  id_gte: ID
+
+  # All values containing the given string.
+  id_contains: ID
+
+  # All values not containing the given string.
+  id_not_contains: ID
+
+  # All values starting with the given string.
+  id_starts_with: ID
+
+  # All values not starting with the given string.
+  id_not_starts_with: ID
+
+  # All values ending with the given string.
+  id_ends_with: ID
+
+  # All values not ending with the given string.
+  id_not_ends_with: ID
+  image: String
+
+  # All values that are not equal to given value.
+  image_not: String
+
+  # All values that are contained in given list.
+  image_in: [String!]
+
+  # All values that are not contained in given list.
+  image_not_in: [String!]
+
+  # All values less than the given value.
+  image_lt: String
+
+  # All values less than or equal the given value.
+  image_lte: String
+
+  # All values greater than the given value.
+  image_gt: String
+
+  # All values greater than or equal the given value.
+  image_gte: String
+
+  # All values containing the given string.
+  image_contains: String
+
+  # All values not containing the given string.
+  image_not_contains: String
+
+  # All values starting with the given string.
+  image_starts_with: String
+
+  # All values not starting with the given string.
+  image_not_starts_with: String
+
+  # All values ending with the given string.
+  image_ends_with: String
+
+  # All values not ending with the given string.
+  image_not_ends_with: String
+  title: String
+
+  # All values that are not equal to given value.
+  title_not: String
+
+  # All values that are contained in given list.
+  title_in: [String!]
+
+  # All values that are not contained in given list.
+  title_not_in: [String!]
+
+  # All values less than the given value.
+  title_lt: String
+
+  # All values less than or equal the given value.
+  title_lte: String
+
+  # All values greater than the given value.
+  title_gt: String
+
+  # All values greater than or equal the given value.
+  title_gte: String
+
+  # All values containing the given string.
+  title_contains: String
+
+  # All values not containing the given string.
+  title_not_contains: String
+
+  # All values starting with the given string.
+  title_starts_with: String
+
+  # All values not starting with the given string.
+  title_not_starts_with: String
+
+  # All values ending with the given string.
+  title_ends_with: String
+
+  # All values not ending with the given string.
+  title_not_ends_with: String
+  updatedAt: DateTime
+
+  # All values that are not equal to given value.
+  updatedAt_not: DateTime
+
+  # All values that are contained in given list.
+  updatedAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  updatedAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  updatedAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  updatedAt_lte: DateTime
+
+  # All values greater than the given value.
+  updatedAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  updatedAt_gte: DateTime
+  owner: UserFilter
+  publicationFan_every: UserFilter
+  publicationFan_some: UserFilter
+  publicationFan_none: UserFilter
+}
+
+type PublicationSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: Publication
+  updatedFields: [String!]
+  previousValues: PublicationPreviousValues
+}
+
+type Query {
+  allDrafts(filter: DraftFilter, orderBy: DraftOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [Draft!]!
+  allNotifications(filter: NotificationFilter, orderBy: NotificationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [Notification!]!
+  allPublications(filter: PublicationFilter, orderBy: PublicationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [Publication!]!
+  allUsers(filter: UserFilter, orderBy: UserOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [User!]!
+  _allDraftsMeta(filter: DraftFilter, orderBy: DraftOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+  _allNotificationsMeta(filter: NotificationFilter, orderBy: NotificationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+  _allPublicationsMeta(filter: PublicationFilter, orderBy: PublicationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+  _allUsersMeta(filter: UserFilter, orderBy: UserOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+  Draft(id: ID): Draft
+  Notification(id: ID): Notification
+  Publication(id: ID): Publication
+  User(auth0UserId: String, email: String, id: ID, picture: String, username: String): User
+  user: User
+
+  # Fetches an object given its ID
+  node(
+    # The ID of an object
+    id: ID!
+  ): Node
+}
+
+type RemoveFromUserOnLikedDraftPayload {
+  draftFanUser: User
+  likedDraftsDraft: Draft
+}
+
+type RemoveFromUserOnLikedPublicationPayload {
+  publicationFanUser: User
+  likedPublicationsPublication: Publication
+}
+
+type Subscription {
+  Draft(filter: DraftSubscriptionFilter): DraftSubscriptionPayload
+  Notification(filter: NotificationSubscriptionFilter): NotificationSubscriptionPayload
+  Publication(filter: PublicationSubscriptionFilter): PublicationSubscriptionPayload
+  User(filter: UserSubscriptionFilter): UserSubscriptionPayload
+}
+
+input UpdateDraft {
+  content: String
+  id: ID!
+  title: String
+  type: DraftType
+  visibility: Visibility
+  ownerId: ID
+  owner: DraftownerUser
+  draftFanIds: [ID!]
+  draftFan: [DraftdraftFanUser!]
+}
+
+input UpdateNotification {
+  id: ID!
+  message: String
+  type: NotificationType
+  receiverId: ID
+  receiver: NotificationreceiverUser
+  senderId: ID
+  sender: NotificationsenderUser
+}
+
+input UpdatePublication {
+  content: String
+  id: ID!
+  image: String
+  title: String
+  ownerId: ID
+  owner: PublicationownerUser
+  publicationFanIds: [ID!]
+  publicationFan: [PublicationpublicationFanUser!]
+}
+
+input UpdateUser {
+  auth0UserId: String
+  bio: String
+  email: String
+  id: ID!
+  picture: String
+  username: String
+  draftsIds: [ID!]
+  drafts: [UserdraftsDraft!]
+  likedDraftsIds: [ID!]
+  likedDrafts: [UserlikedDraftsDraft!]
+  likedPublicationsIds: [ID!]
+  likedPublications: [UserlikedPublicationsPublication!]
+  publicationsIds: [ID!]
+  publications: [UserpublicationsPublication!]
+  receivedNotificationsIds: [ID!]
+  receivedNotifications: [UserreceivedNotificationsNotification!]
+  sentNotificationsIds: [ID!]
+  sentNotifications: [UsersentNotificationsNotification!]
+}
+
+type User implements Node {
+  auth0UserId: String!
+  bio: String!
+  createdAt: DateTime!
+  drafts(filter: DraftFilter, orderBy: DraftOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [Draft!]
+  email: String!
+  id: ID!
+  likedDrafts(filter: DraftFilter, orderBy: DraftOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [Draft!]
+  likedPublications(filter: PublicationFilter, orderBy: PublicationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [Publication!]
+  picture: String!
+  publications(filter: PublicationFilter, orderBy: PublicationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [Publication!]
+  receivedNotifications(filter: NotificationFilter, orderBy: NotificationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [Notification!]
+  sentNotifications(filter: NotificationFilter, orderBy: NotificationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): [Notification!]
+  updatedAt: DateTime!
+  username: String!
+
+  # Meta information about the query.
+  _draftsMeta(filter: DraftFilter, orderBy: DraftOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+
+  # Meta information about the query.
+  _likedDraftsMeta(filter: DraftFilter, orderBy: DraftOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+
+  # Meta information about the query.
+  _likedPublicationsMeta(filter: PublicationFilter, orderBy: PublicationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+
+  # Meta information about the query.
+  _publicationsMeta(filter: PublicationFilter, orderBy: PublicationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+
+  # Meta information about the query.
+  _receivedNotificationsMeta(filter: NotificationFilter, orderBy: NotificationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+
+  # Meta information about the query.
+  _sentNotificationsMeta(filter: NotificationFilter, orderBy: NotificationOrderBy, skip: Int, after: String, before: String, first: Int, last: Int): _QueryMeta!
+}
+
+input UserdraftsDraft {
+  content: String!
+  title: String!
+  type: DraftType!
+  visibility: Visibility
+  draftFanIds: [ID!]
+  draftFan: [DraftdraftFanUser!]
+}
+
+input UserFilter {
+  # Logical AND on all given filters.
+  AND: [UserFilter!]
+
+  # Logical OR on all given filters.
+  OR: [UserFilter!]
+  auth0UserId: String
+
+  # All values that are not equal to given value.
+  auth0UserId_not: String
+
+  # All values that are contained in given list.
+  auth0UserId_in: [String!]
+
+  # All values that are not contained in given list.
+  auth0UserId_not_in: [String!]
+
+  # All values less than the given value.
+  auth0UserId_lt: String
+
+  # All values less than or equal the given value.
+  auth0UserId_lte: String
+
+  # All values greater than the given value.
+  auth0UserId_gt: String
+
+  # All values greater than or equal the given value.
+  auth0UserId_gte: String
+
+  # All values containing the given string.
+  auth0UserId_contains: String
+
+  # All values not containing the given string.
+  auth0UserId_not_contains: String
+
+  # All values starting with the given string.
+  auth0UserId_starts_with: String
+
+  # All values not starting with the given string.
+  auth0UserId_not_starts_with: String
+
+  # All values ending with the given string.
+  auth0UserId_ends_with: String
+
+  # All values not ending with the given string.
+  auth0UserId_not_ends_with: String
+  bio: String
+
+  # All values that are not equal to given value.
+  bio_not: String
+
+  # All values that are contained in given list.
+  bio_in: [String!]
+
+  # All values that are not contained in given list.
+  bio_not_in: [String!]
+
+  # All values less than the given value.
+  bio_lt: String
+
+  # All values less than or equal the given value.
+  bio_lte: String
+
+  # All values greater than the given value.
+  bio_gt: String
+
+  # All values greater than or equal the given value.
+  bio_gte: String
+
+  # All values containing the given string.
+  bio_contains: String
+
+  # All values not containing the given string.
+  bio_not_contains: String
+
+  # All values starting with the given string.
+  bio_starts_with: String
+
+  # All values not starting with the given string.
+  bio_not_starts_with: String
+
+  # All values ending with the given string.
+  bio_ends_with: String
+
+  # All values not ending with the given string.
+  bio_not_ends_with: String
+  createdAt: DateTime
+
+  # All values that are not equal to given value.
+  createdAt_not: DateTime
+
+  # All values that are contained in given list.
+  createdAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  createdAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  createdAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  createdAt_lte: DateTime
+
+  # All values greater than the given value.
+  createdAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  createdAt_gte: DateTime
+  email: String
+
+  # All values that are not equal to given value.
+  email_not: String
+
+  # All values that are contained in given list.
+  email_in: [String!]
+
+  # All values that are not contained in given list.
+  email_not_in: [String!]
+
+  # All values less than the given value.
+  email_lt: String
+
+  # All values less than or equal the given value.
+  email_lte: String
+
+  # All values greater than the given value.
+  email_gt: String
+
+  # All values greater than or equal the given value.
+  email_gte: String
+
+  # All values containing the given string.
+  email_contains: String
+
+  # All values not containing the given string.
+  email_not_contains: String
+
+  # All values starting with the given string.
+  email_starts_with: String
+
+  # All values not starting with the given string.
+  email_not_starts_with: String
+
+  # All values ending with the given string.
+  email_ends_with: String
+
+  # All values not ending with the given string.
+  email_not_ends_with: String
+  id: ID
+
+  # All values that are not equal to given value.
+  id_not: ID
+
+  # All values that are contained in given list.
+  id_in: [ID!]
+
+  # All values that are not contained in given list.
+  id_not_in: [ID!]
+
+  # All values less than the given value.
+  id_lt: ID
+
+  # All values less than or equal the given value.
+  id_lte: ID
+
+  # All values greater than the given value.
+  id_gt: ID
+
+  # All values greater than or equal the given value.
+  id_gte: ID
+
+  # All values containing the given string.
+  id_contains: ID
+
+  # All values not containing the given string.
+  id_not_contains: ID
+
+  # All values starting with the given string.
+  id_starts_with: ID
+
+  # All values not starting with the given string.
+  id_not_starts_with: ID
+
+  # All values ending with the given string.
+  id_ends_with: ID
+
+  # All values not ending with the given string.
+  id_not_ends_with: ID
+  picture: String
+
+  # All values that are not equal to given value.
+  picture_not: String
+
+  # All values that are contained in given list.
+  picture_in: [String!]
+
+  # All values that are not contained in given list.
+  picture_not_in: [String!]
+
+  # All values less than the given value.
+  picture_lt: String
+
+  # All values less than or equal the given value.
+  picture_lte: String
+
+  # All values greater than the given value.
+  picture_gt: String
+
+  # All values greater than or equal the given value.
+  picture_gte: String
+
+  # All values containing the given string.
+  picture_contains: String
+
+  # All values not containing the given string.
+  picture_not_contains: String
+
+  # All values starting with the given string.
+  picture_starts_with: String
+
+  # All values not starting with the given string.
+  picture_not_starts_with: String
+
+  # All values ending with the given string.
+  picture_ends_with: String
+
+  # All values not ending with the given string.
+  picture_not_ends_with: String
+  updatedAt: DateTime
+
+  # All values that are not equal to given value.
+  updatedAt_not: DateTime
+
+  # All values that are contained in given list.
+  updatedAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  updatedAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  updatedAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  updatedAt_lte: DateTime
+
+  # All values greater than the given value.
+  updatedAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  updatedAt_gte: DateTime
+  username: String
+
+  # All values that are not equal to given value.
+  username_not: String
+
+  # All values that are contained in given list.
+  username_in: [String!]
+
+  # All values that are not contained in given list.
+  username_not_in: [String!]
+
+  # All values less than the given value.
+  username_lt: String
+
+  # All values less than or equal the given value.
+  username_lte: String
+
+  # All values greater than the given value.
+  username_gt: String
+
+  # All values greater than or equal the given value.
+  username_gte: String
+
+  # All values containing the given string.
+  username_contains: String
+
+  # All values not containing the given string.
+  username_not_contains: String
+
+  # All values starting with the given string.
+  username_starts_with: String
+
+  # All values not starting with the given string.
+  username_not_starts_with: String
+
+  # All values ending with the given string.
+  username_ends_with: String
+
+  # All values not ending with the given string.
+  username_not_ends_with: String
+  drafts_every: DraftFilter
+  drafts_some: DraftFilter
+  drafts_none: DraftFilter
+  likedDrafts_every: DraftFilter
+  likedDrafts_some: DraftFilter
+  likedDrafts_none: DraftFilter
+  likedPublications_every: PublicationFilter
+  likedPublications_some: PublicationFilter
+  likedPublications_none: PublicationFilter
+  publications_every: PublicationFilter
+  publications_some: PublicationFilter
+  publications_none: PublicationFilter
+  receivedNotifications_every: NotificationFilter
+  receivedNotifications_some: NotificationFilter
+  receivedNotifications_none: NotificationFilter
+  sentNotifications_every: NotificationFilter
+  sentNotifications_some: NotificationFilter
+  sentNotifications_none: NotificationFilter
+}
+
+input UserlikedDraftsDraft {
+  content: String!
+  title: String!
+  type: DraftType!
+  visibility: Visibility
+  ownerId: ID
+  owner: DraftownerUser
+  draftFanIds: [ID!]
+  draftFan: [DraftdraftFanUser!]
+}
+
+input UserlikedPublicationsPublication {
+  content: String!
+  image: String!
+  title: String!
+  ownerId: ID
+  owner: PublicationownerUser
+  publicationFanIds: [ID!]
+  publicationFan: [PublicationpublicationFanUser!]
+}
+
+enum UserOrderBy {
+  auth0UserId_ASC
+  auth0UserId_DESC
+  bio_ASC
+  bio_DESC
+  createdAt_ASC
+  createdAt_DESC
+  email_ASC
+  email_DESC
+  id_ASC
+  id_DESC
+  picture_ASC
+  picture_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  username_ASC
+  username_DESC
+}
+
+type UserPreviousValues {
+  auth0UserId: String!
+  bio: String!
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  picture: String!
+  updatedAt: DateTime!
+  username: String!
+}
+
+input UserpublicationsPublication {
+  content: String!
+  image: String!
+  title: String!
+  publicationFanIds: [ID!]
+  publicationFan: [PublicationpublicationFanUser!]
+}
+
+input UserreceivedNotificationsNotification {
+  message: String!
+  type: NotificationType!
+  senderId: ID
+  sender: NotificationsenderUser
+}
+
+input UsersentNotificationsNotification {
+  message: String!
+  type: NotificationType!
+  receiverId: ID
+  receiver: NotificationreceiverUser
+}
+
+input UserSubscriptionFilter {
+  # Logical AND on all given filters.
+  AND: [UserSubscriptionFilter!]
+
+  # Logical OR on all given filters.
+  OR: [UserSubscriptionFilter!]
+
+  # The subscription event gets dispatched when it's listed in mutation_in
+  mutation_in: [_ModelMutationType!]
+
+  # The subscription event gets only dispatched when one of the updated fields names is included in this list
+  updatedFields_contains: String
+
+  # The subscription event gets only dispatched when all of the field names included in this list have been updated
+  updatedFields_contains_every: [String!]
+
+  # The subscription event gets only dispatched when some of the field names included in this list have been updated
+  updatedFields_contains_some: [String!]
+  node: UserSubscriptionFilterNode
+}
+
+input UserSubscriptionFilterNode {
+  auth0UserId: String
+
+  # All values that are not equal to given value.
+  auth0UserId_not: String
+
+  # All values that are contained in given list.
+  auth0UserId_in: [String!]
+
+  # All values that are not contained in given list.
+  auth0UserId_not_in: [String!]
+
+  # All values less than the given value.
+  auth0UserId_lt: String
+
+  # All values less than or equal the given value.
+  auth0UserId_lte: String
+
+  # All values greater than the given value.
+  auth0UserId_gt: String
+
+  # All values greater than or equal the given value.
+  auth0UserId_gte: String
+
+  # All values containing the given string.
+  auth0UserId_contains: String
+
+  # All values not containing the given string.
+  auth0UserId_not_contains: String
+
+  # All values starting with the given string.
+  auth0UserId_starts_with: String
+
+  # All values not starting with the given string.
+  auth0UserId_not_starts_with: String
+
+  # All values ending with the given string.
+  auth0UserId_ends_with: String
+
+  # All values not ending with the given string.
+  auth0UserId_not_ends_with: String
+  bio: String
+
+  # All values that are not equal to given value.
+  bio_not: String
+
+  # All values that are contained in given list.
+  bio_in: [String!]
+
+  # All values that are not contained in given list.
+  bio_not_in: [String!]
+
+  # All values less than the given value.
+  bio_lt: String
+
+  # All values less than or equal the given value.
+  bio_lte: String
+
+  # All values greater than the given value.
+  bio_gt: String
+
+  # All values greater than or equal the given value.
+  bio_gte: String
+
+  # All values containing the given string.
+  bio_contains: String
+
+  # All values not containing the given string.
+  bio_not_contains: String
+
+  # All values starting with the given string.
+  bio_starts_with: String
+
+  # All values not starting with the given string.
+  bio_not_starts_with: String
+
+  # All values ending with the given string.
+  bio_ends_with: String
+
+  # All values not ending with the given string.
+  bio_not_ends_with: String
+  createdAt: DateTime
+
+  # All values that are not equal to given value.
+  createdAt_not: DateTime
+
+  # All values that are contained in given list.
+  createdAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  createdAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  createdAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  createdAt_lte: DateTime
+
+  # All values greater than the given value.
+  createdAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  createdAt_gte: DateTime
+  email: String
+
+  # All values that are not equal to given value.
+  email_not: String
+
+  # All values that are contained in given list.
+  email_in: [String!]
+
+  # All values that are not contained in given list.
+  email_not_in: [String!]
+
+  # All values less than the given value.
+  email_lt: String
+
+  # All values less than or equal the given value.
+  email_lte: String
+
+  # All values greater than the given value.
+  email_gt: String
+
+  # All values greater than or equal the given value.
+  email_gte: String
+
+  # All values containing the given string.
+  email_contains: String
+
+  # All values not containing the given string.
+  email_not_contains: String
+
+  # All values starting with the given string.
+  email_starts_with: String
+
+  # All values not starting with the given string.
+  email_not_starts_with: String
+
+  # All values ending with the given string.
+  email_ends_with: String
+
+  # All values not ending with the given string.
+  email_not_ends_with: String
+  id: ID
+
+  # All values that are not equal to given value.
+  id_not: ID
+
+  # All values that are contained in given list.
+  id_in: [ID!]
+
+  # All values that are not contained in given list.
+  id_not_in: [ID!]
+
+  # All values less than the given value.
+  id_lt: ID
+
+  # All values less than or equal the given value.
+  id_lte: ID
+
+  # All values greater than the given value.
+  id_gt: ID
+
+  # All values greater than or equal the given value.
+  id_gte: ID
+
+  # All values containing the given string.
+  id_contains: ID
+
+  # All values not containing the given string.
+  id_not_contains: ID
+
+  # All values starting with the given string.
+  id_starts_with: ID
+
+  # All values not starting with the given string.
+  id_not_starts_with: ID
+
+  # All values ending with the given string.
+  id_ends_with: ID
+
+  # All values not ending with the given string.
+  id_not_ends_with: ID
+  picture: String
+
+  # All values that are not equal to given value.
+  picture_not: String
+
+  # All values that are contained in given list.
+  picture_in: [String!]
+
+  # All values that are not contained in given list.
+  picture_not_in: [String!]
+
+  # All values less than the given value.
+  picture_lt: String
+
+  # All values less than or equal the given value.
+  picture_lte: String
+
+  # All values greater than the given value.
+  picture_gt: String
+
+  # All values greater than or equal the given value.
+  picture_gte: String
+
+  # All values containing the given string.
+  picture_contains: String
+
+  # All values not containing the given string.
+  picture_not_contains: String
+
+  # All values starting with the given string.
+  picture_starts_with: String
+
+  # All values not starting with the given string.
+  picture_not_starts_with: String
+
+  # All values ending with the given string.
+  picture_ends_with: String
+
+  # All values not ending with the given string.
+  picture_not_ends_with: String
+  updatedAt: DateTime
+
+  # All values that are not equal to given value.
+  updatedAt_not: DateTime
+
+  # All values that are contained in given list.
+  updatedAt_in: [DateTime!]
+
+  # All values that are not contained in given list.
+  updatedAt_not_in: [DateTime!]
+
+  # All values less than the given value.
+  updatedAt_lt: DateTime
+
+  # All values less than or equal the given value.
+  updatedAt_lte: DateTime
+
+  # All values greater than the given value.
+  updatedAt_gt: DateTime
+
+  # All values greater than or equal the given value.
+  updatedAt_gte: DateTime
+  username: String
+
+  # All values that are not equal to given value.
+  username_not: String
+
+  # All values that are contained in given list.
+  username_in: [String!]
+
+  # All values that are not contained in given list.
+  username_not_in: [String!]
+
+  # All values less than the given value.
+  username_lt: String
+
+  # All values less than or equal the given value.
+  username_lte: String
+
+  # All values greater than the given value.
+  username_gt: String
+
+  # All values greater than or equal the given value.
+  username_gte: String
+
+  # All values containing the given string.
+  username_contains: String
+
+  # All values not containing the given string.
+  username_not_contains: String
+
+  # All values starting with the given string.
+  username_starts_with: String
+
+  # All values not starting with the given string.
+  username_not_starts_with: String
+
+  # All values ending with the given string.
+  username_ends_with: String
+
+  # All values not ending with the given string.
+  username_not_ends_with: String
+  drafts_every: DraftFilter
+  drafts_some: DraftFilter
+  drafts_none: DraftFilter
+  likedDrafts_every: DraftFilter
+  likedDrafts_some: DraftFilter
+  likedDrafts_none: DraftFilter
+  likedPublications_every: PublicationFilter
+  likedPublications_some: PublicationFilter
+  likedPublications_none: PublicationFilter
+  publications_every: PublicationFilter
+  publications_some: PublicationFilter
+  publications_none: PublicationFilter
+  receivedNotifications_every: NotificationFilter
+  receivedNotifications_some: NotificationFilter
+  receivedNotifications_none: NotificationFilter
+  sentNotifications_every: NotificationFilter
+  sentNotifications_some: NotificationFilter
+  sentNotifications_none: NotificationFilter
+}
+
+type UserSubscriptionPayload {
+  mutation: _ModelMutationType!
+  node: User
+  updatedFields: [String!]
+  previousValues: UserPreviousValues
+}
+
+enum Visibility {
+  PRIVATE
+  PUBLIC
+}
+

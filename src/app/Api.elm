@@ -13,10 +13,6 @@ domain =
     "https://nookit.eu.auth0.com"
 
 
-graphCool1 : String
-graphCool1 =
-    "https://api.graph.cool/simple/v1/cjb18c15f1csb0122a4ptkgnt"
-
 graphCool : String
 graphCool =
     "https://api.graph.cool/simple/v1/cjcnkimc02rhy0177ejct2ika"
@@ -67,6 +63,13 @@ deleteDraft draft model =
         |> RemoteData.map (Cmd.map OnFetchDeletedDraft)
         |> withError model
 
+deletePublication : Publication -> Model -> ( Model, Cmd Msg )
+deletePublication pub model =
+    RemoteData.map (authorised (Encoders.deletePublication pub) Decoders.decodeDeletePublication) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map OnFetchDeletedPublication)
+        |> withError model
+
 
 updateDraft : Draft -> Model -> ( Model, Cmd Msg )
 updateDraft draft model =
@@ -75,6 +78,12 @@ updateDraft draft model =
         |> RemoteData.map (Cmd.map OnFetchUpdatedDraft)
         |> withError model
 
+updatePublication : Publication-> Model -> ( Model, Cmd Msg )
+updatePublication pub model =
+    RemoteData.map (authorised (Encoders.updatePublication pub) Decoders.decodeUpdatePublication) model.remote.graphCool
+        |> RemoteData.map sendRequest
+        |> RemoteData.map (Cmd.map OnFetchUpdatedPublication)
+        |> withError model
 
 createDraft : Draft -> Model -> ( Model, Cmd Msg )
 createDraft draft model =
@@ -88,7 +97,7 @@ createPublication : Publication -> Model -> ( Model, Cmd Msg )
 createPublication draft model =
     RemoteData.map (authorised (Encoders.createPublication draft) (Decoders.decodeCreatePublication)) model.remote.graphCool
         |> RemoteData.map sendRequest
-        |> RemoteData.map (Cmd.map OnFetchCreatePublication)
+        |> RemoteData.map (Cmd.map OnFetchCreatedPublication)
         |> withError model
 
 

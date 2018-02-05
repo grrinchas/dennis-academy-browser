@@ -37,7 +37,6 @@ type Notification @model {
 
 }
 
-
 enum NotificationType {
     LIKED_DRAFT
     UNLIKED_DRAFT

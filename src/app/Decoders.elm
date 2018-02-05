@@ -235,6 +235,11 @@ decodeUpdateDraft =
         |> Decoder.field "updateDraft"
         |> dataField
 
+decodeUpdatePublication : Decoder.Decoder Publication
+decodeUpdatePublication =
+    publicationObject
+        |> Decoder.field "updatePublication"
+        |> dataField
 
 decodeCreateDraft : Decoder.Decoder Draft
 decodeCreateDraft =
@@ -256,6 +261,12 @@ decodeDeleteDraft =
         |> Decoder.field "deleteDraft"
         |> dataField
 
+decodeDeletePublication : Decoder.Decoder String
+decodeDeletePublication =
+    Decoder.string
+        |> Decoder.field "id"
+        |> Decoder.field "deletePublication"
+        |> dataField
 
 decodePublicDrafts : Decoder.Decoder (Dict String Draft)
 decodePublicDrafts =

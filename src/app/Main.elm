@@ -136,8 +136,14 @@ update msg model =
             remoteUpdatedDraft Loading model
                 |> Api.updateDraft draft
 
+        ClickUpdatePublication pub ->
+             Api.updatePublication pub model
+
         ClickDeleteDraft draft ->
             Api.deleteDraft draft model
+
+        ClickDeletePublication pub ->
+            Api.deletePublication pub model
 
         ClickLikeDraft draft ->
             updatePublicDrafts (RemoteData.succeed draft) model
@@ -216,6 +222,11 @@ update msg model =
                                 withNoCommand m
                     )
 
+        OnFetchUpdatedPublication web ->
+             updatePublication web model
+                |> resetMenu
+                |> withNoCommand
+
         OnFetchCreatedDraft web ->
             updateDraft web model
                 |> resetForm
@@ -252,6 +263,22 @@ update msg model =
                                 withNoCommand m
                    )
 
+        OnFetchDeletedPublication web ->
+            removePublication web model
+                |> resetMenu
+                |> (\m -> if RemoteData.isSuccess web then
+                       snackBar { message = "Publication has been successfully deleted." , display = True, action = Nothing} m
+                  else  m )
+                |> (\m ->
+                        case m.route of
+                            Ok PublicationsRoute ->
+                                Api.fetchPublications m
+
+                            _ ->
+                                withNoCommand m
+                   )
+
+
         OnFetchPublicDrafts web ->
             remotePublicDrafts web model
                 |> remoteRefreshedPublicDrafts (succeed ())
@@ -266,7 +293,7 @@ update msg model =
                 |> (\m -> RemoteData.map (\p -> formUserBio p.bio m) web |> RemoteData.withDefault m)
                 |> withNoCommand
 
-        OnFetchCreatePublication web ->
+        OnFetchCreatedPublication web ->
             resetMenu model |>
                 withNoCommand
 

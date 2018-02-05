@@ -14,7 +14,7 @@ view model pub =
         [ div [class "row section"] []
         , case ( model.remote.user, pub ) of
             ( Success user, Just p ) ->
-                div []
+                div [class "header"]
                     [ div [ class "col s12 valign-wrapper profile" ]
                          [ img [ class "circle", src p.owner.picture ] []
                          , div [ class "bio" ]
@@ -30,4 +30,5 @@ view model pub =
                  div [class "loader-wrapper"] [ newLoader [] ]
 
         ]
+
 

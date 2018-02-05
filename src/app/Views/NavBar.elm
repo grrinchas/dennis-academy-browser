@@ -146,11 +146,11 @@ notificationsMenu menu u =
 
 
 
-publish : Draft -> Form -> DisplayMenu -> Html Msg
-publish draft form menu =
+publish : User -> Draft -> Form -> DisplayMenu -> Html Msg
+publish user draft form menu =
     div [class "dropdown-wrapper"]
         [ a [ class "btn z-depth-0  reset-margin-right", onClickWithoutProp <|  WhenMenuChanges (menuPublish menu)] [ text "publish" ]
-        , publishMenu draft form menu
+        , publishMenu user draft form menu
         ]
 
 
@@ -174,20 +174,59 @@ userMenu user menu =
         ]
 
 
-publishMenu : Draft -> Form -> DisplayMenu -> Html Msg
-publishMenu draft form menu =
-    div [onClickWithoutProp <|  WhenMenuChanges (menuPublish menu) , class "width-450 card dropdown-content top-70-right-15", classList [ ( "active", menu.publish) ] ]
+publishMenu : User -> Draft -> Form -> DisplayMenu -> Html Msg
+publishMenu user draft form menu =
+    div [onClickWithoutProp <|  WhenMenuChanges (menuPublish menu) , class "width-400 card dropdown-content top-70-right-15", classList [ ( "active", menu.publish) ] ]
         [  div [ class "card-content reset-bottom " ]
             [ p [] [ text "Please enter URL for the image, so that publication would stand out." ]
             , input [ class "no-style", placeholder "Enter image url...", onInput (\url -> WhenFormChanges { form | publishUrl = url }) ] []
             ]
-        , div [class "card-content reset-top reset-bottom"]
-            [ img [src form.publishUrl, class "width-400"] []
+        , div [class "card-content reset-top reset-bottom "]
+            [ img [src form.publishUrl, class "main-img"] []
             ]
+        , updatePublication draft form user
         , div [ class "card-action reset-top" ]
-            [ a [ class "right ", onClick <| ClickCreatePublication <| fromDraft form draft] [ text "OK" ]
+            [ a [ class "right "
+                , case form.updatePublication of
+                    Just p ->
+                        case Dict.get p user.publications of
+                           Just pub ->
+                                onClick <| ClickUpdatePublication <| {pub | content = draft.content, title = draft.title, image = form.publishUrl}
+                           Nothing ->
+                                onClick <| ClickCreatePublication <| fromDraft form draft
+                    Nothing ->
+                        onClick <| ClickCreatePublication <| fromDraft form draft
+                ] [ text "OK" ]
             ]
         ]
+
+
+updatePublication: Draft -> Form -> User -> Html Msg
+updatePublication draft form user =
+    let pubUpdate = \pub ->
+         img [ src pub.image
+             , classList [("active", Maybe.map (\id -> pub.id == id) form.updatePublication |> Maybe.withDefault False)]
+             , onClick <| WhenFormChanges {form | updatePublication = Just pub.id, publishUrl = pub.image}
+             ][]
+
+    in div  [class "card-content update reset-top "]
+         [ p [] [ text "Or update existing." ]
+         , div [ class "img-container"]
+         <| [div [ class "new"
+                 , classList [("active", form.updatePublication == Nothing)]
+                 , onClick <| WhenFormChanges {form | updatePublication = Nothing, publishUrl = ""}
+                 ]
+                [ i [class "material-icons"] [text "add"] ]
+            ] ++ List.map pubUpdate (Dict.values user.publications)
+         , p []
+            [ Maybe.map (\id -> Dict.get id user.publications) form.updatePublication
+                |> Maybe.map (\pub -> Maybe.map .title pub |> Maybe.withDefault draft.title)
+                |> Maybe.withDefault draft.title
+                |> text
+            ]
+
+         ]
+
 
 fromDraft: Form -> Draft -> Publication
 fromDraft form draft =
@@ -227,7 +266,7 @@ draft : Maybe Draft -> Model -> Html Msg
 draft draft model =
     case (model.remote.user, draft) of
         (Success user, Just d) ->
-            withButtons [ publish d model.form model.menu, notifications model.menu (Just user), profile (Just user) model.menu ] |> wrapper
+            withButtons [ publish user d model.form model.menu, notifications model.menu (Just user), profile (Just user) model.menu ] |> wrapper
 
         _ ->
             withButtons [notifications model.menu Nothing, profile Nothing model.menu ] |> wrapper

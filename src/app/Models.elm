@@ -183,29 +183,44 @@ type Msg
     | ClickLogout
     | ClickCreateAccount (Maybe ValidUser)
     | ClickLogin (Maybe ValidUser)
-    | ClickUpdateDraft Draft
+    | ClickUpdateProfile
+
+    -- Click draft
     | ClickCreateDraft Draft
+    | ClickUpdateDraft Draft
     | ClickDeleteDraft Draft
     | ClickRefreshPublicDrafts
     | ClickLikeDraft Draft
     | ClickUnLikeDraft Draft
+
+    -- Click publication
     | ClickCreatePublication Publication
+    | ClickUpdatePublication Publication
+    | ClickDeletePublication Publication
     | ClickLikePublication Publication
     | ClickUnLikePublication Publication
-    | ClickUpdateProfile
+
+    -- Click notification
     | ClickDeleteNotification Notification
 
+    --  Remote data user
     | OnFetchCreatedAccount (WebData Account)
     | OnFetchAuth0Token (WebData Auth0Token)
     | OnFetchGraphCoolToken (WebData AuthGraphCool)
     | OnFetchUserInfo (WebData User)
-    | OnFetchUpdatedDraft (WebData Draft)
+    | OnFetchUserProfile (WebData UserProfile)
+
+    --  Remote data draft
     | OnFetchCreatedDraft (WebData Draft)
+    | OnFetchUpdatedDraft (WebData Draft)
     | OnFetchDeletedDraft (WebData String)
     | OnFetchPublicDrafts (WebData (Dict String Draft))
+
+    --  Remote data publication
+    | OnFetchCreatedPublication (WebData Publication)
+    | OnFetchUpdatedPublication (WebData Publication)
+    | OnFetchDeletedPublication (WebData String)
     | OnFetchPublications (WebData (Dict String Publication))
-    | OnFetchUserProfile (WebData UserProfile)
-    | OnFetchCreatePublication (WebData Publication)
 
 
 
@@ -256,6 +271,7 @@ type alias Form =
     , draftTitleNew : String
     , userBio : String
     , publishUrl : String
+    , updatePublication: Maybe String
     }
 
 
@@ -312,6 +328,11 @@ formPublishUrl string model =
         form ->
             { model | form = { form | publishUrl = string } }
 
+formUpdatePublication: Maybe String -> Model -> Model
+formUpdatePublication string model =
+    case model.form of
+        form ->
+            { model | form = { form | updatePublication = string } }
 
 initialForm : Form
 initialForm =
@@ -322,6 +343,7 @@ initialForm =
     , draftTitleNew = "Very descriptive draft title..."
     , userBio = ""
     , publishUrl = ""
+    , updatePublication = Nothing
     }
 
 
@@ -398,7 +420,7 @@ type alias DisplayMenu =
     , publish : Bool
     , newDraft : Bool
     , notifications: Bool
-    , deleteDraft : { id : String, display : Bool }
+    , delete : { id : String, display : Bool }
     , publicDraft : { id : String, display : Bool }
     , displayDraft : Bool
     , filterDraft :
@@ -425,7 +447,7 @@ initialMenu =
     , publish = False
     , newDraft = False
     , notifications = False
-    , deleteDraft = { id = "", display = False }
+    , delete = { id = "", display = False }
     , publicDraft = { id = "", display = False }
     , displayDraft = False
     , filterDraft =
@@ -446,17 +468,6 @@ initialMenu =
     }
 
 
-isMenuVisible : DisplayMenu -> Bool
-isMenuVisible menu =
-    menu.user
-        || menu.publish
-        || menu.newDraft
-        || menu.deleteDraft.display
-        || menu.publicDraft.display
-        || menu.displayDraft
-        || menu.filterDraft.display
-
-
 menu : DisplayMenu -> Model -> Model
 menu menu model =
     { model | menu = menu }
@@ -468,7 +479,7 @@ reset menu =
     , publish = False
     , newDraft = False
     , notifications = False
-    , deleteDraft = { id = "", display = False }
+    , delete = { id = "", display = False }
     , publicDraft = { id = "", display = False }
     , displayDraft = False
     , filterDraft =
@@ -529,7 +540,6 @@ menuFilterLocalDraftPublic : Bool -> DisplayMenu -> DisplayMenu
 menuFilterLocalDraftPublic bool menu =
     case ( menu.filterDraft, menu.filterDraft.localDraftsPage) of
         (filter, page) -> { menu | filterDraft = {filter | localDraftsPage = {page | public = bool}}}
-
 
 
 menuDisplayDraft : DisplayMenu
@@ -717,6 +727,14 @@ updateDraft web model =
         |> RemoteData.map (flip remoteUser model)
         |> withError model
 
+updatePublication : WebData Publication -> Model -> Model
+updatePublication web model =
+    RemoteData.append web model.remote.user
+        |> RemoteData.map (\( pub, user ) -> { user | publications = Dict.insert pub.id pub user.publications })
+        |> RemoteData.map RemoteData.succeed
+        |> RemoteData.map (flip remoteUser model)
+        |> withError model
+
 updateLikedDraft : Draft -> Model -> Model
 updateLikedDraft draft model =
     model.remote.user
@@ -760,6 +778,13 @@ removeDraft web model =
         |> RemoteData.map (flip remoteUser model)
         |> withError model
 
+removePublication : WebData String -> Model -> Model
+removePublication web model =
+    RemoteData.append web model.remote.user
+        |> RemoteData.map (\( id, user ) -> { user | publications = Dict.remove id user.publications })
+        |> RemoteData.map RemoteData.succeed
+        |> RemoteData.map (flip remoteUser model)
+        |> withError model
 
 removeLikedDraft : Draft -> Model -> Model
 removeLikedDraft draft model =

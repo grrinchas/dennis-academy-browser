@@ -1,5 +1,5 @@
 query isOwner($node_id: ID!, $user_id: ID!) {
-    SomeDraftExists(filter: {
+    SomePublicationExists(filter: {
         id: $node_id
         owner: {
             id: $user_id
