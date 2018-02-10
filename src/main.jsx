@@ -1,6 +1,7 @@
 import Elm from './app/Main.elm';
 import './main.scss';
 import Highlighter from './assets/highlight.pack'
+import './queries.graphql'
 
 
 

@@ -3,6 +3,7 @@ port module Main exposing (..)
 import Api
 import Commands exposing (removeTokens, reroute, saveTokens, updateTime)
 import Dict
+import Json.Decode
 import Mouse
 import Platform.Cmd exposing (batch)
 import Ports
@@ -12,6 +13,7 @@ import Pages
 import RemoteData exposing (RemoteData(Failure, Loading, NotAsked, Success), WebData, succeed)
 import Routes exposing (..)
 import Time exposing (Time)
+
 
 
 subscriptions : Model -> Sub Msg
@@ -58,16 +60,16 @@ main =
         }
 
 
+
 init : Maybe Tokens -> Location -> ( Model, Cmd Msg )
 init tokens loc =
     location loc initialModel
         |> updateTokens tokens
         |> withCommands
             [ updateTime ]
-        |> andAlso Api.fetchUser
+        |> andAlso Api.fetchAdmin
         |> andAlso Api.fetchPublicDrafts
         |> andAlso Api.fetchPublications
-
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -149,26 +151,26 @@ update msg model =
             updatePublicDrafts (RemoteData.succeed draft) model
                 |> updateLikedDraft draft
                 |> Api.likeDraft draft
-                |> andAlso (Api.fetchDraftNotification draft.id draft.owner LIKED_DRAFT)
+                |> andAlso (Api.createNotification draft.id draft.owner LIKED_DRAFT)
 
 
         ClickUnLikeDraft draft ->
             updatePublicDrafts (RemoteData.succeed draft) model
                 |> removeLikedDraft draft
                 |> Api.unLikeDraft draft
-                |> andAlso (Api.fetchDraftNotification draft.id draft.owner UNLIKED_DRAFT)
+                |> andAlso (Api.createNotification draft.id draft.owner UNLIKED_DRAFT)
 
         ClickLikePublication pub ->
             updatePublications (RemoteData.succeed pub) model
                 |> updateLikedPublication pub
                 |> Api.likePublication pub
-                |> andAlso (Api.fetchDraftNotification pub.id pub.owner LIKED_PUBLICATION)
+                |> andAlso (Api.createNotification pub.id pub.owner LIKED_PUBLICATION)
 
         ClickUnLikePublication pub ->
             updatePublications (RemoteData.succeed pub) model
                 |> removeLikedPublication pub
                 |> Api.unLikePublication pub
-                |> andAlso (Api.fetchDraftNotification pub.id pub.owner UNLIKED_PUBLICATION)
+                |> andAlso (Api.createNotification pub.id pub.owner UNLIKED_PUBLICATION)
 
         ClickRefreshPublicDrafts ->
             remoteRefreshedPublicDrafts Loading model
@@ -176,11 +178,11 @@ update msg model =
 
         ClickUpdateProfile ->
             remoteUserProfile Loading model
-                |> Api.fetchUpdateProfile
+                |> Api.updateUser
 
         ClickDeleteNotification note->
             removeNotification note model
-                |> Api.fetchDeleteNotification note
+                |> Api.deleteNotification note
 
         OnFetchCreatedAccount account ->
             remoteAccount account model
@@ -193,7 +195,7 @@ update msg model =
 
         OnFetchGraphCoolToken token ->
             remoteGraphCool token model
-                |> Api.fetchUser
+                |> Api.fetchAdmin
                 |> andAlso Api.fetchPublicDrafts
 
         OnFetchUserInfo user ->
@@ -228,7 +230,8 @@ update msg model =
                 |> withNoCommand
 
         OnFetchCreatedDraft web ->
-            updateDraft web model
+            checkForFailure web model
+                |> updateDraft web
                 |> resetForm
                 |> resetMenu
                 |> (\m -> RemoteData.map (\draft ->
@@ -243,9 +246,9 @@ update msg model =
                 |> reroute
 
 
-
         OnFetchDeletedDraft web ->
-            removeDraft web model
+            checkForFailure web model
+                |> removeDraft web
                 |> resetMenu
                 |>
                 (\m -> if RemoteData.isSuccess web then
@@ -264,7 +267,8 @@ update msg model =
                    )
 
         OnFetchDeletedPublication web ->
-            removePublication web model
+            checkForFailure web model
+                |> removePublication web
                 |> resetMenu
                 |> (\m -> if RemoteData.isSuccess web then
                        snackBar { message = "Publication has been successfully deleted." , display = True, action = Nothing} m
@@ -285,7 +289,8 @@ update msg model =
                 |> withNoCommand
 
         OnFetchPublications web ->
-            remotePublications web model
+            checkForFailure web model
+                |> remotePublications web
                 |> withNoCommand
 
         OnFetchUserProfile web ->
@@ -294,7 +299,14 @@ update msg model =
                 |> withNoCommand
 
         OnFetchCreatedPublication web ->
-            resetMenu model |>
-                withNoCommand
+            checkForFailure web model
+                |> resetMenu
+                |> withNoCommand
 
 
+
+checkForFailure: WebData a -> Model -> Model
+checkForFailure web model =
+    case web of
+        Failure err -> remoteUser (Failure err) model
+        _-> model

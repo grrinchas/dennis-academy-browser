@@ -37,6 +37,14 @@ export default {
                     limit: 50,
                 },
             },
+            {
+                test: /\.(graphql)$/,
+                loader: 'url-loader',
+                options: {
+                    name: 'graphql/[name].[ext]',
+                    limit: 50,
+                },
+            },
         ],
         noParse: /\.elm$/
     },

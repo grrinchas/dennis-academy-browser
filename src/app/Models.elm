@@ -640,6 +640,7 @@ failRemoteUser err model =
     remoteUser (Failure err) model
 
 
+
 initialRemote : Remote
 initialRemote =
     { auth0 = RemoteData.NotAsked
