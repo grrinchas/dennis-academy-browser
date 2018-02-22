@@ -185,28 +185,33 @@ update msg model =
                 |> Api.deleteNotification note
 
         OnFetchCreatedAccount account ->
-            remoteAccount account model
+            checkForFailure account model
+                |> remoteAccount account
                 |> resetForm
                 |> withNoCommand
 
         OnFetchAuth0Token token ->
-            remoteAuth0 token model
+            checkForFailure token model
+                |> remoteAuth0 token
                 |> Api.authGraphCool
 
         OnFetchGraphCoolToken token ->
-            remoteGraphCool token model
+            checkForFailure token model
+                |> remoteGraphCool token
                 |> Api.fetchAdmin
                 |> andAlso Api.fetchPublicDrafts
 
         OnFetchUserInfo user ->
-            remoteUser user model
+            checkForFailure user model
+                |> remoteUser user
                 |> resetForm
                 |> withCommands
                     [ saveTokens model ]
                 |> andAlso reroute
 
         OnFetchUpdatedDraft web ->
-            remoteUpdatedDraft web model
+            checkForFailure web model
+                |> remoteUpdatedDraft web
                 |> updateDraft web
                 |> resetMenu
                 |> withCommands
@@ -225,11 +230,14 @@ update msg model =
                     )
 
         OnFetchUpdatedPublication web ->
-             updatePublication web model
+            checkForFailure web model
+                |> updatePublication web
                 |> resetMenu
                 |> withNoCommand
 
         OnFetchCreatedDraft web ->
+            let _ = Debug.log "" web in
+
             checkForFailure web model
                 |> updateDraft web
                 |> resetForm
@@ -284,7 +292,8 @@ update msg model =
 
 
         OnFetchPublicDrafts web ->
-            remotePublicDrafts web model
+            checkForFailure web model
+                |> remotePublicDrafts web
                 |> remoteRefreshedPublicDrafts (succeed ())
                 |> withNoCommand
 
@@ -294,7 +303,8 @@ update msg model =
                 |> withNoCommand
 
         OnFetchUserProfile web ->
-            remoteUserProfile web model
+            checkForFailure web model
+                |> remoteUserProfile web
                 |> (\m -> RemoteData.map (\p -> formUserBio p.bio m) web |> RemoteData.withDefault m)
                 |> withNoCommand
 

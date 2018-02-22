@@ -133,7 +133,7 @@ createDraft draft model =
         |> GraphQL.withDecoder Decoders.decodeCreateDraft
         |> GraphQL.withAuthorisation (RemoteData.map .token model.remote.graphCool |> RemoteData.withDefault "")
         |> GraphQL.withVariables
-            [ GraphQL.variable "ownerId" draft.owner.id
+            [ GraphQL.variable "ownerId" (RemoteData.map .id model.remote.graphCool |> RemoteData.withDefault "")
             , GraphQL.variable "content" <| sanitize draft.content
             , GraphQL.variable "title" <| sanitize draft.title
             , GraphQL.variable "type" "TUTORIAL"

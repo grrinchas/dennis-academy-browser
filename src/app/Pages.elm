@@ -85,8 +85,7 @@ loginPage model =
                     else
                         Error.view <| Http err
 
-                _ ->
-                    Error.view <| Http err
+                _ -> Auth.loginForm model.form empty |> Auth.wrapper
 
 
 draftPage : String -> Model -> Html Msg

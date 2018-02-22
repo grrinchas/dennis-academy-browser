@@ -16,6 +16,7 @@ view model =
     div [class "row"]
      [ totalLikes model
      , totalDrafts model
+     , totalPublications model
      ]
 
 
@@ -39,6 +40,28 @@ totalDrafts model =
         _ -> div [] []
 
 
+
+totalPublications : Model -> Html msg
+totalPublications model =
+    case model.remote.user of
+        Success user ->
+            div [class "col wider"]
+            [ div [class "card statistics"]
+                [div [class "card-content header  valign-wrapper"]
+                    [ i [class "material-icons" ] [text "apps"]
+                    , span [class ""] [text "Total Publications"]
+                    ]
+                , div [class "divider"][]
+                , div [class "card-content body"]
+                    [ span [] [text <| toString <| Dict.size user.publications]
+                    ]
+                ]
+            ]
+        _ -> div [] []
+
+
+
+
 totalLikes : Model -> Html msg
 totalLikes model =
     case model.remote.user of
@@ -51,10 +74,17 @@ totalLikes model =
                     ]
                 , div [class "divider"][]
                 , div [class "card-content body"]
-                    [ span [] [text <| toString <| List.foldl (\d l -> d.likes + l) 0 <| Dict.values user.drafts]
+                    [ span [] [text <| toString <| countLikes user]
                     ]
                 ]
 
             ]
         _ -> div [] []
+
+
+countLikes: User -> Int
+countLikes user =
+    List.foldr (\d count -> d.likes + count)  0 (Dict.values user.drafts)
+    + List.foldr (\p count -> p.likes + count) 0 (Dict.values user.publications)
+
 

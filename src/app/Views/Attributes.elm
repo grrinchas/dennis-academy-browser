@@ -118,7 +118,8 @@ toDraftPage draft = href <| path <| DraftRoute draft.id
 -- Draft
 
 onClickCreateDraft: Draft -> Attribute Msg
-onClickCreateDraft draft = onClick <| ClickCreateDraft draft
+onClickCreateDraft draft =
+    onClick <| ClickCreateDraft draft
 
 onClickDeleteDraft: Draft -> Attribute Msg
 onClickDeleteDraft draft = onClick <| ClickDeleteDraft draft
