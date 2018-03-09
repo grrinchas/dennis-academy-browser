@@ -236,8 +236,6 @@ update msg model =
                 |> withNoCommand
 
         OnFetchCreatedDraft web ->
-            let _ = Debug.log "" web in
-
             checkForFailure web model
                 |> updateDraft web
                 |> resetForm
@@ -312,6 +310,16 @@ update msg model =
             checkForFailure web model
                 |> resetMenu
                 |> withNoCommand
+
+        ClickLeftSlide ->
+            case model.slideShow - 1 < 0 of
+                True -> ({model| slideShow = 2}, Cmd.none)
+                False -> ({model | slideShow = model.slideShow - 1}, Cmd.none)
+        ClickRightSlide ->
+            case model.slideShow + 1 > 2 of
+                True -> ({model| slideShow = 0}, Cmd.none)
+                False -> ({model | slideShow = model.slideShow + 1}, Cmd.none)
+
 
 
 

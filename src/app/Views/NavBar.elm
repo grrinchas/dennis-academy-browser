@@ -287,7 +287,6 @@ landing model =
     case model.remote.user of
         Success _ ->
             withButtons [ a [ class "btn z-depth-0", href <| path DashboardRoute ] [ text "Dashboard" ] ] |> wrapper
-
         _ ->
             withButtons [ login, span [] [ text "or" ], signUp ] |> wrapper
 

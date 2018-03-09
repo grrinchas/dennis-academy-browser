@@ -82,10 +82,9 @@ loginPage model =
                         Auth.failureResponse "Wrong email or password."
                             |> Auth.loginForm model.form
                             |> Auth.wrapper
-                    else
-                        Error.view <| Http err
+                    else Auth.loginForm model.form empty |> Auth.wrapper
 
-                _ -> Auth.loginForm model.form empty |> Auth.wrapper
+                _ ->  Auth.loginForm model.form empty |> Auth.wrapper
 
 
 draftPage : String -> Model -> Html Msg
@@ -191,6 +190,7 @@ view model =
             case route of
                 HomeRoute ->
                     landingPage model
+
 
                 SignUpRoute ->
                     signUpPage model

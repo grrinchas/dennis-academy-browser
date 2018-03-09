@@ -35,10 +35,17 @@ query allPublicDrafts {
     }
 }
 
+
 query admin($id: ID!) {
     User(id: $id) {
         email
-        ...profileInfo
+        ...userInfo
+        drafts {
+            ...draftInfo
+        }
+        likedDrafts {
+            ...draftInfo
+        }
         likedPublications {
             ...publicationInfo
         }

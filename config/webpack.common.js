@@ -30,7 +30,7 @@ export default {
                 },
             },
             {
-                test: /\.(svg|woff|woff2|eot|ttf|otf)$/,
+                test: /\.(svg|woff|woff2|eot|ttf|otf|png)$/,
                 loader: 'url-loader',
                 options: {
                     name: 'fonts/[name].[ext]',

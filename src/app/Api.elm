@@ -331,11 +331,12 @@ deleteNotification note model =
 
 
 sanitize : String -> String
-sanitize string =
+sanitize s = s
+    {-
     Regex.replace All (Regex.regex "\n") (\_ -> "\\n") string
         |> Regex.replace All (Regex.regex "\t") (\_ -> "\\t")
         |> Regex.replace All (Regex.regex "\"") (\_ -> "\\\"")
-
+-}
 
 visibility: Visibility -> String
 visibility vis =

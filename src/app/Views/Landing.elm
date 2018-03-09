@@ -4,39 +4,215 @@ import Components exposing (newLoader)
 import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onClick, onInput)
 import Markdown
 import Models exposing (..)
 import RemoteData exposing (RemoteData(Loading, Success))
+import Routes exposing (Route(SignUpRoute), path)
+import Views.NavBar exposing (logoImg)
 
 
 view : Model -> Html Msg
-view model = div [] []
- {-
-    div [ class "" ]
-        [
-
-       div [ class "valign-wrapper" ]
-            [ ul [ class "tabs" ]
-                [ li [ class "tab" ] [ a [ href <| path DraftsRoute, classList [ ( "active", not bool ) ] ] [ text "Mine" ] ]
-                , li [ class "tab" ] [ a [ href <| path PublicDraftsRoute, classList [ ( "active", bool ) ] ] [ text "Community" ] ]
-                ]
-
-            , ul [ class "tabs right flex-flex-end" ]
-                [li [class "left-padding tab"] [ sortDraft model.menu ]
-                , li [class "left-padding tab"] [ filterPublic model.menu ]
-                , li [class "left-padding tab"] [ refresh model.remote.refreshedPublicDrafts ]
+view model =
+    div [class "landing"]
+        [ div [class "header valign-wrapper"]
+            [ div [class "container"]
+                [ div [class "row"]
+                     [ div [ class "col s12 "]
+                          [ h1 [] [text "Simple Blogging Platform"]
+                          , h3 []
+                             [text "Open source platform for creating your own online presence." ]
+                          , h3 [class "col s12 github "]
+                             [ a [href "https://github.com/grrinchas/dennis-academy-browser", class "btn z-depth-"]
+                                [ img [src "fonts/github_dark.png", class "left"]
+                                    []
+                                , text "Star on Github"
+                                ]
+                             ]
+                          ]
+                     ]
                 ]
             ]
-        , div [ class "divider" ] []
+            , div [class "how-it-works"]
+                [ div [class "container"]
+                    [ div [class "row"]
+                        [ div [class "col s12"]
+                            [ h1 []
+                                [ text "How it works?"
+                                ]
+                            , h3 []
+                                [ text "At DG Academy we believe that simplicity is the "
+                                , text "key to the success. "
+                                ]
+                            ]
+                        ]
+                    , div [class "row create reset-margin-bottom"]
+                        [ div [class "col"]
+                            [ i [class "material-icons"] [text "view_list"]
+                            , h3 [] [text "1. Read"]
+                            , p []
+                                [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris non ex et arcu auctor lacinia. Mauris dictum efficitur sem, eu rutrum justo. "
+                                ]
+                            ]
+                        , div [class "col"]
+                            [ i [class "material-icons"] [text "apps"]
+                            , h3 [] [text "1. Write"]
+                            , p []
+                                [ text "Mauris non ex et arcu auctor lacinia. Mauris dictum efficitur sem, eu rutrum justo. Aenean blandit dui velit, ac finibus massa ullamcorper et. "
+                                ]
+                            ]
+                        , div [class "col"]
+                            [ i [class "material-icons"] [text "reorder"]
+                            , h3 [] [text "1. Publish"]
+                            , p []
+                                [text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris non ex et arcu auctor lacinia. Aenean blandit dui velit, ac finibus massa ullamcorper et."
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            , div [class "features"]
+                [ div [class "container"]
+                    [ div [class "row"]
+                        [ div [class "col s12"]
+                            [ h1 []
+                                [ text "Blogging platform you have been waiting for"
+                                ]
+                            , h3 []
+                                [ text "DG Academy packed with features that help anyone to create their own blog."
+                                ]
+                            ]
+                        ]
+                    , slider model
+                    ]
+                ]
+            , div [class "testimonials"]
+                [ div [class "container"]
+                    [ div [class "row reset-margin-bottom"]
+                        [ div [class "col s12"]
+                            [ img [src "https://secure.gravatar.com/avatar/43ecbcb29e480758190211b25c85f70c"]
+                                []
+                            , h2 []
+                                [ text "\"DG Academy is really easy way to create your own blog.\""
+                                ]
+                            , p []
+                                [text "- Dennis Grinch, Creator of DG Academy"]
+                            ]
+                        ]
+                    ]
+                ]
+            , div [class "are-you-ready"]
+                [ div [class "container"]
+                    [ div [class "row reset-margin-bottom"]
+                        [ div [class ""]
+                            [  h1 []
+                                [ text "Are you ready?"
+                                ]
+                            , h3 [] [text "Don't wait and start building your own blog now!"]
+                            ]
+                        , div [class ""]
+                            [ a [class "btn", href <| path SignUpRoute] [text "Join our community"]
+                            ]
+                        ]
+                    ]
+                ]
+            , div [class "divider"] []
+            , footer []
+                [ div [class "container"]
+                    [ div [class "row reset-margin-bottom"]
+                        [ div [class ""]
+                            [ img [src logoImg] []
+                            ]
+                        , div [class ""]
+                            [ h2 [] [text "Our Mission"]
+                            , p []
+                                [text "DG Academy has a mission to provide blogging tools for everyone for free forever."
+                                ]
+                            ]
+                        , div [class ""]
+                            [ h2 [] [text "LEARN MORE"]
+                            , p []
+                                [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi ut magna volutpat, consectetur mi sit amet, molestie odio."]
+                            ]
+                        , div [class ""]
+                            [ a [href "https://github.com/grrinchas/dennis-academy-browser"] [img [src "fonts/github.png"] []
+                                ]
+                            ]
+                        ]
 
 
-         div [ class "row container section" ] <|
-            case model.remote.publications of
-                Success pubs ->
-                    List.map (publicationCard model.menu ) <| Dict.values pubs
-                    --(sortBy (draftFilter model.menu user <| Dict.values drafts) model.menu.sortDraft.sortBy)
-                _ ->
-                    [div [class "loader-wrapper"] [ newLoader [] ]]
+                    ]
+                ]
+            , div [class "copyright"]
+                [ div [class "container"]
+                    [ div [class "row reset-margin-bottom"]
+                        [text "© 2018 DENNIS GRINCH. ALL RIGHTS RESERVED."]
+
+                    ]
+                ]
+
         ]
-        -}
+
+
+slider: Model -> Html Msg
+slider model =
+    div [class "slider-wrapper"]
+        [ div [class "arrow"]
+            [ a [class "btn-floating", onClick ClickLeftSlide]
+                [i [class "material-icons"] [text "keyboard_arrow_left"]
+                ]
+            ]
+        , div [class "slider"]
+            [ div [class "wrapper"]
+                [ div [class "slide zero", classList [("show", model.slideShow == 0)]]
+                    [ div [class "img"]
+                          [ p [] [text "M"]
+                          ]
+                      , div [class "feature "]
+                         [ h2 [] [text "Markdown Editor"]
+                         , p []
+                             [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent posuere eu eros eu facilisis. Donec faucibus congue lectus quis dictum. Vestibulum eget nibh vehicula, molestie magna ac, commodo quam. Ut a ullamcorper nisi. Vivamus mollis, arcu at tempus facilisis, nisl nibh ornare felis, a tincidunt turpis quam ac mauris. "
+                             ]
+                         , a [href <| path SignUpRoute,class "btn right"] [text "get started"]
+                         ]
+                    ]
+                , div [class "slide one", classList [("show", model.slideShow == 1)]]
+                    [ div [class "img"]
+                          [ p [] [text "N"]
+                          ]
+                      , div [class "feature "]
+                         [ h2 [] [text "Notifications"]
+                         , p []
+                             [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent posuere eu eros eu facilisis. Donec faucibus congue lectus quis dictum. Vestibulum eget nibh vehicula, molestie magna ac, commodo quam. Ut a ullamcorper nisi. Vivamus mollis, arcu at tempus facilisis, nisl nibh ornare felis, a tincidunt turpis quam ac mauris. "
+                             ]
+                         , a [href <| path SignUpRoute, class "btn right"] [text "get started"]
+                         ]
+                    ]
+                , div [class "slide two", classList [("show", model.slideShow == 2)]]
+                    [ div [class "img"]
+                          [ p [] [text "C"]
+                          ]
+                      , div [class "feature "]
+                         [ h2 [] [text "Community"]
+                         , p []
+                             [ text "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent posuere eu eros eu facilisis. Donec faucibus congue lectus quis dictum. Vestibulum eget nibh vehicula, molestie magna ac, commodo quam. Ut a ullamcorper nisi. Vivamus mollis, arcu at tempus facilisis, nisl nibh ornare felis, a tincidunt turpis quam ac mauris. "
+                             ]
+                         , a [href <| path SignUpRoute, class "btn right"] [text "get started"]
+                         ]
+                    ]
+                ]
+            , div [class "handles"]
+                [ ul []
+                    [ li [classList [("show", model.slideShow == 0)]] []
+                    , li [classList [("show", model.slideShow == 1)]] []
+                    , li [classList [("show", model.slideShow == 2)]] []
+                    ]
+                ]
+            ]
+
+        , div [class "arrow"]
+            [ a [class "btn-floating", onClick ClickRightSlide]
+                [i [class "material-icons"] [text "keyboard_arrow_right"]
+                ]
+            ]
+     ]

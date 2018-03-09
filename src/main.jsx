@@ -1,7 +1,10 @@
 import Elm from './app/Main.elm';
 import './main.scss';
-import Highlighter from './assets/highlight.pack'
 import './queries.graphql'
+import './assets/github.png'
+import './assets/github_dark.png'
+import './assets/markdown_editor.png'
+import Highlighter from './assets/highlight.pack'
 
 
 

@@ -203,6 +203,10 @@ type Msg
     -- Click notification
     | ClickDeleteNotification Notification
 
+    -- SlideShow
+    | ClickLeftSlide
+    | ClickRightSlide
+
     --  Remote data user
     | OnFetchCreatedAccount (WebData Account)
     | OnFetchAuth0Token (WebData Auth0Token)
@@ -688,7 +692,10 @@ type alias Model =
     , remote : Remote
     , now : Time
     , snackBar: SnackBar
+    , slideShow: Int
     }
+
+
 
 initialModel : Model
 initialModel =
@@ -698,6 +705,7 @@ initialModel =
     , remote = initialRemote
     , now = Time.second
     , snackBar = initialSnackBar
+    , slideShow = 0
     }
 
 
