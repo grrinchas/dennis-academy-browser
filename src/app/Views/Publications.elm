@@ -18,7 +18,6 @@ view model =
             case RemoteData.append model.remote.publications model.remote.user of
                 Success (pubs, user) ->
                     List.map (publicationCard model.menu user ) <| Dict.values pubs
-                    --(sortBy (draftFilter model.menu user <| Dict.values drafts) model.menu.sortDraft.sortBy)
                 _ ->
                     [div [class "loader-wrapper"] [ newLoader [] ]]
 

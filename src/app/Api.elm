@@ -13,7 +13,7 @@ import RemoteData exposing (RemoteData(Failure, Success), WebData, sendRequest)
 
 initialPayload: Payload decoder
 initialPayload =
-    { queries = GraphQL.remote <| GraphQL.queries "http://localhost:3000/graphql/queries.graphql"
+    { queries = GraphQL.remote <| GraphQL.queries "graphql/queries.graphql"
     , endpoint = GraphQL.endpoint "https://api.graph.cool/simple/v1/cjcnkimc02rhy0177ejct2ika" (Json.Decode.fail "missing decoder")
     , name = ""
     , variables = []
@@ -100,8 +100,8 @@ updatePublication pub model =
         |> GraphQL.withAuthorisation (RemoteData.map .token model.remote.graphCool |> RemoteData.withDefault "")
         |> GraphQL.withVariables
             [ GraphQL.variable "id" pub.id
-            , GraphQL.variable "content" <| sanitize pub.content
-            , GraphQL.variable "title" <| sanitize pub.title
+            , GraphQL.variable "content"  pub.content
+            , GraphQL.variable "title" pub.title
             , GraphQL.variable "image" pub.image
             ]
         |> GraphQL.send RemoteData.fromResult
@@ -117,8 +117,8 @@ updateDraft draft model =
         |> GraphQL.withAuthorisation (RemoteData.map .token model.remote.graphCool |> RemoteData.withDefault "")
         |> GraphQL.withVariables
             [ GraphQL.variable "id" draft.id
-            , GraphQL.variable "content" <| sanitize draft.content
-            , GraphQL.variable "title" <| sanitize draft.title
+            , GraphQL.variable "content" draft.content
+            , GraphQL.variable "title"  draft.title
             , GraphQL.variable "visibility" <| visibility draft.visibility
             ]
         |> GraphQL.send RemoteData.fromResult
@@ -134,8 +134,8 @@ createDraft draft model =
         |> GraphQL.withAuthorisation (RemoteData.map .token model.remote.graphCool |> RemoteData.withDefault "")
         |> GraphQL.withVariables
             [ GraphQL.variable "ownerId" (RemoteData.map .id model.remote.graphCool |> RemoteData.withDefault "")
-            , GraphQL.variable "content" <| sanitize draft.content
-            , GraphQL.variable "title" <| sanitize draft.title
+            , GraphQL.variable "content"  draft.content
+            , GraphQL.variable "title"  draft.title
             , GraphQL.variable "type" "TUTORIAL"
             ]
         |> GraphQL.send RemoteData.fromResult
@@ -152,8 +152,8 @@ createPublication pub model =
         |> GraphQL.withAuthorisation (RemoteData.map .token model.remote.graphCool |> RemoteData.withDefault "")
         |> GraphQL.withVariables
             [ GraphQL.variable "ownerId" pub.owner.id
-            , GraphQL.variable "content" <| sanitize pub.content
-            , GraphQL.variable "title" <| sanitize pub.title
+            , GraphQL.variable "content"  pub.content
+            , GraphQL.variable "title"  pub.title
             , GraphQL.variable "image" pub.image
             ]
         |> GraphQL.send RemoteData.fromResult
@@ -330,13 +330,6 @@ deleteNotification note model =
         |> (,) model
 
 
-sanitize : String -> String
-sanitize s = s
-    {-
-    Regex.replace All (Regex.regex "\n") (\_ -> "\\n") string
-        |> Regex.replace All (Regex.regex "\t") (\_ -> "\\t")
-        |> Regex.replace All (Regex.regex "\"") (\_ -> "\\\"")
--}
 
 visibility: Visibility -> String
 visibility vis =
