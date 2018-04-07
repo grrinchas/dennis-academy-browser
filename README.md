@@ -1,5 +1,5 @@
-# dennis-academy-browser
+# Simple Blogging Platform
 
-Simple blogging platform build in Elm.
+Is an experimental single page application build using Elm language. 
 
 
