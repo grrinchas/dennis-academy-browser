@@ -12,16 +12,9 @@ First let's install dependencies
 
 After that
 
-* Clone this repo in a new project:
+* Clone this repo 
 ```bash
-git clone https://github.com/grrinchas/dg-elm-starter-kit my-elm-project
-```
-
-* Re-initialise as your own repo:
-```bash
-cd my-elm-project
-rm -rf .git         # on Windows: rmdir .git /s /q
-git init
+git clone https://github.com/grrinchas/dg-elm-starter-kit 
 ```
 
 * Install all `JavaScript` dependencies:
